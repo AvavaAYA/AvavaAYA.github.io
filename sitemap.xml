@@ -2,6 +2,69 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/14/pwnable-tw-applestore-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-silverbullet-writeup/</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/about/index.html</loc>
+    
+    <lastmod>2022-03-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://avavaaya.github.io/404.html</loc>
     
     <lastmod>2022-03-05</lastmod>
@@ -28,33 +91,6 @@
     <priority>0.6</priority>
   </url>
   
-  <url>
-    <loc>https://avavaaya.github.io/about/index.html</loc>
-    
-    <lastmod>2022-03-05</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://avavaaya.github.io/2022/03/04/catalogue/</loc>
-    
-    <lastmod>2022-03-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://avavaaya.github.io/2022/03/04/hello-world/</loc>
-    
-    <lastmod>2022-03-04</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
 
   <url>
     <loc>https://avavaaya.github.io/</loc>
@@ -64,6 +100,48 @@
   </url>
 
   
+  <url>
+    <loc>https://avavaaya.github.io/tags/pwnable-tw/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/ROP/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/unlink/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/ret2libc/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/UAF/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
+  
+  <url>
+    <loc>https://avavaaya.github.io/categories/pwn-writeup/</loc>
+    <lastmod>2022-03-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
   
 </urlset>

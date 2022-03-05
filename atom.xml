@@ -2,11 +2,11 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Welcome</title>
   <icon>https://avavaaya.github.io/icon.png</icon>
-  <subtitle>mua你一下</subtitle>
+  <subtitle>在看吗, 在看的话就mua你一下</subtitle>
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-04T14:05:20.275Z</updated>
+  <updated>2022-03-05T05:58:18.281Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -17,44 +17,186 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>catalogue</title>
-    <link href="https://avavaaya.github.io/2022/03/04/catalogue/"/>
-    <id>https://avavaaya.github.io/2022/03/04/catalogue/</id>
-    <published>2022-03-04T14:04:52.000Z</published>
-    <updated>2022-03-04T14:05:20.275Z</updated>
+    <title>pwnable-tw-applestore writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/14/pwnable-tw-applestore-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/14/pwnable-tw-applestore-writeup/</id>
+    <published>2021-11-14T08:22:06.000Z</published>
+    <updated>2022-03-05T05:58:18.281Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;h2 id=&quot;IM-A-TEST&quot;&gt;&lt;a href=&quot;#IM-A-TEST&quot; class=&quot;headerlink&quot; title=&quot;IM A TEST&quot;&gt;&lt;/a&gt;IM A</summary>
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
         
       
     
     
     
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="unlink" scheme="https://avavaaya.github.io/tags/unlink/"/>
     
   </entry>
   
   <entry>
-    <title>Hello World</title>
-    <link href="https://avavaaya.github.io/2022/03/04/hello-world/"/>
-    <id>https://avavaaya.github.io/2022/03/04/hello-world/</id>
-    <published>2022-03-04T13:55:42.301Z</published>
-    <updated>2022-03-04T13:55:42.301Z</updated>
+    <title>pwnable-tw-silverbullet writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-silverbullet-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-silverbullet-writeup/</id>
+    <published>2021-11-13T07:50:23.000Z</published>
+    <updated>2022-03-05T05:57:34.673Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
         
       
     
     
     
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ret2libc" scheme="https://avavaaya.github.io/tags/ret2libc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-hacknote writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/</id>
+    <published>2021-11-13T07:49:28.000Z</published>
+    <updated>2022-03-05T05:58:07.479Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot; title=&quot;题目考点&quot;&gt;&lt;/a&gt;题目考点&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;UAF&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-calc writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
+    <published>2021-11-13T07:44:54.000Z</published>
+    <updated>2022-03-05T05:58:22.371Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-dubblesort writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/</id>
+    <published>2021-11-13T07:44:54.000Z</published>
+    <updated>2022-03-05T05:58:10.086Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;p&gt;##题目考点&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ret2libc&lt;/li&gt;
+&lt;li&gt;绕过canary&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;##解题思路&lt;/p&gt;
+&lt;p&gt;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ret2libc" scheme="https://avavaaya.github.io/tags/ret2libc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-3x17 writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/</id>
+    <published>2021-11-13T07:39:01.000Z</published>
+    <updated>2022-03-05T05:58:14.284Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
     
   </entry>
   
