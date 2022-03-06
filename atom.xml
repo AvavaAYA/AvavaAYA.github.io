@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-05T06:16:36.078Z</updated>
+  <updated>2022-03-06T01:48:44.092Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -17,15 +17,58 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>verilogOJ</title>
+    <title>pwnable-tw-hacknote writeup</title>
+    <link href="https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/"/>
+    <id>https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/</id>
+    <published>2022-03-06T00:42:22.000Z</published>
+    <updated>2022-03-06T01:48:44.092Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;exploit&quot;&gt;&lt;a href=&quot;#exploit&quot; class=&quot;headerlink&quot; title=&quot;exploit&quot;&gt;&lt;/a&gt;exploit&lt;/h2&gt;&lt;figure class=&quot;highlight</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="unsorter_bin_attack" scheme="https://avavaaya.github.io/tags/unsorter-bin-attack/"/>
+    
+    <category term="house_of_orange" scheme="https://avavaaya.github.io/tags/house-of-orange/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>verilogOJ-writeup</title>
     <link href="https://avavaaya.github.io/2022/03/05/verilogOJ/"/>
     <id>https://avavaaya.github.io/2022/03/05/verilogOJ/</id>
     <published>2022-03-05T06:16:36.000Z</published>
-    <updated>2022-03-05T06:16:36.078Z</updated>
+    <updated>2022-03-06T01:45:11.222Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;题目地址&quot;&gt;&lt;a href=&quot;#题目地址&quot; class=&quot;headerlink&quot; title=&quot;题目地址&quot;&gt;&lt;/a&gt;题目地址&lt;/h2&gt;&lt;p&gt;练习题来自&lt;a href=&quot;https://verilogoj.ustc.edu.cn/oj/&quot;&gt;USTC verilog</summary>
+        
+      
     
     
     
+    <category term="verilog" scheme="https://avavaaya.github.io/categories/verilog/"/>
     
+    
+    <category term="verilog" scheme="https://avavaaya.github.io/tags/verilog/"/>
     
   </entry>
   
@@ -112,35 +155,6 @@
   </entry>
   
   <entry>
-    <title>pwnable-tw-calc writeup</title>
-    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
-    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
-    <published>2021-11-13T07:44:54.000Z</published>
-    <updated>2022-03-05T05:58:22.371Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
-
-&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
-    
-    
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
-    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
-    
-  </entry>
-  
-  <entry>
     <title>pwnable-tw-dubblesort writeup</title>
     <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/"/>
     <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/</id>
@@ -173,6 +187,35 @@
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
     <category term="ret2libc" scheme="https://avavaaya.github.io/tags/ret2libc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-calc writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
+    <published>2021-11-13T07:44:54.000Z</published>
+    <updated>2022-03-05T05:58:22.371Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
     
   </entry>
   

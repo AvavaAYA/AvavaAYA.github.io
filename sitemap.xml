@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/</loc>
+    <loc>https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/</loc>
     
     <lastmod>2022-03-06</lastmod>
     
@@ -13,7 +13,16 @@
   <url>
     <loc>https://avavaaya.github.io/2022/03/05/verilogOJ/</loc>
     
-    <lastmod>2022-03-05</lastmod>
+    <lastmod>2022-03-06</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/</loc>
+    
+    <lastmod>2022-03-06</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -117,6 +126,20 @@
   </url>
   
   <url>
+    <loc>https://avavaaya.github.io/tags/unsorter-bin-attack/</loc>
+    <lastmod>2022-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/house-of-orange/</loc>
+    <lastmod>2022-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://avavaaya.github.io/tags/ROP/</loc>
     <lastmod>2022-03-06</lastmod>
     <changefreq>weekly</changefreq>
@@ -144,10 +167,24 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://avavaaya.github.io/tags/verilog/</loc>
+    <lastmod>2022-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
     <loc>https://avavaaya.github.io/categories/pwn-writeup/</loc>
+    <lastmod>2022-03-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/categories/verilog/</loc>
     <lastmod>2022-03-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
