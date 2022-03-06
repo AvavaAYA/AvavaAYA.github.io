@@ -145,12 +145,11 @@
   <entry>
     <title>pwnable-tw-hacknote writeup</title>
     <url>/2021/11/13/pwnable-tw-hacknote-writeup/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
+    <content><![CDATA[<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
 <li>UAF</li>
 </ul>
 <h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p> 32位elf，菜单题，提供了add, del, print三个功能，依次查看:</p>
+<span id="more"></span>
 <ul>
 <li><p>add_note():</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sub_8048646</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  _DWORD *v0; <span class="comment">// ebx</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> i; <span class="comment">// [esp+Ch] [ebp-1Ch]</span></span><br><span class="line">  <span class="type">int</span> size; <span class="comment">// [esp+10h] [ebp-18h]</span></span><br><span class="line">  <span class="type">char</span> buf; <span class="comment">// [esp+14h] [ebp-14h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v5; <span class="comment">// [esp+1Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v5 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( count &lt;= <span class="number">5</span> )</span><br><span class="line"><span class="comment">//最多输入5个notes(del函数中并没有减少count的值)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">4</span>; ++i )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( !ptr[i] )</span><br><span class="line">      &#123;</span><br><span class="line">        ptr[i] = <span class="built_in">malloc</span>(<span class="number">8u</span>);</span><br><span class="line">        <span class="keyword">if</span> ( !ptr[i] )</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="built_in">puts</span>(<span class="string">&quot;Alloca Error&quot;</span>);</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        *(_DWORD *)ptr[i] = sub_804862B;</span><br><span class="line"><span class="comment">//结构体的第一个字段中包含一个函数指针</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Note size :&quot;</span>);</span><br><span class="line">        read(<span class="number">0</span>, &amp;buf, <span class="number">8u</span>);</span><br><span class="line">        size = atoi(&amp;buf);</span><br><span class="line">        v0 = ptr[i];</span><br><span class="line">        v0[<span class="number">1</span>] = <span class="built_in">malloc</span>(size);</span><br><span class="line"><span class="comment">//可自定义大小的content</span></span><br><span class="line">        <span class="keyword">if</span> ( !*((_DWORD *)ptr[i] + <span class="number">1</span>) )</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="built_in">puts</span>(<span class="string">&quot;Alloca Error&quot;</span>);</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Content :&quot;</span>);</span><br><span class="line">        read(<span class="number">0</span>, *((<span class="type">void</span> **)ptr[i] + <span class="number">1</span>), size);</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;Success !&quot;</span>);</span><br><span class="line">        ++count;</span><br><span class="line">        <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v5;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Full&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -184,6 +183,11 @@
       </tags>
   </entry>
   <entry>
+    <title>verilogOJ</title>
+    <url>/2022/03/05/verilogOJ/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>pwnable-tw-silverbullet writeup</title>
     <url>/2021/11/13/pwnable-tw-silverbullet-writeup/</url>
     <content><![CDATA[<span id="more"></span>
@@ -211,10 +215,5 @@
         <tag>pwnable.tw</tag>
         <tag>ret2libc</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>verilogOJ</title>
-    <url>/2022/03/05/verilogOJ/</url>
-    <content><![CDATA[]]></content>
   </entry>
 </search>

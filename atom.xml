@@ -92,21 +92,13 @@
     <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/"/>
     <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-hacknote-writeup/</id>
     <published>2021-11-13T07:49:28.000Z</published>
-    <updated>2022-03-05T05:58:07.479Z</updated>
+    <updated>2022-03-06T00:41:33.237Z</updated>
     
     
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
-
-&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot; title=&quot;题目考点&quot;&gt;&lt;/a&gt;题目考点&lt;/h2&gt;&lt;ul&gt;
+    <summary type="html">&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot; title=&quot;题目考点&quot;&gt;&lt;/a&gt;题目考点&lt;/h2&gt;&lt;ul&gt;
 &lt;li&gt;UAF&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2</summary>
-        
-      
+&lt;h2 id=&quot;解题思路&quot;&gt;&lt;a href=&quot;#解题思路&quot; class=&quot;headerlink&quot; title=&quot;解题思路&quot;&gt;&lt;/a&gt;解题思路&lt;/h2&gt;&lt;p&gt; 32位elf，菜单题，提供了add, del, print三个功能，依次查看:&lt;/p&gt;</summary>
     
     
     
