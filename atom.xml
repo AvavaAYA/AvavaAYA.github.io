@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-06T01:50:50.503Z</updated>
+  <updated>2022-03-06T02:38:01.239Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/</id>
     <published>2022-03-06T00:42:22.000Z</published>
-    <updated>2022-03-06T01:50:50.503Z</updated>
+    <updated>2022-03-06T02:38:01.239Z</updated>
     
     
       
@@ -30,7 +30,7 @@
         
     <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
 
-&lt;h2 id=&quot;exploit&quot;&gt;&lt;a href=&quot;#exploit&quot; class=&quot;headerlink&quot; title=&quot;exploit&quot;&gt;&lt;/a&gt;exploit&lt;/h2&gt;&lt;figure class=&quot;highlight</summary>
+&lt;h2 id=&quot;exploit&quot;&gt;&lt;a href=&quot;#exploit&quot; class=&quot;headerlink&quot;</summary>
         
       
     
@@ -245,6 +245,33 @@
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
     <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>git-command-review</title>
+    <link href="https://avavaaya.github.io/2021/03/07/git-command-review/"/>
+    <id>https://avavaaya.github.io/2021/03/07/git-command-review/</id>
+    <published>2021-03-07T14:03:31.000Z</published>
+    <updated>2022-03-07T14:12:14.099Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;报错error-src-refspec-master-does-not-match-any&quot;&gt;&lt;a href=&quot;#报错error-src-refspec-master-does-not-match-any&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="git" scheme="https://avavaaya.github.io/categories/git/"/>
+    
+    
+    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     
   </entry>
   
