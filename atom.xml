@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-06T02:38:01.239Z</updated>
+  <updated>2022-03-09T05:22:27.563Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,37 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SUSCTF-happytree-writeup</title>
+    <link href="https://avavaaya.github.io/2022/03/09/happytree-writeup/"/>
+    <id>https://avavaaya.github.io/2022/03/09/happytree-writeup/</id>
+    <published>2022-03-09T00:03:29.000Z</published>
+    <updated>2022-03-09T05:22:27.563Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目分析&quot;&gt;&lt;a href=&quot;#题目分析&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
+    
+    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
+    
+    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
+    
+  </entry>
   
   <entry>
     <title>pwnable-tw-bookwriter writeup</title>
@@ -148,9 +179,9 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
     <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
   </entry>
   
