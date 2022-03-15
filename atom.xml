@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-09T05:22:27.563Z</updated>
+  <updated>2022-03-15T13:09:31.541Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>UTCTF-2022-bloat-writeup</title>
+    <link href="https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/"/>
+    <id>https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/</id>
+    <published>2022-03-15T13:08:50.000Z</published>
+    <updated>2022-03-15T13:09:31.541Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目分析&quot;&gt;&lt;a href=&quot;#题目分析&quot; class=&quot;headerlink&quot; title=&quot;题目分析&quot;&gt;&lt;/a&gt;题目分析&lt;/h2&gt;&lt;h3 id=&quot;准备工作&quot;&gt;&lt;a href=&quot;#准备工作&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="UTCTF" scheme="https://avavaaya.github.io/tags/UTCTF/"/>
+    
+    <category term="kernel" scheme="https://avavaaya.github.io/tags/kernel/"/>
+    
+  </entry>
   
   <entry>
     <title>SUSCTF-happytree-writeup</title>
@@ -186,35 +215,6 @@
   </entry>
   
   <entry>
-    <title>pwnable-tw-calc writeup</title>
-    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
-    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
-    <published>2021-11-13T07:44:54.000Z</published>
-    <updated>2022-03-05T05:58:22.371Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
-
-&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
-    
-    
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
-    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
-    
-  </entry>
-  
-  <entry>
     <title>pwnable-tw-dubblesort writeup</title>
     <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/"/>
     <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/</id>
@@ -247,6 +247,35 @@
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
     <category term="ret2libc" scheme="https://avavaaya.github.io/tags/ret2libc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwnable-tw-calc writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
+    <published>2021-11-13T07:44:54.000Z</published>
+    <updated>2022-03-05T05:58:22.371Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
     
   </entry>
   

