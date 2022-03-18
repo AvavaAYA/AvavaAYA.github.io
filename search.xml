@@ -72,13 +72,16 @@
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">dopwn exp.py</span><br></pre></td></tr></table></figure>
 
 <p>快速创建利用模板.</p>
+<hr>
 <h2 id="kernel利用"><a href="#kernel利用" class="headerlink" title="kernel利用"></a>kernel利用</h2><h3 id="decompress-sh"><a href="#decompress-sh" class="headerlink" title="decompress.sh"></a>decompress.sh</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="built_in">mkdir</span> initramfs</span><br><span class="line"><span class="built_in">cd</span> initramfs</span><br><span class="line"><span class="built_in">cp</span> ../initramfs.cpio.gz .</span><br><span class="line">gunzip ./initramfs.cpio.gz</span><br><span class="line">cpio -idm &lt; ./initramfs.cpio</span><br><span class="line"><span class="built_in">rm</span> initramfs.cpio</span><br></pre></td></tr></table></figure>
 
 <h3 id="compress-sh"><a href="#compress-sh" class="headerlink" title="compress.sh"></a>compress.sh</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">gcc -o exploit -static <span class="variable">$1</span></span><br><span class="line"><span class="built_in">mv</span> ./exploit ./initramfs</span><br><span class="line"><span class="built_in">cd</span> initramfs</span><br><span class="line">find . -print0 \</span><br><span class="line">| cpio --null -ov --format=newc \</span><br><span class="line">| gzip -9 &gt; initramfs.cpio.gz</span><br><span class="line"><span class="built_in">mv</span> ./initramfs.cpio.gz ../</span><br></pre></td></tr></table></figure>
 
+<hr>
 <h3 id="vmlinux-to-elf"><a href="#vmlinux-to-elf" class="headerlink" title="vmlinux-to-elf"></a>vmlinux-to-elf</h3><p>解析符号表:<a href="https://github.com/marin-m/vmlinux-to-elf">vmlinux-to-elf</a></p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">vmlinux-to-elf bzImage vmlinux.bin</span><br></pre></td></tr></table></figure>
 
+<hr>
 <h3 id="gdb-调试命令"><a href="#gdb-调试命令" class="headerlink" title="gdb-调试命令"></a>gdb-调试命令</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">gdb -ex <span class="string">&#x27;set architecture i386:x86_64&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;add-symbol-file bloat.ko 0xffffffffc0000000&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;b load_bloat_binary&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;c&#x27;</span> ./vmlinux.bin</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>small-tips</category>
