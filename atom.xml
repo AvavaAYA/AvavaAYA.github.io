@@ -81,7 +81,7 @@
     <link href="https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/</id>
     <published>2022-03-06T00:42:22.000Z</published>
-    <updated>2022-03-06T02:38:01.239Z</updated>
+    <updated>2022-03-18T05:29:48.863Z</updated>
     
     
       
@@ -90,7 +90,7 @@
         
     <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
 
-&lt;h2 id=&quot;exploit&quot;&gt;&lt;a href=&quot;#exploit&quot; class=&quot;headerlink&quot;</summary>
+&lt;h2 id=&quot;利用原理&quot;&gt;&lt;a href=&quot;#利用原理&quot; class=&quot;headerlink&quot; title=&quot;利用原理&quot;&gt;&lt;/a&gt;利用原理&lt;/h2&gt;&lt;h3 id=&quot;unsorted-bin-attack&quot;&gt;&lt;a</summary>
         
       
     
@@ -129,6 +129,31 @@
     
     
     <category term="verilog" scheme="https://avavaaya.github.io/tags/verilog/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwn-templates-to-make-pwn-faster</title>
+    <link href="https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/"/>
+    <id>https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/</id>
+    <published>2022-03-03T06:32:27.000Z</published>
+    <updated>2022-03-18T06:57:00.590Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;h3 id=&quot;x2F-pwn-template-py&quot;&gt;&lt;a href=&quot;#x2F-pwn-template-py&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
+    
+    
+    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     
   </entry>
   
@@ -215,6 +240,35 @@
   </entry>
   
   <entry>
+    <title>pwnable-tw-calc writeup</title>
+    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
+    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
+    <published>2021-11-13T07:44:54.000Z</published>
+    <updated>2022-03-05T05:58:22.371Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+  </entry>
+  
+  <entry>
     <title>pwnable-tw-dubblesort writeup</title>
     <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/"/>
     <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-dubblesort-writeup/</id>
@@ -247,35 +301,6 @@
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
     <category term="ret2libc" scheme="https://avavaaya.github.io/tags/ret2libc/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>pwnable-tw-calc writeup</title>
-    <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/"/>
-    <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-calc-writeup/</id>
-    <published>2021-11-13T07:44:54.000Z</published>
-    <updated>2022-03-05T05:58:22.371Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt; 
-
-&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
-    
-    
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
-    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
     
   </entry>
   
@@ -313,7 +338,7 @@
     <link href="https://avavaaya.github.io/2021/03/07/git-command-review/"/>
     <id>https://avavaaya.github.io/2021/03/07/git-command-review/</id>
     <published>2021-03-07T14:03:31.000Z</published>
-    <updated>2022-03-07T14:12:14.099Z</updated>
+    <updated>2022-03-18T06:31:39.609Z</updated>
     
     
       
@@ -328,8 +353,10 @@
     
     
     
-    <category term="git" scheme="https://avavaaya.github.io/categories/git/"/>
+    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
     
+    
+    <category term="git" scheme="https://avavaaya.github.io/tags/git/"/>
     
     <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     
