@@ -168,14 +168,14 @@
     <link href="https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/"/>
     <id>https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/</id>
     <published>2022-03-03T06:32:27.000Z</published>
-    <updated>2022-03-18T06:59:40.237Z</updated>
+    <updated>2022-03-23T10:58:57.528Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;h3 id=&quot;x2F-pwn-template-py&quot;&gt;&lt;a href=&quot;#x2F-pwn-template-py&quot;</summary>
+    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;p&gt;脚本源码下载: &lt;a</summary>
         
       
     
@@ -264,9 +264,9 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
-    
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
     
   </entry>
   
@@ -369,7 +369,7 @@
     <link href="https://avavaaya.github.io/2021/03/07/git-command-review/"/>
     <id>https://avavaaya.github.io/2021/03/07/git-command-review/</id>
     <published>2021-03-07T14:03:31.000Z</published>
-    <updated>2022-03-18T06:31:39.609Z</updated>
+    <updated>2022-03-23T10:55:45.731Z</updated>
     
     
       
