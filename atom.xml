@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-24T15:09:30.777Z</updated>
+  <updated>2022-03-29T15:00:16.092Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SUSCTF-2022-rain-writeup</title>
+    <link href="https://avavaaya.github.io/2022/03/29/SUSCTF-2022-rain-writeup/"/>
+    <id>https://avavaaya.github.io/2022/03/29/SUSCTF-2022-rain-writeup/</id>
+    <published>2022-03-29T11:23:07.000Z</published>
+    <updated>2022-03-29T15:00:16.092Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h3 id=&quot;本文提供了两种解题办法&quot;&gt;&lt;a href=&quot;#本文提供了两种解题办法&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
+    
+    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
+    
+  </entry>
   
   <entry>
     <title>IO-sumup</title>
