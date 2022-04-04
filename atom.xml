@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-03-29T15:00:16.092Z</updated>
+  <updated>2022-04-04T11:13:36.376Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -17,11 +17,40 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>SpaceHeroCTF-2022-rings_of_saturn-writeup</title>
+    <link href="https://avavaaya.github.io/2022/04/04/SpaceHeroCTF-2022-rings-of-saturn-writeup/"/>
+    <id>https://avavaaya.github.io/2022/04/04/SpaceHeroCTF-2022-rings-of-saturn-writeup/</id>
+    <published>2022-04-04T03:04:25.000Z</published>
+    <updated>2022-04-04T11:13:36.376Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
+    
+    <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
+    
+    <category term="SpaceHeroCTF" scheme="https://avavaaya.github.io/tags/SpaceHeroCTF/"/>
+    
+  </entry>
+  
+  <entry>
     <title>SUSCTF-2022-rain-writeup</title>
     <link href="https://avavaaya.github.io/2022/03/29/SUSCTF-2022-rain-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/29/SUSCTF-2022-rain-writeup/</id>
     <published>2022-03-29T11:23:07.000Z</published>
-    <updated>2022-03-29T15:00:16.092Z</updated>
+    <updated>2022-04-04T03:07:03.865Z</updated>
     
     
       
@@ -42,6 +71,8 @@
     <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
     
     <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
+    
+    <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
     
   </entry>
   
@@ -76,7 +107,7 @@
     <link href="https://avavaaya.github.io/2022/03/22/pwnable-tw-realloc-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/22/pwnable-tw-realloc-writeup/</id>
     <published>2022-03-22T14:02:38.000Z</published>
-    <updated>2022-03-22T14:54:16.118Z</updated>
+    <updated>2022-04-04T03:07:52.169Z</updated>
     
     
       
@@ -99,6 +130,8 @@
     <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
     <category term="tcache" scheme="https://avavaaya.github.io/tags/tcache/"/>
+    
+    <category term="glibc2.29" scheme="https://avavaaya.github.io/tags/glibc2-29/"/>
     
   </entry>
   
@@ -136,7 +169,7 @@
     <link href="https://avavaaya.github.io/2022/03/09/happytree-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/09/happytree-writeup/</id>
     <published>2022-03-09T00:03:29.000Z</published>
-    <updated>2022-03-09T05:22:27.563Z</updated>
+    <updated>2022-04-04T03:06:23.453Z</updated>
     
     
       
@@ -160,6 +193,8 @@
     
     <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
     
+    <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
+    
   </entry>
   
   <entry>
@@ -167,7 +202,7 @@
     <link href="https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/"/>
     <id>https://avavaaya.github.io/2022/03/06/pwnable-tw-bookwriter-writeup/</id>
     <published>2022-03-06T00:42:22.000Z</published>
-    <updated>2022-03-18T05:29:48.863Z</updated>
+    <updated>2022-04-04T03:08:31.074Z</updated>
     
     
       
@@ -190,6 +225,8 @@
     <category term="unsorter_bin_attack" scheme="https://avavaaya.github.io/tags/unsorter-bin-attack/"/>
     
     <category term="house_of_orange" scheme="https://avavaaya.github.io/tags/house-of-orange/"/>
+    
+    <category term="gilbc2.23" scheme="https://avavaaya.github.io/tags/gilbc2-23/"/>
     
   </entry>
   

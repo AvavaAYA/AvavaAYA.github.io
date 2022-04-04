@@ -28,10 +28,11 @@
 <meta property="og:description" content="题目考点 realloc函数分配特性 tcache attack   解题思路程序逻辑比较清晰，并且没有开启PIE.   菜单仅使用realloc()提供了alloc, realloc, free三个功能:   realloc函数原型为:   123void *realloc(void *ptr, size_t size);&#x2F;&#x2F; ptr为需要重新分配的内存空间指针&#x2F;&#x2F; size为新的内存空间的">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-03-22T14:02:38.000Z">
-<meta property="article:modified_time" content="2022-03-22T14:54:16.118Z">
+<meta property="article:modified_time" content="2022-04-04T03:07:52.169Z">
 <meta property="article:author" content="AvavaAYA">
 <meta property="article:tag" content="pwnable.tw">
 <meta property="article:tag" content="tcache">
+<meta property="article:tag" content="glibc2.29">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="https://avavaaya.github.io/2022/03/22/pwnable-tw-realloc-writeup/">
@@ -129,7 +130,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">16</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">20</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -139,7 +140,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">15</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -225,10 +226,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-03-22 22:02:38 / 修改时间：22:54:16" itemprop="dateCreated datePublished" datetime="2022-03-22T22:02:38+08:00">2022-03-22</time>
+              <time title="创建时间：2022-03-22 22:02:38" itemprop="dateCreated datePublished" datetime="2022-03-22T22:02:38+08:00">2022-03-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-04 11:07:52" itemprop="dateModified" datetime="2022-04-04T11:07:52+08:00">2022-04-04</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -326,6 +333,7 @@
           <div class="post-tags">
               <a href="/tags/pwnable-tw/" rel="tag"># pwnable.tw</a>
               <a href="/tags/tcache/" rel="tag"># tcache</a>
+              <a href="/tags/glibc2-29/" rel="tag"># glibc2.29</a>
           </div>
 
         
@@ -415,7 +423,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -428,7 +436,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -473,13 +481,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">55k</span>
+    <span title="站点总字数">58k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">50 分钟</span>
+    <span title="站点阅读时长">53 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>
