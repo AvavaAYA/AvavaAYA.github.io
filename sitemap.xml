@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://avavaaya.github.io/2022/04/19/IO-exploiting-Part-2/</loc>
+    
+    <lastmod>2022-04-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/2022/03/24/IO-exploiting-Part-1/</loc>
+    
+    <lastmod>2022-04-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://avavaaya.github.io/about/index.html</loc>
     
     <lastmod>2022-04-17</lastmod>
@@ -12,15 +30,6 @@
   
   <url>
     <loc>https://avavaaya.github.io/2022/04/15/HackPack-2022-cerebrum-boggled-writeup/</loc>
-    
-    <lastmod>2022-04-17</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://avavaaya.github.io/2022/03/24/IO-sumup/</loc>
     
     <lastmod>2022-04-17</lastmod>
     
@@ -193,7 +202,7 @@
 
   <url>
     <loc>https://avavaaya.github.io/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -201,161 +210,161 @@
   
   <url>
     <loc>https://avavaaya.github.io/tags/HackPackCTF/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/brainfuck/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/jit/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/ROP/</loc>
-    <lastmod>2022-04-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://avavaaya.github.io/tags/IO-FILE/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/SUSCTF/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/tcache-attack/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/glibc2-27/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/SpaceHeroCTF/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/git/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/basic-cmd/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/UTCTF/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/kernel/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/UAF/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/pwnable-tw/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/unlink/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/unsorter-bin-attack/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/house-of-orange/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/gilbc2-23/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/ret2libc/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/tcache/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/glibc2-29/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/tags/verilog/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://avavaaya.github.io/tags/IO/</loc>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -364,28 +373,28 @@
   
   <url>
     <loc>https://avavaaya.github.io/categories/pwn-writeup/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/categories/pwn-sumup/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/categories/small-tips/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://avavaaya.github.io/categories/verilog/</loc>
-    <lastmod>2022-04-17</lastmod>
+    <lastmod>2022-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

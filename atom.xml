@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-04-17T02:51:16.279Z</updated>
+  <updated>2022-04-19T14:47:13.680Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>IO-exploiting-Part-2</title>
+    <link href="https://avavaaya.github.io/2022/04/19/IO-exploiting-Part-2/"/>
+    <id>https://avavaaya.github.io/2022/04/19/IO-exploiting-Part-2/</id>
+    <published>2022-04-19T15:07:54.000Z</published>
+    <updated>2022-04-19T14:47:13.680Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;&lt;strong&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-sumup" scheme="https://avavaaya.github.io/categories/pwn-sumup/"/>
+    
+    
+    <category term="IO" scheme="https://avavaaya.github.io/tags/IO/"/>
+    
+  </entry>
   
   <entry>
     <title>HackPack-2022-cerebrum-boggled-writeup</title>
@@ -110,11 +135,11 @@
   </entry>
   
   <entry>
-    <title>IO-sumup</title>
-    <link href="https://avavaaya.github.io/2022/03/24/IO-sumup/"/>
-    <id>https://avavaaya.github.io/2022/03/24/IO-sumup/</id>
+    <title>IO-exploiting-Part-1</title>
+    <link href="https://avavaaya.github.io/2022/03/24/IO-exploiting-Part-1/"/>
+    <id>https://avavaaya.github.io/2022/03/24/IO-exploiting-Part-1/</id>
     <published>2022-03-24T15:07:54.000Z</published>
-    <updated>2022-04-17T00:42:09.261Z</updated>
+    <updated>2022-04-19T14:44:50.686Z</updated>
     
     
       
@@ -131,7 +156,7 @@
     <category term="pwn-sumup" scheme="https://avavaaya.github.io/categories/pwn-sumup/"/>
     
     
-    <category term="\_IO\_FILE" scheme="https://avavaaya.github.io/tags/IO-FILE/"/>
+    <category term="IO" scheme="https://avavaaya.github.io/tags/IO/"/>
     
   </entry>
   
