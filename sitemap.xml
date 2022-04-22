@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://avavaaya.github.io/2022/03/05/verilogOJ/</loc>
+    
+    <lastmod>2022-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://avavaaya.github.io/2022/04/20/IO-leak-sumup/</loc>
     
     <lastmod>2022-04-22</lastmod>
@@ -104,15 +113,6 @@
     <loc>https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/</loc>
     
     <lastmod>2022-03-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://avavaaya.github.io/2022/03/05/verilogOJ/</loc>
-    
-    <lastmod>2022-03-10</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -384,7 +384,7 @@
   </url>
   
   <url>
-    <loc>https://avavaaya.github.io/categories/verilog/</loc>
+    <loc>https://avavaaya.github.io/categories/miscellaneous/</loc>
     <lastmod>2022-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

@@ -558,7 +558,7 @@
 
 <h2 id="chall-16"><a href="#chall-16" class="headerlink" title="chall-16"></a>chall-16</h2><figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line"><span class="keyword">module</span> top_module( </span><br><span class="line">    <span class="keyword">input</span> [<span class="number">7</span>:<span class="number">0</span>] in,</span><br><span class="line">    <span class="keyword">output</span> [<span class="number">7</span>:<span class="number">0</span>] out</span><br><span class="line">);</span><br><span class="line">    <span class="keyword">assign</span> out[<span class="number">7</span>:<span class="number">0</span>] = &#123;in[<span class="number">0</span>],in[<span class="number">1</span>],in[<span class="number">2</span>],in[<span class="number">3</span>],in[<span class="number">4</span>],in[<span class="number">5</span>],in[<span class="number">6</span>],in[<span class="number">7</span>]&#125;;</span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>]]></content>
       <categories>
-        <category>verilog</category>
+        <category>miscellaneous</category>
       </categories>
       <tags>
         <tag>verilog</tag>
