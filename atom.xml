@@ -43,9 +43,9 @@
     
     <category term="tcache" scheme="https://avavaaya.github.io/tags/tcache/"/>
     
-    <category term="glibc2.29" scheme="https://avavaaya.github.io/tags/glibc2-29/"/>
-    
     <category term="IO\_leak" scheme="https://avavaaya.github.io/tags/IO-leak/"/>
+    
+    <category term="glibc2.29" scheme="https://avavaaya.github.io/tags/glibc2-29/"/>
     
   </entry>
   
@@ -136,9 +136,9 @@
     
     <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
     
-    <category term="SpaceHeroCTF" scheme="https://avavaaya.github.io/tags/SpaceHeroCTF/"/>
-    
     <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
+    
+    <category term="SpaceHeroCTF" scheme="https://avavaaya.github.io/tags/SpaceHeroCTF/"/>
     
   </entry>
   
@@ -167,9 +167,9 @@
     
     <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
     
-    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
-    
     <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
+    
+    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
     
   </entry>
   
@@ -260,9 +260,9 @@
     
     <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
     
-    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
-    
     <category term="SUSCTF" scheme="https://avavaaya.github.io/tags/SUSCTF/"/>
+    
+    <category term="tcache-attack" scheme="https://avavaaya.github.io/tags/tcache-attack/"/>
     
     <category term="UAF" scheme="https://avavaaya.github.io/tags/UAF/"/>
     
@@ -323,31 +323,6 @@
     
     
     <category term="verilog" scheme="https://avavaaya.github.io/tags/verilog/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>pwn-templates-to-make-pwn-faster</title>
-    <link href="https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/"/>
-    <id>https://avavaaya.github.io/2022/03/03/pwn-templates-to-make-pwn-faster/</id>
-    <published>2022-03-03T06:32:27.000Z</published>
-    <updated>2022-03-23T10:58:57.528Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;p&gt;脚本源码下载: &lt;a</summary>
-        
-      
-    
-    
-    
-    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
-    
-    
-    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     
   </entry>
   
@@ -528,35 +503,6 @@
   </entry>
   
   <entry>
-    <title>git-command-review</title>
-    <link href="https://avavaaya.github.io/2021/03/07/git-cheatsheet/"/>
-    <id>https://avavaaya.github.io/2021/03/07/git-cheatsheet/</id>
-    <published>2021-03-07T14:03:31.000Z</published>
-    <updated>2022-03-23T10:55:45.731Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
-
-&lt;h2 id=&quot;报错error-src-refspec-master-does-not-match-any&quot;&gt;&lt;a href=&quot;#报错error-src-refspec-master-does-not-match-any&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
-    
-    
-    <category term="git" scheme="https://avavaaya.github.io/tags/git/"/>
-    
-    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
-    
-  </entry>
-  
-  <entry>
     <title>gdb-cheat-sheet</title>
     <link href="https://avavaaya.github.io/1919/05/27/gdb-cheatsheet/"/>
     <id>https://avavaaya.github.io/1919/05/27/gdb-cheatsheet/</id>
@@ -582,6 +528,60 @@
     
     
     <category term="gdb" scheme="https://avavaaya.github.io/tags/gdb/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>git-cheatsheet</title>
+    <link href="https://avavaaya.github.io/1919/03/07/git-cheatsheet/"/>
+    <id>https://avavaaya.github.io/1919/03/07/git-cheatsheet/</id>
+    <published>1919-03-07T14:03:31.000Z</published>
+    <updated>2022-05-28T15:19:33.627Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;报错error-src-refspec-master-does-not-match-any&quot;&gt;&lt;a href=&quot;#报错error-src-refspec-master-does-not-match-any&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
+    
+    
+    <category term="git" scheme="https://avavaaya.github.io/tags/git/"/>
+    
+    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>pwn-cheatsheet</title>
+    <link href="https://avavaaya.github.io/1919/03/03/pwn-templates-to-make-pwn-faster/"/>
+    <id>https://avavaaya.github.io/1919/03/03/pwn-templates-to-make-pwn-faster/</id>
+    <published>1919-03-03T06:32:27.000Z</published>
+    <updated>2022-05-28T15:19:54.020Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;p&gt;脚本源码下载: &lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
+    
+    
+    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     
   </entry>
   
