@@ -262,25 +262,6 @@
       </tags>
   </entry>
   <entry>
-    <title>git-command-review</title>
-    <url>/2021/03/07/git-command-review/</url>
-    <content><![CDATA[<span id="more"></span>
-
-<h2 id="报错error-src-refspec-master-does-not-match-any"><a href="#报错error-src-refspec-master-does-not-match-any" class="headerlink" title="报错error: src refspec master does not match any"></a>报错error: src refspec master does not match any</h2><p>本地报错的原因是分支的问题，使用:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git checkout -b main</span><br></pre></td></tr></table></figure>
-<p>调整主分支为main即可.</p>
-<h2 id="从本地更新项目"><a href="#从本地更新项目" class="headerlink" title="从本地更新项目"></a>从本地更新项目</h2><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git add .</span><br><span class="line">git commit -m <span class="string">&quot;a comment&quot;</span></span><br><span class="line">git pull --rebase origin main</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>
-
-<h2 id="新建项目"><a href="#新建项目" class="headerlink" title="新建项目"></a>新建项目</h2><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git init</span><br><span class="line">git add .</span><br><span class="line">git checkout -b main		<span class="comment"># 这里需要把主分支改到main</span></span><br><span class="line">git commit -m <span class="string">&quot;a&quot;</span></span><br><span class="line">git remote add origin git@github.com:***/***.git</span><br><span class="line">git pull origin main</span><br><span class="line">git pull --rebase origin main</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>small-tips</category>
-      </categories>
-      <tags>
-        <tag>git</tag>
-        <tag>basic-cmd</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SUSCTF-happytree-writeup</title>
     <url>/2022/03/09/happytree-writeup/</url>
     <content><![CDATA[<span id="more"></span>
@@ -676,6 +657,66 @@
       </categories>
       <tags>
         <tag>verilog</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>gdb-cheat-sheet</title>
+    <url>/1919/05/27/gdb-cheatsheet/</url>
+    <content><![CDATA[<span id="more"></span>
+
+
+
+<h2 id="获取elf和libc偏移并且从文件建立偏移表"><a href="#获取elf和libc偏移并且从文件建立偏移表" class="headerlink" title="获取elf和libc偏移并且从文件建立偏移表"></a>获取elf和libc偏移并且从文件建立偏移表</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># offsets.py</span></span><br><span class="line"><span class="keyword">import</span> gdb</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">strList, search_patt</span>):</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> strList:</span><br><span class="line">        <span class="keyword">if</span> search_patt <span class="keyword">in</span> i:</span><br><span class="line">            <span class="keyword">return</span> i</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Offset</span>(gdb.Command):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>(self.__class__, self).__init__(<span class="string">&quot;Offset&quot;</span>, gdb.COMMAND_USER)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">invoke</span>(<span class="params">self, args, from_tty</span>):</span><br><span class="line">        argv = gdb.string_to_argv(args)</span><br><span class="line">        <span class="comment">#if len(argv) != 2:</span></span><br><span class="line">        <span class="comment">#    raise gdb.GdbError(&#x27;invalid argcount.&#x27;)</span></span><br><span class="line">        vmmap_res = gdb.execute(<span class="string">&quot;vmmap&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&#x27;\n&#x27;</span>)[<span class="number">1</span>:]</span><br><span class="line">        elf_base_list = vmmap_res[<span class="number">0</span>].split(<span class="string">&quot; &quot;</span>)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> elf_base_list:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;0x&quot;</span> <span class="keyword">in</span> i:</span><br><span class="line">                elf_base = i</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        gdb.execute(<span class="string">&quot;set $elf_base=&quot;</span> + elf_base)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> vmmap_res:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;libc&quot;</span> <span class="keyword">in</span> i:</span><br><span class="line">                libc_base_list = i.split(<span class="string">&quot; &quot;</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> libc_base_list:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;0x&quot;</span> <span class="keyword">in</span> i:</span><br><span class="line">                libc_base = i</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        gdb.execute(<span class="string">&quot;set $libc_base=&quot;</span> + libc_base)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">elf_base</span>(gdb.Command):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>(self.__class__, self).__init__(<span class="string">&quot;elf_base&quot;</span>, gdb.COMMAND_USER)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">invoke</span>(<span class="params">self, args, from_tty</span>):</span><br><span class="line">        argv = gdb.string_to_argv(args)</span><br><span class="line">        res = search(gdb.execute(<span class="string">&quot;p /x $elf_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">int</span>(res, <span class="number">16</span>) == <span class="number">0</span>:</span><br><span class="line">            gdb.execute(<span class="string">&quot;Offset&quot;</span>)</span><br><span class="line">            res = search(gdb.execute(<span class="string">&quot;p /x $elf_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;$elf_base = &quot;</span> + res)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">libc_base</span>(gdb.Command):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>(self.__class__, self).__init__(<span class="string">&quot;libc_base&quot;</span>, gdb.COMMAND_USER)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">invoke</span>(<span class="params">self, args, from_tty</span>):</span><br><span class="line">        argv = gdb.string_to_argv(args)</span><br><span class="line">        res = search(gdb.execute(<span class="string">&quot;p /x $libc_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">int</span>(res, <span class="number">16</span>) == <span class="number">0</span>:</span><br><span class="line">            gdb.execute(<span class="string">&quot;Offset&quot;</span>)</span><br><span class="line">            res = search(gdb.execute(<span class="string">&quot;p /x $libc_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;$libc_base = &quot;</span> + res)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">createList</span>(gdb.Command):</span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	参数为文件路径，如: createList ./test.symbols</span></span><br><span class="line"><span class="string">	文件中格式为: </span></span><br><span class="line"><span class="string">	00004050 list1 elf</span></span><br><span class="line"><span class="string">	...</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>(self.__class__, self).__init__(<span class="string">&quot;createList&quot;</span>, gdb.COMMAND_USER)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">invoke</span>(<span class="params">self, args, from_tty</span>):</span><br><span class="line">        argv = gdb.string_to_argv(args)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(argv) != <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">raise</span> gdb.GdbError(<span class="string">&quot;Invalid argument for createList.&quot;</span>)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(argv[<span class="number">0</span>], <span class="string">&quot;r+&quot;</span>) <span class="keyword">as</span> fd:</span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                </span><br><span class="line">                text = fd.readline().split(<span class="string">&quot; &quot;</span>)</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">not</span> text) <span class="keyword">or</span> <span class="built_in">len</span>(text) != <span class="number">3</span>:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                off = <span class="built_in">int</span>(text[<span class="number">0</span>], <span class="number">16</span>)</span><br><span class="line">                name = text[<span class="number">1</span>]</span><br><span class="line">                <span class="keyword">if</span> <span class="string">&quot;elf&quot;</span> <span class="keyword">in</span> text[<span class="number">2</span>]:</span><br><span class="line">                    base_chosen = <span class="built_in">int</span>(search(gdb.execute(<span class="string">&quot;elf_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>), <span class="number">16</span>)</span><br><span class="line">                <span class="keyword">elif</span> <span class="string">&quot;libc&quot;</span> <span class="keyword">in</span> text[<span class="number">2</span>]:</span><br><span class="line">                    base_chosen = <span class="built_in">int</span>(search(gdb.execute(<span class="string">&quot;libc_base&quot;</span>, to_string=<span class="literal">True</span>).split(<span class="string">&quot; &quot;</span>), <span class="string">&quot;0x&quot;</span>), <span class="number">16</span>)</span><br><span class="line">                gdb.execute(<span class="string">&quot;set $&quot;</span> + name + <span class="string">&quot;=&quot;</span> + <span class="built_in">str</span>(off + base_chosen))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Offset()</span><br><span class="line">elf_base()</span><br><span class="line">libc_base()</span><br><span class="line">createList()</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>small-tips</category>
+      </categories>
+      <tags>
+        <tag>gdb</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>git-command-review</title>
+    <url>/2021/03/07/git-cheatsheet/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h2 id="报错error-src-refspec-master-does-not-match-any"><a href="#报错error-src-refspec-master-does-not-match-any" class="headerlink" title="报错error: src refspec master does not match any"></a>报错error: src refspec master does not match any</h2><p>本地报错的原因是分支的问题，使用:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git checkout -b main</span><br></pre></td></tr></table></figure>
+<p>调整主分支为main即可.</p>
+<h2 id="从本地更新项目"><a href="#从本地更新项目" class="headerlink" title="从本地更新项目"></a>从本地更新项目</h2><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git add .</span><br><span class="line">git commit -m <span class="string">&quot;a comment&quot;</span></span><br><span class="line">git pull --rebase origin main</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>
+
+<h2 id="新建项目"><a href="#新建项目" class="headerlink" title="新建项目"></a>新建项目</h2><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">git init</span><br><span class="line">git add .</span><br><span class="line">git checkout -b main		<span class="comment"># 这里需要把主分支改到main</span></span><br><span class="line">git commit -m <span class="string">&quot;a&quot;</span></span><br><span class="line">git remote add origin git@github.com:***/***.git</span><br><span class="line">git pull origin main</span><br><span class="line">git pull --rebase origin main</span><br><span class="line">git push origin main</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>small-tips</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
+        <tag>basic-cmd</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pwnable-tw-realloc-rev writeup</title>
+    <url>/2022/05/27/pwnable-tw-realloc-rev-writeup/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
+<li>tcache</li>
+<li>IO_leak</li>
+</ul>
+<hr>
+<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p>题目逻辑和 <code>re-alloc</code> 完全一样，但是开启了 <code>PIE</code> 和 <code>Full RELRO</code> 导致之前劫持 <code>got</code> 表的利用思路失效，在题目中没有提供 <code>show</code> 的情况下，这里考虑通过 <code>IO_leak</code> 来泄露 <code>libc_offset</code> .</p>
+<h4 id="overlap"><a href="#overlap" class="headerlink" title="overlap"></a>overlap</h4><p>先回顾一下题目程序存在的漏洞以及构造 <code>chunk_overlapping</code> 的思路:  </p>
+<ul>
+<li>漏洞主要出现在 <code>realloc</code> 中当指定 <code>size = 0</code> 时进行 <code>realloc</code> 会对 <code>chunk</code> 进行 <code>free</code> 且返回值为 <code>0</code>;</li>
+</ul>
+]]></content>
+      <categories>
+        <category>pwn-writeup</category>
+      </categories>
+      <tags>
+        <tag>pwnable.tw</tag>
+        <tag>tcache</tag>
+        <tag>glibc2.29</tag>
+        <tag>IO\_leak</tag>
       </tags>
   </entry>
 </search>
