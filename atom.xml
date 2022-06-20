@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-05-27T23:54:43.442Z</updated>
+  <updated>2022-06-20T15:21:46.859Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>setcontext-sumup</title>
+    <link href="https://avavaaya.github.io/2022/06/20/setcontext-sumup/"/>
+    <id>https://avavaaya.github.io/2022/06/20/setcontext-sumup/</id>
+    <published>2022-06-20T10:32:51.000Z</published>
+    <updated>2022-06-20T15:21:46.859Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="setcontext" scheme="https://avavaaya.github.io/tags/setcontext/"/>
+    
+    <category term="glibc2.33" scheme="https://avavaaya.github.io/tags/glibc2-33/"/>
+    
+  </entry>
   
   <entry>
     <title>pwnable-tw-realloc-rev writeup</title>
@@ -54,7 +83,7 @@
     <link href="https://avavaaya.github.io/2022/04/20/IO-leak-sumup/"/>
     <id>https://avavaaya.github.io/2022/04/20/IO-leak-sumup/</id>
     <published>2022-04-20T03:45:14.000Z</published>
-    <updated>2022-04-22T07:07:11.812Z</updated>
+    <updated>2022-06-20T10:06:00.744Z</updated>
     
     
       
@@ -77,6 +106,8 @@
     <category term="unsorted_bin_attack" scheme="https://avavaaya.github.io/tags/unsorted-bin-attack/"/>
     
     <category term="glibc2.27" scheme="https://avavaaya.github.io/tags/glibc2-27/"/>
+    
+    <category term="glibc2.34" scheme="https://avavaaya.github.io/tags/glibc2-34/"/>
     
   </entry>
   
