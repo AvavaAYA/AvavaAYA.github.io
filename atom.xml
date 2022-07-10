@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-06-20T15:21:46.859Z</updated>
+  <updated>2022-07-10T15:19:33.686Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,39 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>pwnable-tw-realloc-rev writeup</title>
+    <link href="https://avavaaya.github.io/2022/07/08/pwnable-tw-realloc-rev-writeup/"/>
+    <id>https://avavaaya.github.io/2022/07/08/pwnable-tw-realloc-rev-writeup/</id>
+    <published>2022-07-08T08:00:08.000Z</published>
+    <updated>2022-07-10T15:19:33.686Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
+    
+    <category term="tcache" scheme="https://avavaaya.github.io/tags/tcache/"/>
+    
+    <category term="IO\_leak" scheme="https://avavaaya.github.io/tags/IO-leak/"/>
+    
+    <category term="glibc2.29" scheme="https://avavaaya.github.io/tags/glibc2-29/"/>
+    
+  </entry>
   
   <entry>
     <title>setcontext-sumup</title>
@@ -42,39 +75,6 @@
     <category term="setcontext" scheme="https://avavaaya.github.io/tags/setcontext/"/>
     
     <category term="glibc2.33" scheme="https://avavaaya.github.io/tags/glibc2-33/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>pwnable-tw-realloc-rev writeup</title>
-    <link href="https://avavaaya.github.io/2022/05/27/pwnable-tw-realloc-rev-writeup/"/>
-    <id>https://avavaaya.github.io/2022/05/27/pwnable-tw-realloc-rev-writeup/</id>
-    <published>2022-05-27T08:00:08.000Z</published>
-    <updated>2022-05-27T23:54:43.442Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
-
-&lt;h2 id=&quot;题目考点&quot;&gt;&lt;a href=&quot;#题目考点&quot; class=&quot;headerlink&quot;</summary>
-        
-      
-    
-    
-    
-    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
-    
-    
-    <category term="pwnable.tw" scheme="https://avavaaya.github.io/tags/pwnable-tw/"/>
-    
-    <category term="tcache" scheme="https://avavaaya.github.io/tags/tcache/"/>
-    
-    <category term="IO\_leak" scheme="https://avavaaya.github.io/tags/IO-leak/"/>
-    
-    <category term="glibc2.29" scheme="https://avavaaya.github.io/tags/glibc2-29/"/>
     
   </entry>
   
