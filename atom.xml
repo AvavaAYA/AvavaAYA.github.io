@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-07-10T15:19:33.686Z</updated>
+  <updated>2022-07-12T07:59:26.819Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -15,6 +15,37 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>exploitation-in-latest-glibc-0x00</title>
+    <link href="https://avavaaya.github.io/2022/07/12/exploitation-in-latest-glibc-0x00/"/>
+    <id>https://avavaaya.github.io/2022/07/12/exploitation-in-latest-glibc-0x00/</id>
+    <published>2022-07-12T14:03:31.000Z</published>
+    <updated>2022-07-12T07:59:26.819Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+&lt;h2 id=&quot;概述&quot;&gt;&lt;a href=&quot;#概述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
+    
+    
+    <category term="glibc2.34" scheme="https://avavaaya.github.io/tags/glibc2-34/"/>
+    
+    <category term="largebin-attack" scheme="https://avavaaya.github.io/tags/largebin-attack/"/>
+    
+    <category term="house-of-pig" scheme="https://avavaaya.github.io/tags/house-of-pig/"/>
+    
+  </entry>
   
   <entry>
     <title>pwnable-tw-realloc-rev writeup</title>
@@ -584,31 +615,6 @@
     
     
     <category term="git" scheme="https://avavaaya.github.io/tags/git/"/>
-    
-    <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>pwn-cheatsheet</title>
-    <link href="https://avavaaya.github.io/1919/03/03/pwn-templates-to-make-pwn-faster/"/>
-    <id>https://avavaaya.github.io/1919/03/03/pwn-templates-to-make-pwn-faster/</id>
-    <published>1919-03-03T06:32:27.000Z</published>
-    <updated>2022-05-28T15:19:54.020Z</updated>
-    
-    
-      
-      
-        
-        
-    <summary type="html">&lt;h2 id=&quot;基本模板&quot;&gt;&lt;a href=&quot;#基本模板&quot; class=&quot;headerlink&quot; title=&quot;基本模板&quot;&gt;&lt;/a&gt;基本模板&lt;/h2&gt;&lt;p&gt;脚本源码下载: &lt;a</summary>
-        
-      
-    
-    
-    
-    <category term="small-tips" scheme="https://avavaaya.github.io/categories/small-tips/"/>
-    
     
     <category term="basic-cmd" scheme="https://avavaaya.github.io/tags/basic-cmd/"/>
     

