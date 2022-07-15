@@ -6,7 +6,7 @@
   <link href="https://avavaaya.github.io/atom.xml" rel="self"/>
   
   <link href="https://avavaaya.github.io/"/>
-  <updated>2022-07-12T07:59:26.819Z</updated>
+  <updated>2022-07-14T07:23:53.490Z</updated>
   <id>https://avavaaya.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://avavaaya.github.io/2022/07/12/exploitation-in-latest-glibc-0x00/"/>
     <id>https://avavaaya.github.io/2022/07/12/exploitation-in-latest-glibc-0x00/</id>
     <published>2022-07-12T14:03:31.000Z</published>
-    <updated>2022-07-12T07:59:26.819Z</updated>
+    <updated>2022-07-14T07:23:53.490Z</updated>
     
     
       
@@ -39,11 +39,11 @@
     <category term="pwn-writeup" scheme="https://avavaaya.github.io/categories/pwn-writeup/"/>
     
     
-    <category term="glibc2.34" scheme="https://avavaaya.github.io/tags/glibc2-34/"/>
-    
     <category term="largebin-attack" scheme="https://avavaaya.github.io/tags/largebin-attack/"/>
     
     <category term="house-of-pig" scheme="https://avavaaya.github.io/tags/house-of-pig/"/>
+    
+    <category term="glibc2.31" scheme="https://avavaaya.github.io/tags/glibc2-31/"/>
     
   </entry>
   
