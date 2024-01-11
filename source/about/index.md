@@ -33,4 +33,4 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 - [ ] 强网拟态 WriteUp
 
-- [x] [鹏城杯 2023 WriteUp](https://eastxuelian.nebuu.la/WriteUp/pcb-2023/)
+- [x] [鹏城杯 2023 WriteUp](/WriteUp/pcb-2023/)
