@@ -637,7 +637,7 @@ print(to_js(data))
 
 执行效果:
 
-![image](/assets/images/ass001.png)
+![image](/V8/v8-pwn-0x00/ass001.png)
 
 ---
 
