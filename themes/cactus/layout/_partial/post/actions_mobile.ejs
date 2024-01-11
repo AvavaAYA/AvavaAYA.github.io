@@ -9,10 +9,16 @@
       </ul>
     </div>
 
-    <% let tocHTML = toc(page.content) %>
+    <% let tocHTML = toc(page.content, {
+        class: 'post-toc',
+        list_number: false
+    }) %>
     <% if (tocHTML !== '') { %>
       <div id="toc-footer" style="display: none">
-        <%- toc(page.content) %>
+        <%- toc(page.content, {
+        class: 'post-toc',
+        list_number: false
+    }) %>
       </div>
     <% } %>
 
