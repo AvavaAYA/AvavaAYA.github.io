@@ -3,4 +3,34 @@ title: about
 date: 2024-01-11 23:45:09
 ---
 
-hello
+Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http://en.ustc.edu.cn/). After taking part in 7th [Hackergame](https://hack.lug.ustc.edu.cn/) and won a second prize as freshman, I became deeply passionate about binary exploitation. Motivated by the belief that「**pwn for fun**」, I've continuously delved into various challenges, ranging from kernel privilege escalation to user-level browser exploitation. Now, I hold the position of leader in [Nebula](http://nebuu.la/). Having participated in all major domestic CTF competitions, our goal for the upcoming years is to venture into international events, including the formidable DEFCON. I am actively seeking internship opportunities in a cybersecurity-focused laboratory this semester.
+
+---
+
+## 最近我在干什么？
+
+[Checkout my calendar!](http://remote.nebuu.la/lianctf.ics)
+
+### CTF 准备
+
+- [ ] kernel ebpf 之类的新东西
+
+- [ ] AWD 总结
+
+- [x] 准备线下赛的各种板子
+
+### 其他
+
+- [ ] 托福 / 还要再考一次，怎么这也能「卡绩」
+
+- [ ] GRE / 好难🤯
+
+- [ ] 科研 && 实习经历 / 看到 ai 就会④
+
+### 近期比赛总结 && 复现
+
+- [ ] ACTF 2023 WriteUp
+
+- [ ] 强网拟态 WriteUp
+
+- [x] [鹏城杯 2023 WriteUp](https://eastxuelian.nebuu.la/WriteUp/pcb-2023/)
