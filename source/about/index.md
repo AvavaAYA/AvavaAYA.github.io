@@ -15,19 +15,23 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 - [ ] kernel ebpf 之类的新东西
 
+  - [kernel 的新特性](https://github.com/0voice/kernel_new_features)
+
 - [ ] AWD 总结
 
 - [x] 准备线下赛的各种板子
 
 ### 其他
 
-- [ ] 托福 / 还要再考一次，怎么这也能「卡绩」
+- [ ] [托福](/Others/toefl-105/) / 还要再考一次，怎么这也能「卡绩」
 
 - [ ] GRE / 好难🤯
 
 - [ ] 科研 && 实习经历 / 看到 ai 就会④
 
 ### 近期比赛总结 && 复现
+
+- [2023 所有比赛附件](https://r3kapig-not1on.notion.site/2023-4828bf0bb74e45cabce2288370402dc0)
 
 - [ ] ACTF 2023 WriteUp
 

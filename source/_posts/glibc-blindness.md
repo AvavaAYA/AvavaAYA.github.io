@@ -9,7 +9,9 @@ category: Glibc
 
 House of blindless 是一个涉及到 rtld 的利用方法，事实上 ld.so 里面确实还有很多被利用的潜力，后面涉及到 glibc 的比赛题目可能也会偏向于考察这部分内容。
 
-直接以 `WMCTF-2023-blindless` 为例，附件可以在我的 github 仓库中找到：
+直接以 `WMCTF-2023-blindless` 为例，附件链接：
+
+[attachment](https://drive.google.com/file/d/1AF3JrobITUa0dj_bfVrcMBJXOQIJgM86/view?usp=sharing)
 
 ## Analysis
 
