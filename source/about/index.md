@@ -9,7 +9,7 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 ## 最近我在干什么？
 
-[Checkout my calendar!](http://remote.nebuu.la/lianctf.ics)
+[Checkout my calendar!](https://calendar.google.com/calendar/u/0?cid=ZWFzdHh1ZWxpYW5AZ21haWwuY29t)
 
 ### CTF 准备
 
@@ -33,7 +33,13 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 - [2023 所有比赛附件](https://r3kapig-not1on.notion.site/2023-4828bf0bb74e45cabce2288370402dc0)
 
-- [ ] ACTF 2023 WriteUp
+- [x] 强网杯 WriteUp
+
+- [ ] 京麒杯 WriteUp
+
+- [x] TPCTF 2023 WriteUp
+
+- [x] ACTF 2023 WriteUp
 
 - [ ] 强网拟态 WriteUp
 
