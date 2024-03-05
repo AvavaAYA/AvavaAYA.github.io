@@ -1,7 +1,9 @@
 ---
 title: Git Cheatsheet
 date: 2024-03-05 14:07:07
-tags: git
+tags:
+  - Cheatsheet
+  - Git
 category: Others
 ---
 
