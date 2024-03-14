@@ -30,7 +30,7 @@ pwndbg> distance 0x7ffff7bfeed8 0x7ffff7bff6c0
 
 ## 问题：简述 ret2dlresolve 的使用场景与限制条件
 
-refer to: [ctf-wiki](https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/advanced-rop/ret2dlresolve/), [ret2dl-runtime-resolve详细分析(32位&64位) . ~ha1vk~](https://blog.csdn.net/seaaseesa/article/details/104478081)
+refer to: [ctf-wiki](https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/advanced-rop/ret2dlresolve/), [ret2dl-runtime-resolve详细分析(32位&64位) . _ha1vk_](https://blog.csdn.net/seaaseesa/article/details/104478081)
 
 # 补充
 
@@ -44,5 +44,5 @@ refer to: [ctf-wiki](https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/
 
 # References
 
-[1.] [线程PWN之gkctf2020 GirlFriendSimulator](https://blog.csdn.net/seaaseesa/article/details/107581574) . ~ha1vk~
-[2.] [V8 沙箱绕过](https://jayl1n.github.io/2022/02/27/v8-sandbox-escape/) . ~jayl1n~
+[1.] [线程PWN之gkctf2020 GirlFriendSimulator](https://blog.csdn.net/seaaseesa/article/details/107581574) . _ha1vk_
+[2.] [V8 沙箱绕过](https://jayl1n.github.io/2022/02/27/v8-sandbox-escape/) . _jayl1n_
