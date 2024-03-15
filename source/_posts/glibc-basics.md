@@ -24,7 +24,20 @@ pwndbg> distance 0x7ffff7bfeed8 0x7ffff7bff6c0
 0x7ffff7bfeed8->0x7ffff7bff6c0 is 0x7e8 bytes (0xfd words)
 ```
 
-> 在 glibc 中，线程有自己的 arena，但是 arena 的个数是有限的，一般跟处理器核心个数有关，假如线程个数超过 arena 总个数，并且执行线程都在使用，那么该怎么办呢。Glibc 会遍历所有的 arena，首先是从主线程的 main_arena 开始，尝试 lock 该 arena，如果成功 lock，那么就把这个 arena 给线程使用。[1]
+<!-- > 在 glibc 中，线程有自己的 arena，但是 arena 的个数是有限的，一般跟处理器核心个数有关，假如线程个数超过 arena 总个数，并且执行线程都在使用，那么该怎么办呢。Glibc 会遍历所有的 arena，首先是从主线程的 main_arena 开始，尝试 lock 该 arena，如果成功 lock，那么就把这个 arena 给线程使用。[1] -->
+
+Arena 负责堆块内存的管理，但 Thread 与 Arena 也不是一一对应的：
+
+- 32 位系统 arena 数量为：`2 * core + 1`
+- 64 位系统 arena 数量为：`8 * core + 1`
+
+在多线程程序中就出现了堆块重用：
+
+1. 从 `main_arena` 开始遍历所有 arena，并尝试对其上锁
+
+2. 若成功上锁，则返回给用户
+
+3. 若没有可用的 arena，则阻塞这次调用
 
 ---
 
@@ -347,10 +360,65 @@ ia()
 [2.] [V8 沙箱绕过](https://jayl1n.github.io/2022/02/27/v8-sandbox-escape/) . _jayl1n_
 [3.] [ret2dl-runtime-resolve详细分析(32位&64位)](https://blog.csdn.net/seaaseesa/article/details/104478081) . _ha1vk_
 [4.] [ctf-wiki ret2dlresolve](https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/advanced-rop/ret2dlresolve/) . [_ctf-wiki_](https://ctf-wiki.org/)
+[5.] [Understanding glibc malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/) . _sploitfun_
 
 ---
 
 # 附录
+
+## malloc 测试程序
+
+```c
+/* Per thread arena example. */
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+void *threadFunc(void *arg) {
+    printf("Before malloc in thread 1\n");
+    getchar();
+    char *addr = (char *)malloc(1000);
+    printf("After malloc and before free in thread 1\n");
+    printf("ADDR: %p\n", addr);
+    getchar();
+    free(addr);
+    printf("After free in thread 1\n");
+    printf("ADDR: %p\n", addr);
+    getchar();
+}
+
+int main() {
+    pthread_t t1;
+    void *s;
+    int ret;
+    char *addr;
+
+    printf("Welcome to per thread arena example::%d\n", getpid());
+    printf("Before malloc in main thread\n");
+    getchar();
+    addr = (char *)malloc(1000);
+    printf("After malloc and before free in main thread\n");
+    printf("ADDR: %p\n", addr);
+    getchar();
+    free(addr);
+    printf("After free in main thread\n");
+    printf("ADDR: %p\n", addr);
+    getchar();
+    ret = pthread_create(&t1, NULL, threadFunc, NULL);
+    if (ret) {
+        printf("Thread creation error\n");
+        return -1;
+    }
+    ret = pthread_join(t1, &s);
+    if (ret) {
+        printf("Thread join error\n");
+        return -1;
+    }
+    return 0;
+}
+```
 
 ## ret2dlresolve victim 程序
 
