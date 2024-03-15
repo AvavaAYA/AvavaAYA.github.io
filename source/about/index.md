@@ -14,3 +14,34 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 [Calendar](https://calendar.google.com/calendar/u/0?cid=ZWFzdHh1ZWxpYW5AZ21haWwuY29t)
 
 [Todo-list](https://t.me/eastXLian)
+
+---
+
+# eastXueLian's Channel
+
+> 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
+
+## Something About My Desk Set:
+
+> 感觉能在学校里有这么大的工位很幸运，还是要多做一些成绩出来啊（
+
+- 2024-03-15：搬了一台闲置的显示器回来，没想到那么重（之前搬戴尔的 32 寸也没觉得多重啊），双手在颤抖。
+
+![2024/03/15](/about/deskset-0315.jpg)
+
+- 2024-03-11：古剑山喜提新玩偶，喜欢我网安一哥吗。
+
+![2024/03/11](/about/deskset-0311.jpg)
+![2024/03/11-1](/about/deskset-0311-1.jpg)
+
+- 2024-03-06：莲 fufu。
+
+![2024/03/06](/about/deskset-0306.jpg)
+
+- 2024-03-05：带了个屏幕挂灯，但是忘记拿遥控器了。
+
+![2024/03/05](/about/deskset-0305.jpg)
+
+- 2024-03-04：新学期开始，专业课都上得差不多了，但是居然还差一些通识课学分，故这学期常驻西区。
+
+![2024/03/04](/about/deskset-0304.jpg)
