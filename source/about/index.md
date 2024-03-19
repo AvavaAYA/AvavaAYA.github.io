@@ -25,6 +25,10 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 > 感觉能在学校里有这么大的工位很幸运，还是要多做一些成绩出来啊（
 
+- 2024-03-17：最近白票了 100u，开始炒币。故重新启用之前的低分辨率 27 寸屏用来实时观察动态。
+
+![2024/03/17](/about/deskset-0317.jpg)
+
 - 2024-03-15：搬了一台闲置的显示器回来，没想到那么重（之前搬戴尔的 32 寸也没觉得多重啊），双手在颤抖。
 
 ![2024/03/15](/about/deskset-0315.jpg)
