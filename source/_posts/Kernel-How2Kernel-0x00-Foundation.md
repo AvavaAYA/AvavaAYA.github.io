@@ -482,7 +482,9 @@ sed -i "s/char payload\[\] = \".*\";/char payload[] = \"$HEX_PAYLOAD\";/" $C_SOU
 
 > `commit_creds(&init_cred)`
 
-在较老版本中，有一条常见的提权利用链：`commit_creds(prepare_kernel_cred(0))`，但是 22 年之后的 kernel 更新中这条利用链失效了，因为 `prepare_kernel_cred(0)` 不再返回 root 权限的 cred。
+在较老版本中，有一条常见的提权利用链：`commit_creds(prepare_kernel_cred(0))`，但是近期 kernel 更新中这条利用链失效了，因为 `prepare_kernel_cred(0)` 不再返回 root 权限的 cred：
+
+> 这里是否还能利用存疑，我查找了最新版的 kernel 源码（[6.8.1](https://elixir.bootlin.com/linux/v6.8.1/source/kernel/cred.c#L634)）发现确实已经无法利用，若参数为 NULL 则会直接返回 NULL；但是在较新的版本（检查了 [6.1.61](https://elixir.bootlin.com/linux/v6.1.61/source/kernel/cred.c#L726)）是仍然能够实现利用的，故这种较简单的方法在比赛中未尝不可一试。
 
 这时候就要想其它办法来获得一个 root cred 了，最容易想到的就是 `init_cred`，在有调试信息的 kernel 中可以直接从符号表获得其 `kaslr` 偏移（`p &init_cred`），但是现在很多题都不会给调试信息，这时候确实可以用 config 去编译一份调试信息，但更简单的方法还是从其它函数里「借鉴」。
 
