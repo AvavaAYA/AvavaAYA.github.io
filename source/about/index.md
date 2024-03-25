@@ -23,6 +23,8 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 ## 炒币
 
+- 2024-03-25：扭亏为盈！
+
 - 2024-03-21：感觉不是很成功，这几天跌得厉害，还剩 240u
 
 - 2024-03-19：小赚 50u，趁今天跌得厉害再做多 250u 进去，现在手上一共有 410u
