@@ -188,8 +188,7 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
             const [raw]: (string | undefined)[] = capture
             let escaped = raw ?? ""
             escaped = escaped.replace("#", "\\#")
-            // escape pipe characters if they are not already escaped
-            escaped = escaped.replace(/((^|[^\\])(\\\\)*)\|/g, "$1\\|")
+            escaped = escaped.replace("|", "\\|")
 
             return escaped
           })
