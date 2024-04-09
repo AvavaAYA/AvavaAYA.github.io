@@ -6,13 +6,15 @@ tags:
   - tutorial
 ---
 
->     二级信安实践 PWN 部分的官方题解，包括附加题。部分题目提供了多种解题思路。
+> [!done] 
+> 二级信安实践 PWN 部分的官方题解，包括附加题。部分题目提供了多种解题思路。
 >
->     实验的解题代码和附件已经公开在 [github 仓库](https://github.com/AvavaAYA/ustc-pwn-tutorial/tree/main/official-exp)中。
+> 实验的解题代码和附件已经公开在 [github 仓库](https://github.com/AvavaAYA/ustc-pwn-tutorial/tree/main/official-exp)中。
 
 # 超安全的嗨客笔记
 
->     题目分为两小问，第一问需要溢出修改函数指针，第二问则需要 getshell.
+> [!hint] 
+> 题目分为两小问，第一问需要溢出修改函数指针，第二问则需要 getshell.
 
 ## 缓冲区要被注满了
 
@@ -65,7 +67,7 @@ ia()
 
 第二问要求 getshell，即劫持控制流后实现任意代码执行的目标。根据实验教学顺序，我们这里先学习了 shellcode 的使用，讲义里也给出了 getshell 的 nasm 格式汇编代码：
 
-```asm
+```z80
 mov rax, {bytes_binsh};
 push rax;
 mov rdi, rsp;
@@ -139,7 +141,10 @@ ShellcodeMall.amd64.execve_bin_sh
 
 上面第一道题利用了函数指针数组中存在的漏洞实现了控制流劫持，因此在调用 mprotrct 等函数时只需要控制输入的内容即可，但是在更多情况下目标程序中并没有东西来帮我们传入函数/系统调用的参数，这时候就需要手动去布置寄存器。ROP 就是为了解决这个问题而被提出的：既然函数调用时参数取决于寄存器的值，那我们就可以用程序中现有片段去设置寄存器的值（`pop <reg>` 会把栈上 rsp 所指内容弹到寄存器中），而紧跟的一句 ret 实际上相当于 pop rip，会把 pc 寄存器设置为栈上的下一个值。
 
-通过连续布置这样的 ROP 片段，就能控制函数/系统调用的参数。 **注意：如果你想连续进行多个系统调用，请确保找到的 syscall 片段后面也跟着一句 ret。**
+通过连续布置这样的 ROP 片段，就能控制函数/系统调用的参数。 
+
+> [!caution] 
+> 如果你想连续进行多个系统调用，请确保找到的 syscall 片段后面也跟着一句 ret。
 
 对于 ROP-gadgets 的寻找，已经有很多工具了，如 ROPgadget，ropper，pwncli 等，甚至 objdump+文字编辑器就能胜任这一点。
 
@@ -166,7 +171,10 @@ asm("pop %rax");
 
 按道理来说 getshell 不是只要调用 system("sh") 就行了吗？于是在第二小问中去掉了这句话，这时候可以发现一件很奇怪的事情：按照刚刚的思路来编写 exp，程序报错退出了。
 
-**这是栈没对齐导致的。** 上一问的 pop rax 就是为了使调用 system 函数时栈对齐到 0x10。
+> [!caution] 
+> 这是栈没对齐导致的。
+
+上一问的 pop rax 就是为了使调用 system 函数时栈对齐到 0x10。
 
 面对这种情况，只需要在我们的 ROP 链前面加一句 ret 即可：
 
@@ -278,7 +286,7 @@ s(payload)
 
 "leave" 指令是 x86 架构汇编语言中的一条指令，它用于函数的出口操作。它的作用是将栈帧恢复到调用者的栈帧状态，并将栈指针（Stack Pointer，ESP）设置为基址指针（Base Pointer，EBP）的值，相当于执行了以下指令序列：
 
-```asm
+```z80
 mov esp, ebp
 pop ebp
 ```
@@ -596,7 +604,7 @@ sl(payload)
 # ===========exp ends=============
 ```
 
-其实 libc 中也存在 ONE_GADGET，即直接 getshell 的代码片段，感兴趣的同学可以自行了解。
+其实 libc 中也存在 `ONE_GADGET`，即直接 getshell 的代码片段，感兴趣的同学可以自行了解。
 
 ---
 

@@ -4,44 +4,45 @@ date: 2023-08-30 23:21:23
 tags:
   - V8
 ---
-
-> 之前一直对 v8 有所耳闻却没仔细看过, 这下比赛里被锤烂了, 坐大牢
-
-# v8-pwn-cheatsheet
+> [!summary] 
+> 感觉浏览器是最复杂的用户态程序之一，而 JS 引擎又是浏览器中最复杂的组件之一。
+>
+> 故在比赛中受挫后下定决心研究一下 V8，~~也许这会成为我以后的研究方向😋~~。
+# V8 Pwn Cheatsheet
 
 ## Installation
 
-chrome 中 JavaScript 的解释器被称为 V8, 下载的 V8 源码经过编译后得到可执行文件 d8, 而 d8 往往又分为 `debug` 和 `release` 版本。
+Chrome 中 JavaScript 的解释器被称为 V8，下载的 V8 源码经过编译后得到可执行文件 d8，而 d8 往往又分为 `debug` 和 `release` 版本。
 
-先是下载源码:
+先是下载源码：
 
-- 安装 `depot_tools` 用于下载 V8 源码:
+- 安装 `depot_tools` 用于下载 V8 源码：
 
   - `git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git`
-  - `echo 'export PATH=$PATH:"/root/depot_tools"' >> ~/.zshrc`
+  - `echo "set -gx PATH $(pwd)/depot_tools $PATH" >> ~/.config/fish/config.fish`
 
-- 安装 `ninja` 用于编译 V8:
+- 安装 `ninja` 用于编译 V8：
 
   - `git clone https://github.com/ninja-build/ninja.git`
   - `cd ninja && ./configure.py --bootstrap && cd ..`
-  - `echo 'export PATH=$PATH:"/root/ninja"' >> ~/.zshrc`
-  - `source ~/.zshrc`
+  - `echo "set -gx PATH $(pwd)/ninja $PATH" >> ~/.config/fish/config.fish`
+  - `source ~/.config/fish/config.fish`
+  - ~~`set -gx all_proxy socks5://x.x.x.x:xxxx`~~
   - `fetch v8`
 
-- 接下来编译:
+- 接下来编译：
 
   - `cd v8 && gclient sync`
   - `tools/dev/v8gen.py x64.debug`
   - `ninja -C out.gn/x64.debug `
 
-- 最后选择导出路径:
+- 编译结果位于：
 
   - `./out.gn/x64.debug/d8`
-  - `./out.gn/x64.debug/v8_shell`
 
 ## Patch
 
-题目一般会给出有漏洞版本的 `commit-id`, 因此编译之前需要把源码版本先 patch 到目标版本:
+题目一般会给出有漏洞版本的 `commit-id`，因此编译之前需要把源码版本先 patch 到目标版本:
 
 ```bash
 git reset --hard 6dc88c191f5ecc5389dc26efa3ca0907faef3598
@@ -638,7 +639,3 @@ print(to_js(data))
 执行效果:
 
 ![[static/v8-ass001.png]]
-
----
-
-## Acknowledgements

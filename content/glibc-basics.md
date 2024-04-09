@@ -49,7 +49,7 @@ ret2dlresolve 通常用来应对栈题不给泄漏的情况，要求已经能控
 
 这里有几个思路类似的利用手法：
 
-- [GLIBC - Exploitation-in-Latest-Glibc-0x01 House of Blindness](https://eastxuelian.nebuu.la/Glibc/glibc-blindness/)：打的是 `_dl_fini` 中的利用链，要求能够实现 elf 或 libc 范围内的任意地址写且程序正常退出，低字节覆盖 `l->l_addr` 和 `l->l_info[DT_FINI_ARRAY/DT_FINI]->d_un.d_ptr`，即可调用 elf 中的任意函数。
+- [GLIBC - Exploitation-in-Latest-Glibc-0x01 House of Blindness](glibc-blindness)：打的是 `_dl_fini` 中的利用链，要求能够实现 elf 或 libc 范围内的任意地址写且程序正常退出，低字节覆盖 `l->l_addr` 和 `l->l_info[DT_FINI_ARRAY/DT_FINI]->d_un.d_ptr`，即可调用 elf 中的任意函数。
 
 - [Libc-GOT-Hijacking (only works for glibc < 2.39)](https://github.com/n132/Libc-GOT-Hijacking)：将任意地址写转为 RCE，但是对于 glibc-2.39，libc 也引入了 `FULL_RELRO`，该利用方法不再适用。glibc-2.35 之后 libc GOT 表头部不再可写故引入了新的 gadget。[Issue with Libc-GOT-Hijacking Method on Newer Libc Versions (2.37, 2.38) #1](https://github.com/n132/Libc-GOT-Hijacking/issues/1)
 

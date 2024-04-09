@@ -4,7 +4,6 @@ date: 2023-09-25 23:04:22
 tags:
   - Glibc
 ---
-
 # TLDR;
 
 House of blindless 是一个涉及到 rtld 的利用方法，事实上 ld.so 里面确实还有很多被利用的潜力，后面涉及到 glibc 的比赛题目可能也会偏向于考察这部分内容。
