@@ -363,9 +363,13 @@ ia()
 # References
 
 \[1\] [线程PWN之gkctf2020 GirlFriendSimulator](https://blog.csdn.net/seaaseesa/article/details/107581574) . _ha1vk_
+
 \[2\] [V8 沙箱绕过](https://jayl1n.github.io/2022/02/27/v8-sandbox-escape/) . _jayl1n_
+
 \[3\] [ret2dl-runtime-resolve详细分析(32位&64位)](https://blog.csdn.net/seaaseesa/article/details/104478081) . _ha1vk_
+
 \[4\] [ctf-wiki ret2dlresolve](https://ctf-wiki.org/pwn/linux/user-mode/stackoverflow/x86/advanced-rop/ret2dlresolve/) . [_ctf-wiki_](https://ctf-wiki.org/)
+
 \[5\] [Understanding glibc malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/) . _sploitfun_
 
 ---
