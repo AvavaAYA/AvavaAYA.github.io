@@ -100,6 +100,19 @@ else:
 
 Apply this to your own project by simply copying the above code to `./.git/hooks/pre-commit` and `chmod +x ./.git/hooks/pre-commit`.
 
+## Erase Previous Commits
+
+It seems helpful to know how to erase all commit records when you find some secrets are leaked.
+
+```bash
+git checkout --orphan latest_branch
+git add -A
+git commit -am "Initialize repository"
+git branch -D main
+git branch -m main
+git push -f origin main
+```
+
 ---
 
 ## References

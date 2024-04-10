@@ -27,6 +27,7 @@ draft: true
 # 例题 1：Accessing the Truth
 
 - 题目链接：[Accessing_the_Truth.tar.gz](https://drive.google.com/file/d/1yc2FS8Y2Hq48oeJdpjHZSIxDiPbfWXG2/view?usp=drive_link)
+
 ## Analysis
 
 UEFI pwn 通常需要研究基于 `EDK II` 编译生成的固件镜像文件 `OVMF.fd`，可用于在 QEMU 等虚拟机中提供 UEFI 支持，可以借助现有工具 `uefi-firmware-parser` 来进行初步解包：
@@ -36,7 +37,7 @@ UEFI pwn 通常需要研究基于 `EDK II` 编译生成的固件镜像文件 `OV
 uefi-firmware-parser -ecO ./OVMF.fd
 ```
 
-通常基于 edk2 的固件镜像会提供 UI 和 EFI Shell 两种交互方式，在其中可以进行 boot 参数的设置。题目也提供了 `boot.nsh`，其中 `.nsh` 是 UEFI Shell 脚本文件的扩展名。这些脚本文件包含一系列 UEFI Shell 命令,可以用于自动执行各种任务,如加载驱动程序、配置设备、启动操作系统等。UEFI 提权 pwn 的目标往往就是进入 UI 或者 EFI SHELL 的交互界面，修改 boot 启动参数为 `bzImage console=ttyS0 -initrd=initramfs.cpio rdinit=/bin/sh` 就可以绕开 init 脚本以 root 身份进入系统并获得 flag。
+通常基于 edk2 的固件镜像会提供 UI 和 EFI Shell 两种交互方式，在其中可以进行 boot 参数的设置。题目也提供了 `boot.nsh`，其中 `.nsh` 是 UEFI Shell 脚本文件的扩展名。这些脚本文件包含一系列 UEFI Shell 命令,可以用于自动执行各种任务,如加载驱动程序、配置设备、启动操作系统等。UEFI 提权 pwn 的目标往往就是进入 UI 或者 EFI SHELL 的交互界面，修改 boot 启动参数为 `console=ttyS0 -initrd=initramfs.cpio rdinit=/bin/sh` 就可以绕开 init 脚本以 root 身份进入系统并获得 flag。
 
 在进行逆向分析之前，还要明确分析的对象，故先运行启动脚本而后可以发现在启动过程中长按 `Esc (b"\x1b")` 或 `F12` 或 `F2` 都无法进入 Bios 界面，而是要求输入密码：
 
@@ -49,7 +50,7 @@ Enter Password:
 
 这里的 `BdsDxe` 是 UEFI 启动过程中的一个驱动程序，负责从固件卷（Firmware Volume）中加载启动项。即 UEFI 固件中自定义了一个名为「UiApp」的启动项，它覆盖了原本进入 BIOS 设置的启动项。所以按 ESC 键会加载运行这个「UiApp」程序，而不是进入正常的 BIOS 设置界面。
 
-对刚接触 UEFI 的人而言，定位有漏洞的校验程序可能是一个阻碍，这里有一种比较暴力的做法，即直接根据字符串定位：
+对刚接触 UEFI 的攻击者而言，定位有漏洞的校验程序可能是一个阻碍，这里有一种比较暴力的做法，即直接根据字符串定位：
 
 ```bash
 # nix-shell -p ugrep
@@ -92,8 +93,6 @@ Binary file volume-0/file-9e21fd93-9c72-4c15-8c4b-e77f1db2d792/section0/section3
 ```
 
 ## Exploitation
-
-### Ret2Boot-Manager
 
 来到利用部分，为了方便调试可以先根据 `run.py` 改一个 pwn 脚本出来，若涉及 UEFI UI 的操作可以用 `socat -,raw,echo=0 SYSTEM:"./exp.py"` 运行：
 
@@ -160,6 +159,8 @@ ia()
 ```
 
 到了这一步，这道题已经解决大半，接下来就回到了我们最熟悉的 ROP 环节，但是应该把控制流劫持到什么地方呢？毕竟这里没有机会去 `system("/bin/sh")` 了。
+
+### Ret2Boot-Manager
 
 不妨考虑这个 UiApp，它是一个密码校验程序，那假如密码正确会发生什么呢？没错，就是回到 bios 的 ui 界面中！我们的目标就是回去修改 boot 启动参数加上 `rdinit=/bin/sh` 绕开 init 脚本实现提权。
 
@@ -279,7 +280,7 @@ ia()
 
 特别对于本题而言，直接把 shellcode 溢出写到栈上再用已知栈地址去调用可以实现 bootloader shellcode 的攻击了。
 
-UEFI Shellcode 的实现思路通常围绕
+UEFI Shellcode 的实现思路通常围绕 UEFI 提供的 BootServices 来实现读取文件、写入文件等操作。其中 UEFI Boot Services 提供了一系列的函数，用于在UEFI环境中执行各种操作，如内存管理、设备控制、文件操作等。这些服务只在操作系统启动之前可用，启动后由操作系统接管这些功能。
 
 ```python
 #!/usr/bin/env python3
@@ -463,7 +464,6 @@ flag += "}"
 
 __import__("lianpwn").success(flag)
 ```
-
 
 # References
 
