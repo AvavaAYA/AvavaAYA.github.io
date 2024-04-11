@@ -4,7 +4,7 @@ date: 2024-03-22 16:21:06
 tags:
   - UEFI
   - WriteUp
-draft: true
+draft: false
 ---
 
 # 基础概念
@@ -24,6 +24,26 @@ draft: true
 
 简单来说就是：BIOS/UEFI 加载 Bootloader，Bootloader 再加载操作系统内核，内核启动再完成其它初始化。
 
+## 传参规则
+
+应用程序二进制接口（ABI）规定的函数调用约定视平台和语言而定，这里对以下两种进行区分：
+
+- [System V AMD64 ABI](https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf)，即常见于 `x86_64` linux 下的函数调用约定：
+	- 前 6 个整数或指针参数依次通过寄存器 **RDI, RSI, RDX, RCX, R8, R9** 传递
+	- **对于系统调用会将第四个参数 RCX 改为 R10**
+	- 前 8 个浮点参数通过 XMM0 - XMM7 传递
+	- 超过 6 个整数参数或 8 个浮点参数的部分通过栈传递
+	- 返回值通过 RAX 传递，浮点返回值通过 XMM0 传递
+- [Microsoft x64](https://learn.microsoft.com/zh-cn/cpp/build/x64-calling-convention?view=msvc-170)，即 Windows 平台的函数调用约定：
+	- 前 4 个整数或指针参数依次通过 **RCX, RDX, R8, R9** 传递
+	- 前 4 个浮点参数通过 XMM0 - XMM3 传递
+	- 其余参数通过栈传递
+	- 返回值通过 RAX 传递
+
+> [!tip] 
+> 我曾在面试时将 **调用约定** 与 **应用二进制接口（ABI）标准** 混淆，虽然它们都涉及到函数调用的细节，但它们的适用范围和目的存在差异：
+> - 调用约定包括 cdecl（C Declaration，规定调用者清理堆栈，允许函数有可变数量的参数）、stdcall（主要用于 Windows API，规定被调用函数清理堆栈，这意味着函数参数的数量是固定的）、fastcall（一种优化的调用约定，通过将前几个参数放在寄存器中传递，以减少堆栈操作，提高函数调用的效率，不同的编译器和平台可能对哪些寄存器应该被用来传递参数有不同的规定）等。
+> - 应用程序二进制接口（ABI）详细规定了许多方面，包括但不限于函数调用约定、数据类型的大小和对齐、系统调用的编号和接口、对象文件格式，是包含函数调用约定在内的更广泛的标准集合。
 # 例题 1：Accessing the Truth
 
 - 题目链接：[Accessing_the_Truth.tar.gz](https://drive.google.com/file/d/1yc2FS8Y2Hq48oeJdpjHZSIxDiPbfWXG2/view?usp=drive_link)
@@ -62,6 +82,13 @@ ug --encoding=UTF-16LE "Enter Password"
 ```bash
 Binary file volume-0/file-9e21fd93-9c72-4c15-8c4b-e77f1db2d792/section0/section3/volume-ee4e5898-3914-4259-9d6e-dc7bd79403cf/file-462caa21-7614-4503-836e-8ab6f4662331/section0.pe matches
 ```
+
+> [!tip]
+> 这里介绍一个 UEFI 固件逆向插件：[efiXplorer](https://github.com/binarly-io/efiXplorer)，支持下列功能：
+>
+> - 定位和重命名已知的 UEFI GUID
+> - 定位和重命名 SMI 处理程序
+> - 定位和重命名 UEFI 启动/运行时服务
 
 接下来就可以进入 ida 分析了。可以继续搜字符串找到主要逻辑函数（其实就在开头，ida 处理 UTF-16LE 麻烦的话可以直接到 xxd | nvim 里面用正则找），进行分析就可以发现函数中喜闻乐见的栈溢出了：
 
@@ -282,6 +309,19 @@ ia()
 
 UEFI Shellcode 的实现思路通常围绕 UEFI 提供的 BootServices 来实现读取文件、写入文件等操作。其中 UEFI Boot Services 提供了一系列的函数，用于在UEFI环境中执行各种操作，如内存管理、设备控制、文件操作等。这些服务只在操作系统启动之前可用，启动后由操作系统接管这些功能。
 
+下面的 Shellcode 来源于 [Pwn2Win CTF 2021 Writeup](https://ptr-yudai.hatenablog.com/entry/2021/05/31/232507#Pwn-373pts-Accessing-the-Trush-8-solves)，实现如下功能：
+
+```c
+SystemTable->BootService->LocateProtocol(
+	&gEfiSimpleFileSystemProtocolGuid,
+	NULL,
+	&foo);
+foo->OpenVolume(foo, &bar);
+bar->Open(bar, &file, "/path/to/flag", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
+file->Read(file, &size, buf);
+print(flag);
+```
+
 ```python
 #!/usr/bin/env python3
 
@@ -465,6 +505,10 @@ flag += "}"
 __import__("lianpwn").success(flag)
 ```
 
+---
+
+## ToySMM
+
 # References
 
 \[1\] [Pwn2Win CTF 2021 Writeup](https://ptr-yudai.hatenablog.com/entry/2021/05/31/232507#Pwn-373pts-Accessing-the-Trush-8-solves) . _ptr-yudai_
@@ -474,3 +518,5 @@ __import__("lianpwn").success(flag)
 \[3\] [D^3CTF 2022 PWN - d3guard official writeup](https://eqqie.cn/index.php/archives/1929) . _eqqie_
 
 \[4\] [x86 架构 BIOS 攻击面梳理与分析](https://www.cnblogs.com/L0g4n-blog/p/17369864.html) . _L0g4n_
+
+\[5\] [UEFI安全漏洞的挖掘、防御与检测之道](https://www.4hou.com/posts/DWyn) . _fanyeee_
