@@ -4,10 +4,11 @@ date: 2024-03-22 16:21:06
 tags:
   - UEFI
   - WriteUp
-draft: false
+draft: true
 ---
-
 # 基础概念
+
+~~尽管比赛中的 UEFI PWN 题目通常并不需要太多基础知识就能解题，但在博客中多记一些总是好的，也许面试中就问到了~~
 
 ## 系统启动的典型步骤
 
@@ -24,6 +25,52 @@ draft: false
 
 简单来说就是：BIOS/UEFI 加载 Bootloader，Bootloader 再加载操作系统内核，内核启动再完成其它初始化。
 
+---
+## UEFI 安全启动流程
+
+> [!quote] 
+> UEFI 安全启动（Secure Boot）是 UEFI 规范的一个重要特性，旨在增强计算机启动过程的安全性。它通过确保计算机仅加载和执行未被篡改的、经过数字签名验证的操作系统加载程序和驱动程序，来保护计算机免受恶意软件（尤其是引导级恶意软件和根套件）的侵害。
+
+下图展现了 UEFI PI（平台初始化）规范中的引导流程，其中包括：
+
+1. **SEC**，Security Phase：
+	- 前期验证，进行初步的硬件检测和初始化
+	- 系统的硬件尚未完全初始化，只有 CPU 处于可用状态
+	- 从实模式切换到保护模式，创建临时堆栈和数据区域以供后续阶段使用
+	- 找到 PEI 加载程序并从 SPI 中开始运行
+
+1. **PEI**，Pre-EFI Initialization：
+	- 前期初始化，主要负责内存的初始化，以及为后续的 DXE 阶段准备必要的资源和服务，系统的内存控制器被配置并启动，此后操作系统和应用程序才能使用内存
+	- 检测和初始化早期硬件组件，如内存控制器和某些必要的外围设备
+	- 建立 PEI 阶段的服务表，为 DXE 阶段提供基础服务，比如 Flash 固件访问、内存服务等
+	- 加载并执行一些早期的驱动程序，这些驱动程序负责初始化更多的硬件设备
+	
+3. **DXE**，Driver Execution Environment：
+	- 负责加载和执行所有的 UEFI 驱动，对系统硬件进行进一步的初始化，UEFI 固件利用之前 PEI 阶段收集的信息，来配置系统的剩余硬件资源
+	- 加载 UEFI 驱动程序，这些驱动程序是以 EFI 可执行格式存储在固件或其他存储设备上
+		- 驱动信息来源于 PEI 模式提供的一系列的 HOB（Hand-Off Block）
+		- 涉及到设置 SMM（System Management Mode）的运行时环境，SMM 是一种特殊的执行模式（ring -2），用于处理一些底层的系统管理任务，如电源管理
+	- 通过 `EFI_BDS_ARCH_PROTOCOL` 调用 `entry->bds`，启动 BDS 阶段
+		- 其中 UEFI 规范定义了一系列的协议（Protocol），这些协议是软件模块之间交互的接口，也是 DXE 和驱动之间的通信方式
+	
+> [!tip] 
+> DXE 阶段负责加载和执行大量的 UEFI 驱动和服务，通常是 UEFI PWN 题的考点
+
+4. **BDS**，Boot Device Selection：
+	- 显示启动菜单，允许用户选择启动设备（如果有多个可启动设备或操作系统）
+		- 但是在提权类型的 UEFI PWN 中通常会在 `BdsDXE` 过程用自定义驱动禁用启动菜单的显示，需要通过漏洞利用来篡改启动项增加 `rdinit=/bin/sh` 参数实现提权
+	- 确定启动设备，加载操作系统的引导程序
+
+5. **TSL**，Transient System Load：
+	- 可选阶段，负责加载和执行瞬态系统，如 UEFI Shell 或预引导环境
+
+6. **RT**，Runtime：
+	- 提供运行时服务给操作系统，包括系统时间、唤醒事件和变量存储等
+	- 在操作系统运行期间仍然可用，即使 UEFI 的其他部分不再活跃
+
+![[static/uefi-image0.png]]
+
+---
 ## 传参规则
 
 应用程序二进制接口（ABI）规定的函数调用约定视平台和语言而定，这里对以下两种进行区分：
@@ -44,9 +91,13 @@ draft: false
 > 我曾在面试时将 **调用约定** 与 **应用二进制接口（ABI）标准** 混淆，虽然它们都涉及到函数调用的细节，但它们的适用范围和目的存在差异：
 > - 调用约定包括 cdecl（C Declaration，规定调用者清理堆栈，允许函数有可变数量的参数）、stdcall（主要用于 Windows API，规定被调用函数清理堆栈，这意味着函数参数的数量是固定的）、fastcall（一种优化的调用约定，通过将前几个参数放在寄存器中传递，以减少堆栈操作，提高函数调用的效率，不同的编译器和平台可能对哪些寄存器应该被用来传递参数有不同的规定）等。
 > - 应用程序二进制接口（ABI）详细规定了许多方面，包括但不限于函数调用约定、数据类型的大小和对齐、系统调用的编号和接口、对象文件格式，是包含函数调用约定在内的更广泛的标准集合。
+
+逆向 UEFI 相关模块时可以发现其文件格式为 PE，因此利用时也应该编写 Microsoft x64 标准的 shellcode。
+
+---
 # 例题 1：Accessing the Truth
 
-- 题目链接：[Accessing_the_Truth.tar.gz](https://drive.google.com/file/d/1yc2FS8Y2Hq48oeJdpjHZSIxDiPbfWXG2/view?usp=drive_link)
+- 题目链接：[Too-Old-Challenges/Accessing_the_Truth.tar.gz](https://drive.google.com/drive/folders/1ClwAHcOvBmwJ3f6H1SBuOP6G7WRTVjND?usp=sharing)
 
 ## Analysis
 
@@ -506,8 +557,9 @@ __import__("lianpwn").success(flag)
 ```
 
 ---
+# 例题 2：SMM Cowsay
 
-## ToySMM
+这是一道非常经典的 UEFI 
 
 # References
 
