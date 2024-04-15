@@ -4,7 +4,7 @@ date: 2024-03-22 16:21:06
 tags:
   - UEFI
   - WriteUp
-draft: false
+draft: true
 ---
 # 基础概念
 
