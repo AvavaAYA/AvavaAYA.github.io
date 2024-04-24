@@ -6,9 +6,13 @@ tags:
   - PWN
   - Kernel
 ---
-
 > I have been using NixOS on all my devices, so the following blog is about dealing with user-level and kernel-level pwn challenges on NixOS through fish scripts and nix configurations.
+# What's 「lianpwn」
 
+> [!important] 
+> 经常遇到师傅来问我 WP 里的「lianpwn」是什么，其实就是一些基于 pwncli 或者 pwntools 的简单包装，具体代码位于：[nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) 仓库中。
+>
+> I often get asked what 'lianpwn' in my WP is. It's actually just some simple wrappers based on pwncli or pwntools. The specific code can be found in the [nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) repository.
 # User-level Pwn
 
 I have a python module named lianpwn, which is based on pwncli and pwntools. There're a few lambdas and helper classes defined in it:
