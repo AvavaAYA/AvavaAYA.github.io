@@ -380,8 +380,8 @@ send_payload(my_buf + 0xF8, [my_buf + 0x28])
 
 接下来要完成利用，还要构造出 `[my_buf, 0]` 的栈布局并且调用到 `plt0 + 6` 的位置，这对于常规 ret2dlresolve 栈溢出的例题而言并不困难，但是本题只能篡改 `.bss` 段上的内存，没有提供栈上 ROP 的能力，通常会想到**栈迁移**之类的做法，不过这里还有更简单的解法
 
-![[wp-infosec2024-0.png]]
-![[wp-infosec2024-1.png]]
+![[static/wp-infosec2024-0.png]]
+![[static/wp-infosec2024-1.png]]
 
 我用 ropper 看了一下，题目中并没有 push 相关的 gadget，也难以直接改变栈上数据，但是 plt 头部本身就提供了先 `push 0x0` 再 jump 到 plt0 的位置 `push [_GLOBAL_OFFSET_TABLE_+8]` 的调用链，got 表又是可写的，因此就免去了栈迁移的麻烦。
 
@@ -518,9 +518,7 @@ graph TB
 	D --> F[调用 system 函数 getshell]
 ```
 
-计算偏移的方法很多，包括 gdb 或 python：
-
-![[Screenshot 2024-05-22 at 16.34.10.png]]
+计算偏移的方法很多，包括 gdb 或 python。
 #### 解题
 
 至于标准解法是不需要编写脚本的，这里演示直接在命令行中解题的办法：
@@ -684,7 +682,7 @@ Out[4]: '0x5559a9e7d000'
 
 完整利用截图如下：
 
-![[wp-infosec2024-2.png]]
+![[static/wp-infosec2024-2.png]]
 
 ---
 ## isadbg 免费版
