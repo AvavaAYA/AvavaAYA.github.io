@@ -27,20 +27,6 @@ title: WriteUp - 二级信安实践 2024 - PWN
 ---
 ## isadbg 专业版
 
-> [!题目描述] 
-> 小 D 同学很喜欢调试，离开了 pwndbg 他简直就不会做题了。
-> 
-> 「如果能调试到远程题目程序就好了」
-> 
-> 虽然长得有一点像 pwndbg，但这道题只实现了一个伪·调试器，输入 help 可以看到所有已实现的指令，如果需要本地调试或者查看源码的话你也可以下载附件。
-> 
-> 这些资料或许对你有帮助：
-> 
-> - [PWN 讲义](http://pwn.isa.nebuu.la:31340)
-> - [NebuCTF 上类似题目的题解](https://github.com/Nebula-CTFTeam/CTF_101/tree/main/NebuCTF/pwn#debug-myself)
-> 
-> 你需要运行 `/readflag` 来获取 flag。
-
 > [!seealso] 
 > 这道题和去年出给 NebuCTF 的 [DebugMyself](https://github.com/Nebula-CTFTeam/CTF_101/tree/main/NebuCTF/pwn#debug-myself) 这道题很像，但去年比赛时完全没有人看我的题，于是信安实践上重新拿来用了。
 
