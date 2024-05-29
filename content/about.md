@@ -22,8 +22,20 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 # eastXueLian's Channel
 
 > 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
+## 桂花龙井美式
 
+- 2024-05-14：家里寄了一些好吃的过来，其中有一大包「桂花龙井咖啡」，感觉味道有点奇怪（闻着很香，但喝着没什么咖啡味）
+
+---
+## 实习与期末考试
+
+- 不知不觉就把日程安排得太满了
+- 如果没其它变数的话接下来就去 JD 实习了，但是入职时间好像还没明确
+
+---
 ## 炒币
+
+- 2024-04-29：太幽默了，还剩 20u，太失败了
 
 - 2024-04-06：可恶啊，现在手上只剩一个 sol 了😭
 
@@ -34,7 +46,6 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 - 2024-03-19：小赚 50u，趁今天跌得厉害再做多 250u 进去，现在手上一共有 410u
 
 ---
-
 ## Something About My Desk Set:
 
 > 感觉能在学校里有这么大的工位很幸运，还是要多做一些成绩出来啊（
