@@ -1,4 +1,5 @@
 ---
+id: xinan-level2-2024
 aliases: []
 tags:
   - WriteUp
@@ -11,15 +12,7 @@ title: WriteUp - 二级信安实践 2024 - PWN
 > 
 > 去年 PWN 的三道题完成人数分别是 $40 +$、$30 +$、$10 +$，由于有同学反映学期末时间紧张、环境配置麻烦等问题，今年将题目数量缩减到了两题、每题分值降低到了 25 分、并且降低了交互的难度。
 > 
-> 经过实验报告的审核，今年第二题约有 16 个提交是有效的，其中大部分无效提交中都存在明显的引用痕迹：
-> 
-> 1. `playload = b"sh;   "`
-> 	- 这里原脚本作者遇到了 `system(b"sh")` 不成功的问题，原因是 read 读入的 sh 缺少 `\x00` 截断，可以考虑用分号隔开后面的数据。如果理解了第一道题字符串在栈上的表示的话，脚本解题中应该优先考虑 `sh\x00` 这样的写法，或者按照 ppt 中的 `sh;` 即可完成做题。
-> 	- 此外这里有个拼写错误，常见写法应该是 payload。
-> 1. `playload = b"%" + str(3).encode() + b"$p"`
-> 	- 这里的写法是为了写循环爆破格式化字符串的泄漏位置，但是存在不少代码中去掉了 `for` 循环爆破却保留了 `str(3).encode()`。这里更常规的写法包括 `b"%3$p"`、`b"%3$lx"` 等。或者根据课上 / 讲义中的提示，预期解法是到栈上找 `main` 函数返回到 `__libc_start_main` 的地址，即 `b"%23$p"`。
-> 
-> 在 16 个有效提交以外，还有一些附上了部分正确思路的实验报告，会根据报告中体现的进展给分。
+> 经过实验报告的审核，今年压轴题有 16 个提交是有效的，两道拓展题也有 2 个有效提交。
 
 > [!tldr] 
 > PWN 部分在总分中占比很少，无论是否完成了题目都不用担心这道题给最终得分带来的影响。
@@ -28,7 +21,7 @@ title: WriteUp - 二级信安实践 2024 - PWN
 ## isadbg 专业版
 
 > [!seealso] 
-> 这道题和去年出给 NebuCTF 的 [DebugMyself](https://github.com/Nebula-CTFTeam/CTF_101/tree/main/NebuCTF/pwn#debug-myself) 这道题很像，但去年比赛时完全没有人看我的题，于是信安实践上重新拿来用了。
+> 这道题和去年出给 NebuCTF 的 [DebugMyself](https://github.com/Nebula-CTFTeam/CTF_101/tree/main/NebuCTF/pwn#debug-myself) 很像，但去年比赛时完全没有人看我的题，于是信安实践上重新拿来用了。
 
 从设定上来说，这道题不需要选手编写利用脚本来解题，只需要通过 `stack` 指令查看栈布局，通过 `gift` 指令获取 **`pop rdi ; pop rsi ; pop rdx ; pop rax ; ret`** 等语句的地址，最后通过 `set` 指令完成栈上数据的布置就能 **getshell**：
 
@@ -183,7 +176,7 @@ ret2dlresolve 通常用来应对栈题不给泄漏的情况，要求已经能控
 
 1. 首先在调用 `libc_func@plt` 的时候，动态链接的程序并不能直接跳转到 libc 里执行，而是先 jmp 到其 got 表对应的表项上继续运行，这也是 got-hijack 利用手法的由来。
 
-```
+```bash
  ► 0x555555400710 <puts@plt>                         jmp    qword ptr [rip + 0x200902]    <puts@got[plt]>
 
    0x555555400716 <puts@plt+6>                       push   0
@@ -195,7 +188,7 @@ ret2dlresolve 通常用来应对栈题不给泄漏的情况，要求已经能控
 
 2. 在非 `FULL_RELRO` 的情况下，程序会先将目标 got 表项序号（如此处 puts 为 0，write 为 1）推入栈中作为第二个参数，`link_map` 推入栈中作为第一个参数调用 `_dl_runtime_resolve`。源码见 [`/sysdeps/x86_64/dl-trampoline.h`](https://elixir.bootlin.com/glibc/glibc-2.27/source/sysdeps/x86_64/dl-trampoline.h)。
 
-```
+```bash
 pwndbg> got
 
 GOT protection: Partial RELRO | GOT functions: 6
@@ -369,7 +362,7 @@ send_payload(my_buf + 0xF8, [my_buf + 0x28])
 ![[static/wp-infosec2024-0.png]]
 ![[static/wp-infosec2024-1.png]]
 
-我用 ropper 看了一下，题目中并没有 push 相关的 gadget，也难以直接改变栈上数据，但是 plt 头部本身就提供了先 `push 0x0` 再 jump 到 plt0 的位置 `push [_GLOBAL_OFFSET_TABLE_+8]` 的调用链，got 表又是可写的，因此就免去了栈迁移的麻烦。
+我用 ropper 看了一下，题目中并没有能够直接操作栈的 gaegets，但是 plt 头部本身就提供了先 `push 0x0` 再 jump 到 plt0 的位置 `push [_GLOBAL_OFFSET_TABLE_+8]` 的调用链，got 表又是可写的，因此就免去了栈迁移的麻烦。
 
 因此可以篡改 puts 以外的某个函数的 got 表项到上面 `0x555555555034` 的位置，再布置好 GOT 表上 `[_GLOBAL_OFFSET_TABLE_+8] = my_buf` 实现利用，最终 exp 如下：
 
