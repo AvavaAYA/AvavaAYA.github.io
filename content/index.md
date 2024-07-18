@@ -14,6 +14,7 @@ Welcome to my blog. I am eastXueLian from China, [click here](about.md) to learn
 
 | Date       | Blog                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------- |
+| 2024-07-18 | [WriteUp - 不知道能不能说的一个比赛 - PWN](bc-ctf-2024)                                         |
 | 2024-05-29 | [WriteUp - 二级信安实践 2024 - PWN](xinan-level2-2024)                                         |
 | 2024-04-17 | [UEFI PWN 总结](UEFI-pwn-0x00)                                                             |
 | 2024-04-15 | [WriteUp - b01lersCTF2024 - PWN && Blockchain](b01lers-CTF-2024)                         |

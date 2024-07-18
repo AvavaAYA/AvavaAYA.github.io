@@ -22,8 +22,20 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 # eastXueLian's Channel
 
 > 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
+## 实习
+
+- 2024-07-19：正式工作一周了，在 🌸为，感觉非常有趣啊，做内存分配器。不过还是比较后悔当时没投蓝军，还是想尝试一下更底层的攻击研究
+
+---
+## 菁英班
+
+- 2024-07-12：为期一周的培训结束了。很幸运随机分配的小组氛围和谐又活跃，非常开心。虽然小组项目写起来很痛苦。项目链接：[github.com:zhpywhatever/OHOS-Top3-Health-APP](https://github.com/zhpywhatever/OHOS-Top3-Health-APP)
+- 2024-07-13：比较难绷的是公司送了一本《美国陷阱》
+
+---
 ## 桂花龙井美式
 
+- 2024-07-19：原来是发霉了「龙图.jpg」
 - 2024-05-14：家里寄了一些好吃的过来，其中有一大包「桂花龙井咖啡」，感觉味道有点奇怪（闻着很香，但喝着没什么咖啡味）
 
 ---
