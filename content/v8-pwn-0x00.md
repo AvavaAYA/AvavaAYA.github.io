@@ -190,7 +190,6 @@ graph TD;
    - Type Confusions
    - UaFs
    - OOB Accesses
-
 2. Wasm:
    - Incorrect parsing
    - Signature mismatch
