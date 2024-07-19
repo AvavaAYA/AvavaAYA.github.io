@@ -22,30 +22,34 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 # eastXueLian's Channel
 
 > 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
+
 ## 实习
 
 - 2024-07-19：正式工作一周了，在 🌸为，感觉非常有趣啊，做内存分配器。不过还是比较后悔当时没投蓝军，还是想尝试一下更底层的攻击研究
-- zmhs
 
 ---
+
 ## 菁英班
 
 - 2024-07-12：为期一周的培训结束了。很幸运随机分配的小组氛围和谐又活跃，非常开心。虽然小组项目写起来很痛苦。项目链接：[github.com:zhpywhatever/OHOS-Top3-Health-APP](https://github.com/zhpywhatever/OHOS-Top3-Health-APP)
 - 2024-07-13：比较难绷的是公司送了一本《美国陷阱》
 
 ---
+
 ## 桂花龙井美式
 
 - 2024-07-19：原来是发霉了「龙图.jpg」
 - 2024-05-14：家里寄了一些好吃的过来，其中有一大包「桂花龙井咖啡」，感觉味道有点奇怪（闻着很香，但喝着没什么咖啡味）
 
 ---
+
 ## 实习与期末考试
 
 - 不知不觉就把日程安排得太满了
 - 如果没其它变数的话接下来就去 JD 实习了，但是入职时间好像还没明确
 
 ---
+
 ## 炒币
 
 - 2024-04-29：太幽默了，还剩 20u，太失败了
@@ -59,6 +63,7 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 - 2024-03-19：小赚 50u，趁今天跌得厉害再做多 250u 进去，现在手上一共有 410u
 
 ---
+
 ## Something About My Desk Set:
 
 > 感觉能在学校里有这么大的工位很幸运，还是要多做一些成绩出来啊（
@@ -76,4 +81,3 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 - 2024-03-05：带了个屏幕挂灯，但是忘记拿遥控器了。
 
 - 2024-03-04：新学期开始，专业课都上得差不多了，但是居然还差一些通识课学分，故这学期常驻西区。
-
