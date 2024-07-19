@@ -25,6 +25,7 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 ## 实习
 
 - 2024-07-19：正式工作一周了，在 🌸为，感觉非常有趣啊，做内存分配器。不过还是比较后悔当时没投蓝军，还是想尝试一下更底层的攻击研究
+- zmhs
 
 ---
 ## 菁英班
