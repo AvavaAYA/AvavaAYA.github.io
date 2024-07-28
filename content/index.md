@@ -10,9 +10,6 @@ Welcome to my blog. I am eastXueLian from China, [click here](about.md) to learn
 
 # Recent Posts
 
-> [!info]
-> 并不是我平时没有记录 WP 的习惯（而是博客目录下有很多被标注了 `_draft` 的比赛 WP，有很多分析与利用还没有完善，可能等这个暑假的实习确定后才有空去整理复现一些高质量的比赛题目）
-
 | Date       | Blog                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------- |
 | 2024-07-18 | [WriteUp - Plan BeiChen - PWN](bc-ctf-2024)                                              |
