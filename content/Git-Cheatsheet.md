@@ -60,7 +60,7 @@ git checkout
 
 ## Stop Leaking Secrets
 
-I’m going to introduce a useful light tool here: https://github.com/gitleaks/gitleaks[2][3], which can alert you and stop your commit when the result of `git log -p` might contain sensitive keys.
+I’m going to introduce a useful light tool here: https://github.com/gitleaks/gitleaks , which can alert you and stop your commit when the result of `git log -p` might contain sensitive keys.
 
 It’s simple to install and use it as a command line tool, having brew package for mac users and nixpkgs for my NixOS.
 
