@@ -380,7 +380,8 @@ class Helpers {
 
 - 首先需要明白：JavaScript 中对于对象（[对象结构的复习](#对象结构)）的解析依赖于 `map`：map 指向 `<Map(PACKED_ELEMENTS)>` 时 elements 中元素就会按照 obj 来解析，其他类型同理；
 - 而 `oob()` 不带参数（`args.at<Object>(0)` 永远是 self），就可以输出 `elements[length]`，`oob(data)` 就可以在 `elements[length]` 写入 data；
-- array 的 elements 也是对象，在内存结构中，往往体现为：elements 紧挨着 array，即： ** `elements[length]` 的位置上就是 array 的 `map` ** ；
+- array 的 elements 也是对象，在内存结构中，往往体现为：elements 紧挨着 array，即：
+  - `elements[length]` 的位置上就是 array 的 `map`；
 - 因此可以考虑先读出 map，再在另一种 array 的 map 处写入，即实现了类型混淆。
 
 这样一来，我们就可以开始考虑构造任意地址写了，思路如下：
