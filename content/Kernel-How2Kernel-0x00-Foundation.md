@@ -1,9 +1,11 @@
 ---
-title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
-date: 2024-01-18 19:02:34
+id: Kernel-How2Kernel-0x00-Foundation
+aliases: []
 tags:
   - Kernel
   - tutorial
+date: 2024-01-18 19:02:34
+title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 ---
 
 > PWN 手的常规学习路线包括：栈 -> 堆（用户态）-> 内核 -> ？，无论后面的路线是嵌入式、浏览器、异架构 PWN，内核是现在国内外赛事难题的集中考察点，企业招人也会看重这方面的能力（偏向于安卓内核），此外了解内核的利用思路对一个 PWN 手的成长也是受益无穷的。
@@ -11,6 +13,18 @@ tags:
 > 所以可以说：一个一流战队的主力 PWN 手是必须要了解内核 PWN 的。
 >
 > 欢迎踏上 Kernel Pwn 的旅途：
+
+> [!todo] 
+> **Linux Kernel Pwn 系列博客预计包括：**
+> 
+> - [x] [[kernel-How2Kernel-0x00-Foundation|Environment and Basic LPE]]
+>     - 基础知识
+>     - 一些常见的非预期解
+>     - Kernel Shellcode 提权
+> - [ ] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
+> - [ ] slub 分配器
+> - [ ] 跨缓存的溢出与跨页的堆风水
+> - [ ] Buddy System
 
 ---
 
