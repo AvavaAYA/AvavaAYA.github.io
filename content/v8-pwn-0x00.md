@@ -290,6 +290,8 @@ ninja -C out.gn/x64.release d8
 
 这里有一点需要注意的是，我们现在编译的 debug 版本调用 `obj.oob()` 时会触发异常退出，因此只能在 release 版本下进行利用，debug 版本下调试帮助理解 JavaScript 对象结构。
 
+### 漏洞分析
+
 题目的漏洞点体现在 `oob.diff` 文件中，通过参数数量的不同分别提供了越界读和越界写的功能：
 
 ```c
@@ -311,6 +313,8 @@ ninja -C out.gn/x64.release d8
                                  -> 泄露相关地址
                                                  -> shellcode || hook_hijacking
 ```
+
+### 开始之前 - 一些辅助函数
 
 先来看几个类型转换的辅助函数：
 
@@ -384,6 +388,8 @@ class Helpers {
   - `elements[length]` 的位置上就是 array 的 `map`；
 - 因此可以考虑先读出 map，再在另一种 array 的 map 处写入，即实现了类型混淆。
 
+### 利用漏洞 - 获得地址与伪造对象的能力
+
 这样一来，我们就可以开始考虑构造任意地址写了，思路如下：
 
 - 首先，在 JavaScript 中浮点数在内存中是直接存储的，因此伪造 `float_array` 是比较合适的；
@@ -448,6 +454,8 @@ console.log(fake_obj.length);
 
 可以验证在输出 `fake_obj` 时显示为 `<JSArray[128]>` 类型，进一步就可以在 `fake_obj` 的基础上获得任意地址读写的能力：
 
+### 受限的任意读写
+
 ```javascript
 console.log("STEP 2 - Arbitary read and write with fake_obj.");
 
@@ -471,6 +479,8 @@ let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
 
 但是上面使用 FloatArray 进行写入的时候，在目标地址高位是 0x7f 等情况下，会出现低 18 位被置零的现象，可以通过 ArrayBuffer 的利用来解决（这也是绕过没有沙盒的指针压缩的常见思路，因为 ArrayBuffer 的储存空间使用 [PartitionAlloc](https://chromium.googlesource.com/chromium/src/+/master/base/allocator/partition_allocator/PartitionAlloc.md) 分配，位于 v8 堆之外的单独内存区域中）：
 
+### 更强的任意读写 - ArrayBuffer
+
 - `DataView(ArrayBuffer)` 对象中的有如下指针关系：
   - ArrayBuffer 对象用来表示通用的、固定长度的原始二进制数据缓冲区；
   - 但是 ArrayBuffer 不能直接操作，需要通过 DataView 对象来提供读写多种数据类型的底层接口，因此不需要考虑字节序等问题；
@@ -484,6 +494,8 @@ let data_buf = new ArrayBuffer(0x1000);
 let data_view = new DataView(data_buf);
 let buf_backing_store_addr = get_addr(data_buf) + 0x20n;
 ```
+
+### 最终利用 - 通过 WasmInstance 写 shellcode
 
 现在获得了任意地址读写，最直接的思路就是：
 
@@ -548,6 +560,8 @@ for x in [shellcode[i : i + 8] for i in range(0, len(shellcode), 8)]:
     print(hex(u64_ex(x)), end="n, ")
 print("];")
 ```
+
+### 完整利用
 
 最后整体利用代码如下：
 
@@ -725,6 +739,8 @@ let exp = () => {
 
 exp();
 ```
+
+至此题目已经完成了，通过这道入门题目了解了 V8 的调试方式、对象结构与基本利用思路。
 
 ---
 
