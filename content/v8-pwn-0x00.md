@@ -4,7 +4,7 @@ aliases: []
 tags:
   - V8
 date: 2023-08-30 23:21:23
-title: V8 - PWN chromium 0x00
+title: V8 - PWN Chromium 0x00 - Starting with OOB
 ---
 
 > [!summary]
