@@ -272,7 +272,7 @@ graph TD;
 >    - Structural optimization errors
 > 7. Sandbox violations/SBX
 
-## 例题：starCTF2019-OOB
+## 例题 0x00：starCTF2019-OOB
 
 这道题也算是 V8 题目中比较经典的例题了, 题目附件: [starctf2019-pwn-OOB](https://github.com/AvavaAYA/ctf-writeup-collection/tree/main/StarCTF-2019/pwn-OOB)
 
@@ -741,6 +741,43 @@ exp();
 ```
 
 至此题目已经完成了，通过这道入门题目了解了 V8 的调试方式、对象结构与基本利用思路。
+
+---
+
+## 例题 0x01：X-NUCA 2020 - babyV8
+
+这里看第二道例题，虽然同样是直接的 OOB 类型漏洞，但是这题开启了指针压缩，可以举一反三尝试一下刚刚学到的利用思路：
+
+```bash
+git checkout 8.6.358
+gclient sync -v -D
+git apply - # 从标准输入读取 diff
+diff --git a/src/codegen/code-stub-assembler.cc b/src/codegen/code-stub-assembler.cc
+index 16fd384..8bf435a 100644
+--- a/src/codegen/code-stub-assembler.cc
++++ b/src/codegen/code-stub-assembler.cc
+@@ -2888,7 +2888,7 @@ TNode<Smi> CodeStubAssembler::BuildAppendJSArray(ElementsKind kind,
+       [&](TNode<Object> arg) {
+         TryStoreArrayElement(kind, &pre_bailout, elements, var_length.value(),
+                              arg);
+-        Increment(&var_length);
++        Increment(&var_length, 3);
+       },
+       first);
+   {
+```
+
+### 漏洞分析
+
+分析题目 patch 的函数可以发现：
+
+1. `BuildAppendJSArray` 函数先获取了原数组的 length 和 elements；
+2. 判断原数组 elements（即 FixedArray）的容量，若不足则调整容量；
+3. 将参数用 ForEach 循环依次存入新的 elements 中；
+4. *原先会将 `var_length`，即 index 递增，经过 patch 过后会直接增加 3；*
+5. 结束循环后设置 `array.length` 并返回。
+
+其中增加容量 和 递增 index 并最终设置 `array.length` 二者的操作是通过不同的方法计算出来的，现在 patch 了后者的计算逻辑，使得最终的 `array.length` 可以超过调整出来 elements 的容量，就直接导致了 OOB。
 
 ---
 
