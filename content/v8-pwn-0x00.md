@@ -777,7 +777,32 @@ index 16fd384..8bf435a 100644
 4. *原先会将 `var_length`，即 index 递增，经过 patch 过后会直接增加 3；*
 5. 结束循环后设置 `array.length` 并返回。
 
-其中增加容量 和 递增 index 并最终设置 `array.length` 二者的操作是通过不同的方法计算出来的，现在 patch 了后者的计算逻辑，使得最终的 `array.length` 可以超过调整出来 elements 的容量，就直接导致了 OOB。
+其中「增加容量」和「递增 index 并最终设置 `array.length`」二者的操作是通过不同的方法计算出来的，而题目中 patch 了后者的计算逻辑，使得最终的 `array.length` 可以超过调整出来 elements 的容量，就直接导致了 OOB。
+
+### POC
+
+来到具体利用，还需要明确如何触发漏洞：
+
+> [!Question] 
+> `BuildAppendJSArray` 函数的参数应该是多大的数组才能导致 OOB？
+>
+> - 首先跟踪到 `PossiblyGrowElementsCapacity` 函数，找到其中调用的 `CalculateNewElementsCapacity`，定位到返回长度的计算方式为：$1.5 \times arg + Padding$
+> - 经过测试，Double 类型 Array 的 Padding 值为 0x10
+
+其次就是怎么调用漏洞函数，同样是找交叉引用发现 ArrayPrototypePush 中存在相关调用，故可以写出如下 POC：
+
+```javascript
+let victim = [1.1];
+victim.push(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1, 11.11, 12.12);
+console.log(victim.length);
+
+%DebugPrint(victim);
+%SystemBreak();
+```
+
+
+
+
 
 ---
 
