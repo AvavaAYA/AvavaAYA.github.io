@@ -1072,6 +1072,34 @@ let exp = () => {
 exp();
 ```
 
+### 利用 JIT 优化后的函数获得 RWX 内存
+
+- [ref: Trick #6: Disabling W^X at Runtime](https://tiszka.com/blog/CVE_2021_21225_exploit.html)
+
+> [!info] 
+> 这是一个很有趣的技巧，虽然在最新版本控制新分配堆空间的 flag 位置已经不在 V8 堆上了，但也值得学习一下：
+
+- 定位 `write_protect_code_memory_` 变量位置（在题目版本源码下）：
+
+首先定位到设置该变量的代码位置，这个布尔值在 `/v8/new_v8/v8/src/heap/heap.h:2037` 中被声明为 false，在 `/v8/new_v8/v8/src/heap/heap.cc:5377` 中被使用，故可以把断点打在 `heap.cc:5377` 上：
+
+```c
+In file: /v8/new_v8/v8/src/heap/heap.cc:5377
+   5372   if (FLAG_stress_scavenge > 0) {
+   5373     stress_scavenge_observer_ = new StressScavengeObserver(this);
+   5374     new_space()->AddAllocationObserver(stress_scavenge_observer_);
+   5375   }
+   5376
+ ► 5377   write_protect_code_memory_ = FLAG_write_protect_code_memory;
+   5378 }
+   5379
+   5380 void Heap::InitializeHashSeed() {
+   5381   DCHECK(!deserialization_complete_);
+   5382   uint64_t new_hash_seed;
+```
+
+在当前的命名空间下，就可以直接用 `p &write_protect_code_memory_` 指令找到该标志位的地址，计算出它在 V8 堆上的相对偏移。
+
 ---
 
 # References
