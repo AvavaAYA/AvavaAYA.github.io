@@ -1136,3 +1136,4 @@ let exp = () => {
 2. [v8 pwn入门篇利用合集](https://blog.csdn.net/qq_61670993/article/details/135316299) . *[XiaozaYa](https://blog.csdn.net/qq_61670993)*
 3. [Chrome v8 pwn](https://blog.csdn.net/qq_45323960/article/details/130124693) . *[sky123](https://sky123.blog.csdn.net/?type=blog)*
 4. [V8 沙箱绕过](https://tttang.com/archive/1443/) . *[Jayl1n](https://tttang.com/user/Jayl1n)*
+5. [Chaos me JavaScript V8](https://github.com/ErodedElk/Chaos-me-JavaScript-V8) . *[TokameinE](https://github.com/ErodedElk)*
