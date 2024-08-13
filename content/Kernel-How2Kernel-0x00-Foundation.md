@@ -25,6 +25,7 @@ title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 > - [ ] slub 分配器
 > - [ ] 跨缓存的溢出与跨页的堆风水
 > - [ ] Buddy System
+>     - PageJack - Page UAF
 
 ---
 
