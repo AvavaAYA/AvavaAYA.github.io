@@ -1,8 +1,10 @@
 ---
-title: About Me
-draft: false
+id: about
+aliases: []
 tags:
   - Misc
+draft: false
+title: About Me
 ---
 
 Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http://en.ustc.edu.cn/). After taking part in 7th [Hackergame](https://hack.lug.ustc.edu.cn/) and won a second prize as freshman, I became deeply passionate about binary exploitation. Motivated by the belief that「**pwn for fun**」, I've continuously delved into various challenges, ranging from kernel privilege escalation to user-level browser exploitation. Now, I hold the position of leader in [Nebula](http://nebuu.la/). Having participated in all major domestic CTF competitions, our goal for the upcoming years is to venture into international events, including the formidable DEFCON. I am actively seeking internship opportunities in a cybersecurity-focused laboratory this semester.
@@ -25,14 +27,16 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 ## 实习
 
-- 2024-07-19：正式工作一周了，在 🌸为，感觉非常有趣啊，做内存分配器。不过还是比较后悔当时没投蓝军，还是想尝试一下更底层的攻击研究
+- 2024-08-15：好消息：开始做蓝军了；坏消息：部门里新成立的蓝军，第一项任务是人工审计其它蓝军审计过的西加加代码并且有问题数量指标。
+- 2024-07-19：正式工作一周了，在 🌸为，感觉非常有趣啊，做内存分配器。不过还是比较后悔当时没投蓝军，还是想尝试一下更底层的攻击研究。
 
 ---
 
 ## 菁英班
 
-- 2024-07-12：为期一周的培训结束了。很幸运随机分配的小组氛围和谐又活跃，非常开心。虽然小组项目写起来很痛苦。项目链接：[github.com:zhpywhatever/OHOS-Top3-Health-APP](https://github.com/zhpywhatever/OHOS-Top3-Health-APP)
+- 2024-08-14：小组项目出分了，毫无意外地拿到了很高的成绩 1st / 3。
 - 2024-07-13：比较难绷的是公司送了一本《美国陷阱》
+- 2024-07-12：为期一周的培训结束了。很幸运随机分配的小组氛围和谐又活跃，非常开心。虽然小组项目写起来很痛苦。项目链接：[github.com:zhpywhatever/OHOS-Top3-Health-APP](https://github.com/zhpywhatever/OHOS-Top3-Health-APP)
 
 ---
 
