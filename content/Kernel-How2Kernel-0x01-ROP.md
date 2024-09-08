@@ -149,8 +149,10 @@ user_ss;
 
 # Chal-0x03: QWB-2018-core
 
+- 附件：[Google Drive](https://drive.google.com/file/d/1c5P7f7tujaNRdNI6wHGKjMLjOiGVJETq/view?usp=sharing)
+
 > [!note] 
-> 是一道很经典的内核题，尽管从现在角度来看 `4.15.8` 版本的内核非常古老，但还是集成了 KASLR、KPTI、SMEP / SMAP 等基本保护，大致上可以通过 CPU 的标志位来判断：`cat /proc/cpuinfo | grep flags`。
+> 是一道很经典的内核题，尽管从现在角度来看 `4.15.8` 版本的内核非常古老，但还是集成了 KASLR、KPTI、SMEP / SMAP 等基本保护，大致上可以通过 CPU 的标志位来判断：`cat /proc/cpuinfo | grep flags`
 >
 > 对于这道题，博客中将会逐步开启保护，介绍 Kernel ROP 和基本的保护绕过技巧。
 
@@ -170,11 +172,95 @@ bzImage  core.cpio  start.sh  vmlinux
 bin  core.ko  etc  gen_cpio.sh  init  lib  lib64  linuxrc  proc  root  sbin  sys  tmp  usr  vmlinux
 ```
 
-2. 修改 `init` 和 `start.sh` 启动脚本完成利用的准备工作：
-
-    - 在 init 中加入：
+2. 修改 `init` 和 `start.sh` 启动脚本完成利用的准备工作，使题目能够正常启动并简化调试流程（每次只需要编译 exp 到指定文件，避免反复打包）：
 
 ```bash
+# 在 init 中加入：
+
 [ -e /dev/sda ] && cat /dev/sda >/bin/pwn
 chmod 755 /bin/pwn
+
+## 此外还可以顺便注释掉定时关机、修改权限后重新打包，便于调试查看地址等
+setsid /bin/cttyhack setuidgid 0000 /bin/sh
+
+# 修改 start.sh 如下：
+##  改大内存防止启动失败
+##  其中 exploit 对应 exp.c 的编译产物
+
+#!/usr/bin/env bash
+qemu-system-x86_64 \
+    -m 128M \
+    -kernel ./bzImage \
+    -initrd ./core.cpio \
+    -append "root=/dev/ram rw console=ttyS0 oops=panic panic=1 quiet kaslr" \
+    -drive file=exploit,format=raw \
+    -s \
+    -netdev user,id=t0, -device e1000,netdev=t0,id=nic0 \
+    -nographic
+```
+
+3. 重新打包题目：
+
+```bash
+find . -print0 | cpio --null -ov --format=newc >../core.cpio
+```
+
+---
+
+接下来把 `rootfs/core.ko` 内核模块拖进 ida，就是常规的逆向分析流程了， ~~相比于用户态的虚拟机题，内核 pwn 还是很少在逆向上设置门槛~~ 。
+
+关于内核模块中实现的系统调用，可以到 `init_module` 函数中找 `core_fops` 结构体，其中就列出了所有实现的接口，一般比较需要细看的就是 ioctl，其实就是一个「菜单」，通过 `ioctl(fd, cmd, args)` 的形式进行菜单功能调用。
+
+进入 `core_ioctl` 函数立刻就可以发现全局变量 off 非常可疑，因为它被用作缓冲区偏移量的同时也是用户可控的，并且没有任何检查：
+
+```c
+__int64 __fastcall core_ioctl(__int64 a1, int a2, __int64 a3)
+{
+  switch ( a2 )
+  {
+    case 0x6677889B:
+      core_read(a3);
+      break;
+    case 0x6677889C:
+      printk(&unk_2CD);
+      off = a3;
+      break;
+    case 0x6677889A:
+      printk(&unk_2B3);
+      core_copy_func(a3);
+      break;
+  }
+  return 0LL;
+}
+```
+
+`core_read` 函数中从内核栈上拷贝 0x40 字节到用户态缓冲区中，提供了越界读：
+
+```c
+unsigned __int64 __fastcall core_read(__int64 a1)
+{
+  char v5[64]; // [rsp+0h] [rbp-50h] BYREF
+
+  strcpy(v5, "Welcome to the QWB CTF challenge.\n");
+  copy_to_user(a1, &v5[off], 64LL);
+}
+```
+
+来到最后一个接口，`core_copy_func` 里面有一个整数溢出导致的栈溢出：
+
+```c
+__int64 __fastcall core_copy_func(__int64 a1)
+{
+  _QWORD v2[10]; // [rsp+0h] [rbp-50h] BYREF
+
+  v2[8] = __readgsqword(0x28u);
+  if ( a1 > 63 )
+  {
+    return 0xFFFFFFFFLL;
+  }
+  else
+  {
+    qmemcpy(v2, &name, (unsigned __int16)a1);
+  }
+}
 ```
