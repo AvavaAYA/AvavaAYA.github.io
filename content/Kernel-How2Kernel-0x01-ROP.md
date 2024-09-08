@@ -105,4 +105,42 @@ user_ss;
 
 当然也可以直接复用内核代码中返回用户态的 gadget，相关代码在 `arch/x86/entry/entry_64.S` 的 `swapgs_restore_regs_and_return_to_usermode` 函数中：
 
+```c
+swapgs_restore_regs_and_return_to_usermode_plus_22:
+    mov    rdi,rsp
+    mov    rsp,QWORD PTR gs:0x5004
+    push   QWORD PTR [rdi+0x30]
+    push   QWORD PTR [rdi+0x28]
+    push   QWORD PTR [rdi+0x20]
+    push   QWORD PTR [rdi+0x18]
+    push   QWORD PTR [rdi+0x10]
+    push   QWORD PTR [rdi]
+    push   rax
+    jmp    tag1
 
+tag1:
+    pop    rax
+    pop    rdi
+    swapgs
+    jmp    tag2
+
+tag2:
+    test   BYTE PTR [rsp+0x20],0x4
+    jne    shouldnt_touch
+    iretq
+```
+
+即只需要在栈上布置好：
+
+```c
+swapgs_restore_regs_and_return_to_usermode + 22;
+0;
+0; 因为 tag1 处 pop 了两次，占位
+ret_addr;
+user_cs;
+user_rflags;
+user_sp;
+user_ss;
+```
+
+这样也可以成功返回用户态并执行 `ret_addr` 处的代码。
