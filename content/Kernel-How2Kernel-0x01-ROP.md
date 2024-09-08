@@ -5,7 +5,7 @@ tags:
   - Kernel
   - tutorial
 date: 2024-03-18 19:02:34
-draft: true
+draft: false
 title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 ---
 
@@ -144,3 +144,37 @@ user_ss;
 ```
 
 这样也可以成功返回用户态并执行 `ret_addr` 处的代码。
+
+---
+
+# Chal-0x03: QWB-2018-core
+
+> [!note] 
+> 是一道很经典的内核题，尽管从现在角度来看 `4.15.8` 版本的内核非常古老，但还是集成了 KASLR、KPTI、SMEP / SMAP 等基本保护，大致上可以通过 CPU 的标志位来判断：`cat /proc/cpuinfo | grep flags`。
+>
+> 对于这道题，博客中将会逐步开启保护，介绍 Kernel ROP 和基本的保护绕过技巧。
+
+1. 解包文件系统：
+
+```bash
+❯ ls
+bzImage  core.cpio  start.sh  vmlinux
+❯ file ./core.cpio
+./core.cpio: gzip compressed data, last modified: Fri Mar 23 13:41:13 2018, max compression, from Unix, original size modulo 2^32 53442048
+❯ mv ./core.cpio{,.gz}
+❯ gzip -d ./core.cpio.gz
+❯ mkdir rootfs && cd rootfs
+❯ cpio -idm < ../core.cpio
+104379 blocks
+❯ ls
+bin  core.ko  etc  gen_cpio.sh  init  lib  lib64  linuxrc  proc  root  sbin  sys  tmp  usr  vmlinux
+```
+
+2. 修改 `init` 和 `start.sh` 启动脚本完成利用的准备工作：
+
+    - 在 init 中加入：
+
+```bash
+[ -e /dev/sda ] && cat /dev/sda >/bin/pwn
+chmod 755 /bin/pwn
+```

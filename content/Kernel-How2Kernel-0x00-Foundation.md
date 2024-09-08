@@ -61,7 +61,7 @@ Kernel PWN 的目标往往是提权（escalation），即给出一个低权限�
 
 ## 提权
 
-> 在一个低权限的 shell 中，找到系统的漏洞并加以利用，最终拿到 root 权限——这是一种非常经典的 PWN 思路~~，不感觉非常浪漫吗（）~~。
+> 在一个低权限的 shell 中，找到系统的漏洞并加以利用，最终拿到 root 权限——这是一种非常经典的 PWN 思路 ~~，不感觉非常浪漫吗~~ 。
 
 内核漏洞利用固然是提权的强力手段，但是很多时候存在更简单的方法，例如 [ld.so + suid](CVE-2023-4911)。
 
@@ -102,13 +102,13 @@ exit
 
 > 当时我对这些东西一知半解，作为验题人却没有注意到这些问题，sad😞
 
-- [attachments](https://github.com/AvavaAYA/ctf-writeup-collection?tab=readme-ov-file#hackergame-2022-jeopardy)
+- [attachments](https://drive.google.com/file/d/1IKKj57fliEOj396J2so5OiYrE614Leiq/view?usp=sharing)
 
 进入 `/sbin` 目录发现其中文件到属主都并非 root，因此可以用上面到方法篡改，实现利用。
 
 ##### Chal-0x01: TPCTF-2023-core
 
-- [attachments](https://github.com/AvavaAYA/ctf-writeup-collection?tab=readme-ov-file#tpctf-2023-jeopardy)
+- [attachments](https://drive.google.com/file/d/1F-vr8dpZfiPZx1l2_8zEXnzQdGyqHvvb/view?usp=sharing)
 
 #### /etc 目录下可写
 
@@ -258,7 +258,7 @@ Kernel 中的漏洞如何导致提权？通俗来讲，kernel 中的模块运行
 
 > 这是一道来自 2023 年首届京麒杯的签到内核题（用于开启 soloCTF），但是现场选手们都做太慢了以至于主办方不得不现场放出另一道签到题。
 
-- [attachments](https://github.com/AvavaAYA/ctf-writeup-collection?tab=readme-ov-file#solo-rootcode)
+- [attachments](https://drive.google.com/file/d/1p1eO0HjQaRYn321xAnPsL-dl3i66hUyA/view?usp=sharing)
 
 ### Analysis
 
