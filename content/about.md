@@ -25,6 +25,12 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 > 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
 
+## 羊城杯
+
+- 2024-09-12：可恶的渗透比赛，唯一的 web 手还是新人，断网比赛没准备 CVE，非常坐牢啊；最耻辱的一集；相信以后会好起来的。
+
+---
+
 ## 实习
 
 - 2024-09-02：正式告一段落了，学到了很多啊；是一段宝贵的经历，坚定了我「必须到工业界实践」到想法。
