@@ -5,6 +5,7 @@ tags:
   - Kernel
   - tutorial
 date: 2024-01-18 19:02:34
+draft: false
 title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 ---
 

