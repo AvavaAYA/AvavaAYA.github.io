@@ -363,6 +363,9 @@ delete(5)                   # H1
 ## References
 
 \[1\] [CTF 中 glibc堆利用 及 IO_FILE 总结](https://bbs.kanxue.com/thread-272098.htm) . *[winmt](https://bbs.kanxue.com/homepage-949925.htm)*
+
 \[2\] [House of apple 一种新的glibc中IO攻击方法 (2)](https://bbs.kanxue.com/thread-273832.htm) . *[roderick01](https://bbs.kanxue.com/homepage-956675.htm)*
+
 \[3\] [Educational Heap Exploitation](https://github.com/shellphish/how2heap) . *[shellphish](https://github.com/shellphish)*
+
 \[4\] [glibc2.29+的off by null利用](https://tttang.com/archive/1614/#toc__6) . *[cru5h](https://tttang.com/user/cru5h)*
