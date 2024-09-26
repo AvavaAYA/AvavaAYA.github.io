@@ -18,7 +18,7 @@ title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 >     - 基础知识
 >     - 一些常见的非预期解
 >     - Kernel Shellcode 提权
-> - [ ] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
+> - [x] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
 >     - 基本 ROP 链的构造
 >     - `pt_regs` 结构体的利用
 >     - ret2dir 绕过 SMEP / SMAP
