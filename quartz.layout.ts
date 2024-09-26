@@ -7,11 +7,11 @@ export const sharedPageComponents: SharedLayout = {
   header: [],
   footer: Component.Footer({
     links: {
-      Home: "https://eastxuelian.nebuu.la",
-      GitHub: "https://github.com/avavaaya",
-      Mail: "mailto:zrcui2002@outlook.com",
-      X: "https://twitter.com/eastXueLian",
-      // "Discord Community": "https://discord.gg/cRFFHYye7t",
+      "🏠 Home": "https://eastxuelian.nebuu.la",
+      "📰 Resume": "https://resume.zerencui.com",
+      "🌐 GitHub": "https://github.com/avavaaya",
+      "📨 Mail": "mailto:eastxuelian@gmail.com",
+      "🐦️ X": "https://twitter.com/eastXueLian",
     },
   }),
 }

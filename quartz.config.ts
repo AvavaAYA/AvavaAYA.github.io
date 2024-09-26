@@ -29,24 +29,24 @@ const config: QuartzConfig = {
 
       colors: {
         lightMode: {
-          light: "#fbf1c7", // 背景色（浅）
-          lightgray: "#ebdbb2", // 浅灰色
-          gray: "#d5c4a1", // 灰色
-          darkgray: "#a89984", // 深灰色
-          dark: "#3c3836", // 文字颜色（深）
-          secondary: "#458588", // 次要颜色（蓝色调）
-          tertiary: "#689d6a", // 第三颜色（青色调）
-          highlight: "rgba(215, 153, 33, 0.15)", // 高亮颜色（带透明度的黄色）
+          light: "#fbf1c7",
+          lightgray: "#ebdbb2",
+          gray: "#427b58",
+          darkgray: "#3c3836",
+          dark: "#076678",
+          secondary: "#8f3f71",
+          tertiary: "#af3a03",
+          highlight: "rgba(104, 157, 106, 0.15)",
         },
         darkMode: {
-          light: "#282828", // 背景色（深）
-          lightgray: "#a89984", // 浅灰色（边框 / 高亮）
-          gray: "#928374", // 灰色
-          darkgray: "#fbf1c7", // 正文文字
-          dark: "#ebdbb2", // 文字颜色（浅）
-          secondary: "#8ec07c", // 次要颜色（蓝色调）
-          tertiary: "#83a598", // 第三颜色（青色调）
-          highlight: "rgba(215, 153, 33, 0.15)", // 高亮颜色（带透明度的黄色）
+          light: "#282828", // background color (dark)
+          lightgray: "#3c3836", // frame / inline code background (grey)
+          gray: "#8ec07c", // datetime / graphdot (aqua)
+          darkgray: "#ebdbb2", // text (fg)
+          dark: "#83a598", // title / toc / inline code (blue)
+          secondary: "#d3869b", // link (purple)
+          tertiary: "#fe8019", // link highlight (orange)
+          highlight: "rgba(104, 157, 106, 0.15)", // tag highlight (aqua with transprancy)
         },
       },
 
@@ -72,7 +72,6 @@ const config: QuartzConfig = {
       //     highlight: "rgba(143, 159, 169, 0.15)",
       //   },
       // },
-
     },
   },
   plugins: {
@@ -84,8 +83,8 @@ const config: QuartzConfig = {
       Plugin.Latex({ renderEngine: "katex" }),
       Plugin.SyntaxHighlighting({
         theme: {
-          light: "catppuccin-latte",
-          dark: "nord",
+          light: "solarized-light",
+          dark: "vitesse-dark",
         },
         keepBackground: true,
       }),
