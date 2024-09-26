@@ -5,7 +5,7 @@ tags:
   - Glibc
 date: 2023-02-28 00:25:13
 draft: false
-title: GLIBC - exploitation-in-latest-glibc-0x00 基本思路
+title: GLIBC - exploiting-the-latest-glibc-0x00 基本思路
 ---
 
 > [!TLDR] 

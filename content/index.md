@@ -27,7 +27,7 @@ Welcome to my blog. I am eastXueLian from China, [click here](about.md) to learn
 | 2023-11-04 | [WriteUp - 鹏城杯 2023 - PWN 部分所有题目](pcb-2023)                                     |
 | 2023-10-30 | [V8 - PWN Chromium 0x01](v8-pwn-0x01)                                                    |
 | 2023-10-08 | [CVE-2023-4911 - Looney Tunables - ld.so 提权](CVE-2023-4911)                            |
-| 2023-09-25 | [GLIBC - exploitation-in-latest-glibc-0x01 House of Blindness](glibc-blindness)          |
+| 2023-09-25 | [GLIBC - exploiting-the-latest-glibc-0x01 House of Blindness](glibc-blindness)          |
 | 2023-08-30 | [V8 - PWN Chromium 0x00 - Starting with OOB](v8-pwn-0x00)                                                    |
 | 2023-07-01 | [WriteUp - 二级信安实践 - PWN](xinan-level2-2023)                                        |
-| 2023-02-28 | [GLIBC - exploitation-in-latest-glibc-0x00 基本思路](glibc-simple)          |
+| 2023-02-28 | [GLIBC - exploiting-the-latest-glibc-0x00 基本思路](glibc-simple)          |
