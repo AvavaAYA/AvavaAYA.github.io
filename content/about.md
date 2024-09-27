@@ -25,6 +25,12 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 > 这个主页的访客比我 tg channel 访客还多，故宣布这里是新的 qq 空间。
 
+## 主页
+
+- 2024-09-27：刚刚手动调了一个 Gruvbox 的配色出来，感觉挺漂亮的；如果有什么改进建议可以随时联系我（
+
+---
+
 ## 羊城杯
 
 - 2024-09-12：可恶的渗透比赛，唯一的 web 手还是新人，断网比赛没准备 CVE，非常坐牢啊；最耻辱的一集；相信以后会好起来的。
@@ -78,6 +84,8 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 ## Something About My Desk Set:
 
 > 感觉能在学校里有这么大的工位很幸运，还是要多做一些成绩出来啊（
+
+- 2024-09-27：现在有两块 32 寸屏幕，非常开心。
 
 - 2024-03-21：磁吸桌面设备真的是非常优雅的设计，买了个磁吸天线。现在终于能使用蓝牙连接主机听歌了。
 
