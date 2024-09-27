@@ -15,9 +15,9 @@ Hello, I'm eastXueLian, a junior pursuing a Cyber Security major at [USTC](http:
 
 ## My Recent Works:
 
-[Calendar](https://calendar.google.com/calendar/u/0?cid=ZWFzdHh1ZWxpYW5AZ21haWwuY29t)
+- [TG Channel](https://t.me/eastXLian)
 
-[Todo-list](https://t.me/eastXLian)
+- [Calendar](https://calendar.google.com/calendar/u/0?cid=ZWFzdHh1ZWxpYW5AZ21haWwuY29t)
 
 ---
 
