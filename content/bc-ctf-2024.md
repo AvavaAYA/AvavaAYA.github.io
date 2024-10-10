@@ -1,10 +1,12 @@
 ---
-title: WriteUp - Plan BeiChen - PWN
-date: 2024-07-18 23:14:55
-draft: false
+id: bc-ctf-2024
+aliases: []
 tags:
   - WriteUp
   - PWN
+date: 2024-07-18 23:14:55
+draft: false
+title: WriteUp - Plan BeiChen - PWN
 ---
 
 > [!info]
