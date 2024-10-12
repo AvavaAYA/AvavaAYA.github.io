@@ -1,18 +1,21 @@
 ---
-title: Pwn Cheatsheet
-date: 2024-03-05 15:02:18
+id: Pwn-Cheatsheet
+aliases: []
 tags:
   - Cheatsheet
   - PWN
   - Kernel
+date: 2024-03-05 15:02:18
+title: Pwn Cheatsheet
 ---
 > I have been using NixOS on all my devices, so the following blog is about dealing with user-level and kernel-level pwn challenges on NixOS through fish scripts and nix configurations.
 # What's 「lianpwn」
 
 > [!important] 
-> 经常遇到师傅来问我 WP 里的「lianpwn」是什么，其实就是一些基于 pwncli 或者 pwntools 的简单包装，具体代码位于：[nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) 仓库中。
+> 经常遇到师傅来问我 WP 里的「lianpwn」是什么，其实就是一些基于 pwncli 或者 pwntools 的简单包装，具体代码位于：[nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) 仓库中。**更新：现已保存到 pypi 中，可以直接 `pip install lianpwn` 使用**
 >
-> I often get asked what 'lianpwn' in my WP is. It's actually just some simple wrappers based on pwncli or pwntools. The specific code can be found in the [nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) repository.
+> I often get asked what 'lianpwn' in my WP is. It's actually just some simple wrappers based on pwncli or pwntools. The specific code can be found in the [nix-config](https://github.com/AvavaAYA/nix-config/tree/main/packages/lianpwn) repository. **Update: You can use `pip install lianpwn`**
+
 # User-level Pwn
 
 I have a python module named lianpwn, which is based on pwncli and pwntools. There're a few lambdas and helper classes defined in it:
@@ -22,12 +25,8 @@ from pwncli import *
 
 lg_inf = lambda s: print("\033[1m\033[33m[*] %s\033[0m" % (s))
 lg_err = lambda s: print("\033[1m\033[31m[x] %s\033[0m" % (s))
-# lg_suc = lambda s: print("\033[1m\033[32m[+] %s\033[0m" % (s))
-lg_suc = lambda s_name, s_val: print(
-    "\033[1;33;40m %s --> 0x%x \033[0m" % (s_name, s_val)
-)
+lg_suc = lambda s: print("\033[1m\033[32m[+] %s\033[0m" % (s))
 i2b = lambda c: str(c).encode()
-# lg = lambda s: print("\033[1;31;40m %s --> 0x%x \033[0m" % (s, eval(s, globals())))
 lg = lambda s_name, s_val: print("\033[1;31;40m %s --> 0x%x \033[0m" % (s_name, s_val))
 debugB = lambda: input("\033[1m\033[33m[ATTACH ME]\033[0m")
 
