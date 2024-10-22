@@ -313,6 +313,8 @@ musl 静态编译上传后依次运行 `./lpe ; ./getflag virnet0` 获得 flag�
 > [!info]
 > 这里很麻烦的一点是 gift 函数里限时 10 秒，但是交互 1000 次需要不少时间，远程总是差一点，跑很多遍终于出来了
 
+实际上这里打的是 `__elf_set___libc_atexit_element__IO_cleanup__` 函数指针，原先这里存放的是 `_IO_cleanup` 函数地址，覆盖后可以在 `exit` 时调用任意地址：
+
 ```python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
