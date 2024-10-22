@@ -692,8 +692,14 @@ Ret2dir 中的 dir 就是指内核内存空间中的直接映射区，关注 [li
   __________________|____________|__________________|_________|___________________________________________________________
 ```
 
-对于 DMA，这段长达 64T 的虚拟内存空间直接映射了所有内存空间，即从 `page_offset_base` 到 `page_offset_base + 
-MAX_MEMORY_SIZE` 的内存直接对应了整个物理地址空间。
+> [!NOTE] 
+> 开启 KASLR 后，`CONFIG_RANDOMIZE_MEMORY` 选项会使得物理内存的直接映射区域（direct mapping area）、vmalloc / ioremap 空间以及虚拟内存映射区域的基地址在引导时被随机化偏移：
+> 
+> - 直接映射区域地址变化
+> - 内存区域顺序保持不变
+> - 为避免内存地址重叠，开启 KASAN 时会禁用 KASLR
+
+对于 DMA，这段长达 64T 的虚拟内存空间直接映射了所有内存空间，即从 `page_offset_base` 到 `page_offset_base + MAX_MEMORY_SIZE` 的内存直接对应了整个物理地址空间。
 
 这也就意味着除了直接 Direct Mapping Area 以外的所有虚拟内存空间在 Direct Mapping Area 内都必然存在一个对应的内存页，也就是其他虚拟内存对应的物理地址在 Direct Mapping Area 的映射，两块虚拟内存页对应着同一块物理内存页。
 
