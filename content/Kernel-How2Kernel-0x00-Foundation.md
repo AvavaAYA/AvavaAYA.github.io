@@ -18,7 +18,7 @@ title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 > [!todo] 
 > **Linux Kernel Pwn 系列博客预计包括：**
 > 
-> - [x] [[kernel-How2Kernel-0x00-Foundation|Environment and Basic LPE]]
+> - [x] [[Kernel-How2Kernel-0x00-Foundation|Environment and Basic LPE]]
 >     - 基础知识
 >     - 一些常见的非预期解
 >     - Kernel 提权常见思路
