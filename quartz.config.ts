@@ -28,16 +28,6 @@ const config: QuartzConfig = {
       },
 
       colors: {
-        lightMode: {
-          light: "#fbf1c7",
-          lightgray: "#ebdbb2",
-          gray: "#427b58",
-          darkgray: "#3c3836",
-          dark: "#076678",
-          secondary: "#8f3f71",
-          tertiary: "#af3a03",
-          highlight: "rgba(104, 157, 106, 0.15)",
-        },
         darkMode: {
           light: "#282828", // background color (dark)
           lightgray: "#3c3836", // frame / inline code background (grey)
@@ -48,30 +38,17 @@ const config: QuartzConfig = {
           tertiary: "#fe8019", // link highlight (orange)
           highlight: "rgba(104, 157, 106, 0.15)", // tag highlight (aqua with transprancy)
         },
+        lightMode: {
+          light: "#fbf1c7",
+          lightgray: "#ebdbb2",
+          gray: "#427b58",
+          darkgray: "#3c3836",
+          dark: "#076678",
+          secondary: "#8f3f71",
+          tertiary: "#af3a03",
+          highlight: "rgba(104, 157, 106, 0.15)",
+        },
       },
-
-      // colors: {
-      //   lightMode: {
-      //     light: "#faf8f8",
-      //     lightgray: "#e5e5e5",
-      //     gray: "#b8b8b8",
-      //     darkgray: "#4e4e4e",
-      //     dark: "#2b2b2b",
-      //     secondary: "#284b63",
-      //     tertiary: "#84a59d",
-      //     highlight: "rgba(143, 159, 169, 0.15)",
-      //   },
-      //   darkMode: {
-      //     light: "#161618",
-      //     lightgray: "#393639",
-      //     gray: "#646464",
-      //     darkgray: "#d4d4d4",
-      //     dark: "#ebebec",
-      //     secondary: "#7b97aa",
-      //     tertiary: "#84a59d",
-      //     highlight: "rgba(143, 159, 169, 0.15)",
-      //   },
-      // },
     },
   },
   plugins: {

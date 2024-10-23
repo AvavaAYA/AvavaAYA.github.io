@@ -17,12 +17,13 @@ title: "Kernel - How2Kernel 0x01: ROP and pt-regs"
 > - [x] [[kernel-How2Kernel-0x00-Foundation|Environment and Basic LPE]]
 >     - 基础知识
 >     - 一些常见的非预期解
->     - Kernel Shellcode 提权
+>     - Kernel 提权常见思路
 > - [x] [[Kernel-How2Kernel-0x01-ROP|ROP and pt-regs]]
 >     - 基本 ROP 链的构造
 >     - `pt_regs` 结构体的利用
->     - ret2dir 绕过 SMEP / SMAP
-> - [ ] slub 分配器
+>     - ret2dir 与直接映射区
+> - [x] [[Kernel-How2Kernel-0x02-heap-basics|slub 分配器]]
+>     - 内核堆概述
 > - [ ] 跨缓存的溢出与跨页的堆风水
 > - [ ] Buddy System
 >     - PageJack - Page UAF
